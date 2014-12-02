@@ -6,6 +6,8 @@ function Player( data ) {
 	this.map = data.map || null;
 	this.x = data.x || null;
 	this.y = data.y || null;
+	this.offsetX = 0;
+	this.offsetY = 0;
 	this.hp = data.hp || null;
 	this.mp = data.mp || null;
 	this.bag = data.bag || [];

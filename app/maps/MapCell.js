@@ -21,6 +21,8 @@ function MapCell() {
 
     this.light = null;
     this.unknown = null;
+    this.graphic = null;
+    this.failed = false;
 }
 
 module.exports = MapCell;
