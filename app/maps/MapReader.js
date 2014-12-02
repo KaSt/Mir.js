@@ -2,13 +2,13 @@ var Map = require('./Map.js');
 var MapCell = require('./MapCell.js');
 
 function MapReader(mapName, dataBuffer) {
-	this._dataBufferBuffer = dataBuffer;
+	this._dataBuffer = dataBuffer;
 	this._mapName = mapName;
 	this._mapCells = [];
 	this._map = new Map();
 }
 
-MapReader.prototype.loadMap() {
+MapReader.prototype.loadMap = function() {
 
 	//wemade mir3 maps have no title they just start with blank bytes
     if (this._dataBuffer.getInt8(0) == 0) {

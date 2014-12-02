@@ -1,24 +1,29 @@
-var ScenesEnum = require('../scenes/ScenesEnum.js');
-var WorldScene = require('../scenes/WorldScene.js');
 
 var GameService = {
 	player: null,
-	currentScene: null,
+	scene: null,
 	loggedIn: false,
 
-	loadScene: function(newScene) {
-		this.currentScene.hide().then(function() {
-			switch(newScene) {
-				case ScenesEnum.WORLD_SCENE:
-					this.currentScene = new WorldScene();
-					break;
-			}
+	loadScene: function(newScene, appContainer) {
+
+		var processScene = function processScene() {
+			this.scene = newScene;
+
+			newScene.init();
 
 			//show loading?
 
 			//then show scene
-			this.currentScene.show();
-		}.bind(this));
+			this.scene.show();
+		}.bind(this);
+
+		if(this.scene !== null) {
+			this.scene.hide().then(function() {
+				processScene();
+			}.bind(this));
+		} else {
+			processScene();
+		}
 	}
 };
 

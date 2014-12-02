@@ -34,12 +34,18 @@ var asyncLoad = function(fileName) {
 var LoaderService = {
     loadMap: function(mapName) {
         return new Promise(function(resolve, reject) {
+            console.log('Loading map ' + mapName);
             asyncLoad("http://mirjs.com/maps/" + mapName + ".map")
                 .then(function(arrayBuffer) {
                     var mapReader = new MapReader(mapName, arrayBuffer);
+                    console.log('Loaded map ' + mapName);
                     resolve(mapReader.loadMap());
                 }, function(error) {
+                    console.log('Filed to load map ' + mapName);
                     reject(error);
+                }).catch(function(e){
+                    console.log('Filed to load map ' + mapName);
+                    reject(error); 
                 });
         });
     }

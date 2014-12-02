@@ -19,7 +19,7 @@ GameService.player = new Player({
 	name: 'TrueADM',
 	level: 30,
 	exp: 2000,
-	map: 100,
+	map: "0",
 	x: 350,
 	y: 350,
 	hp: 100,

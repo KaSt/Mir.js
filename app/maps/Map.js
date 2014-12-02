@@ -8,4 +8,4 @@ function Map( data ) {
 
 }
 
-module.export = Map;
+module.exports = Map;
