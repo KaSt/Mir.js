@@ -1,3 +1,12 @@
+var ResourceService = require('../services/ResourceService.js');
+
+var addPathNamePadding = function(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+
 function MapCell() {
     this.backIndex = null;
     this.backImage = null;
@@ -21,8 +30,40 @@ function MapCell() {
 
     this.light = null;
     this.unknown = null;
-    this.graphic = null;
-    this.failed = false;
+
+    this.backSprite = null;
+    this.middleSprite = null;
+}
+
+MapCell.prototype.getBackImageUrl = function() {
+	var index = (this.backImage & 0x1FFFF) - 1;
+
+	if(index < 0) {
+		return null;
+	}
+
+	var indexString = addPathNamePadding(index, 6),
+		mapLib = ResourceService.graphics.mapLib(this.backIndex);
+
+	return mapLib.path + "/" + indexString + "." + mapLib.type;
+}
+
+MapCell.prototype.getMiddleImageUrl = function() {
+	var index = this.middleImage - 1;
+
+	if(index < 0) {
+		return null;
+	}
+
+	var indexString = addPathNamePadding(index, 6),
+		mapLib = ResourceService.graphics.mapLib(this.middleIndex);
+
+	return mapLib.path + "/" + indexString + "." + mapLib.type;
+}
+
+MapCell.prototype.clearSprite = function() {
+	this.backSprite = null;
+	this.middleSprite = null;
 }
 
 module.exports = MapCell;

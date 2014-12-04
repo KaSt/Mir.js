@@ -28,4 +28,12 @@ Map.prototype.getHeight = function() {
 	return this._height;
 }
 
+Map.prototype.clearSprites = function() {
+    for (var x = 0; x < this._width; x++) {
+        for (var y = 0; y < this._height; y++) {
+        	this._mapCells[x][y].clearSprite();
+      	}
+	}
+}
+
 module.exports = Map;

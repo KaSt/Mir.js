@@ -28,6 +28,8 @@ GameService.player = new Player({
 	equiped: {}
 });
 
+window.GameService = GameService;
+
 //we haven't got the login scene or char select scene yet, so let's cheat and say we have
 GameService.loggedIn = true;
 

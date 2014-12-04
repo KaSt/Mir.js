@@ -75,13 +75,13 @@ MapReader.prototype._loadMapType2 = function(width, height) {
     var offset = 52;
     for (var x = 0; x < width; x++) {
         for (var y = 0; y < height; y++) {
-            var mapCell = new MapCell();
+            var mapCell = new MapCell();                 
 
-            mapCell.backImage = this._dataBuffer.getInt16(offset);
+            mapCell.backImage = this._dataBuffer.getInt16(offset, true);
             offset += 2;
-            mapCell.middleImage = this._dataBuffer.getInt16(offset);
+            mapCell.middleImage = this._dataBuffer.getInt16(offset, true);
             offset += 2;
-            mapCell.frontImage = this._dataBuffer.getInt16(offset);
+            mapCell.frontImage = this._dataBuffer.getInt16(offset, true);
             offset += 2;
             mapCell.doorIndex = this._dataBuffer.getInt8(offset++);
             mapCell.doorOffset = this._dataBuffer.getInt8(offset++);

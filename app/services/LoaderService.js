@@ -1,16 +1,11 @@
 var MapReader = require('../maps/MapReader.js');
+var PIXI = require('pixi.js');
 
 /*
 
     Aysnc load assets and cache them locally
 
 */
-
-var addPathNamePadding = function(n, width, z) {
-  z = z || '0';
-  n = n + '';
-  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-}
 
 var asyncLoad = function(fileName, type) {
     return new Promise(function(resolve, reject) {
@@ -51,25 +46,10 @@ var LoaderService = {
                 });
         });
     },
-    loadMapGraphics: function(mapLib, index) {
-        return new Promise(function(resolve, reject) {
-            var fullPath = '';
-            index = addPathNamePadding(index, 6);
-            fullPath = "http://mirjs.com/" + mapLib.path + "/" + index + "." + mapLib.type;
-            
-            console.log('Loading map graphics ' + mapLib.path + ' - ' + index);
-            // asyncLoad(fullPath, 'file')
-            //     .then(function(blob) {
-            //         console.log('Loaded map graphics ' + mapLib.path + ' - ' + index);
-            //         resolve(fullPath);
-            //     }, function(error) {
-            //         console.log('Failed to load graphics ' + mapLib.path + ' - ' + index);
-            //         reject(error);
-            //     }).catch(function(e){
-            //         console.log('Failed to load graphics ' + mapLib.path + ' - ' + index);
-            //         reject(error); 
-            //     });
-        });
+    loadMapTexture: function(assetPath) {
+        var texture = PIXI.Texture.fromImage("http://mirjs.com/" + assetPath);
+
+        return texture;
     }
 };
 

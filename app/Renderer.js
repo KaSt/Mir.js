@@ -1,5 +1,5 @@
 var GameService = require('./services/GameService.js');
-var WebGLRenderer = require('pixi/renderers/webgl/WebGLRenderer');
+var PIXI = require('pixi.js');
 
 function Renderer(appContainer) {
 	this._stopped = false;
@@ -9,7 +9,7 @@ function Renderer(appContainer) {
 }
 
 Renderer.prototype._init = function() {
-	this._renderer = new WebGLRenderer(1024, 768);
+	this._renderer = new PIXI.WebGLRenderer(1024, 768);
 	this._appContainer.appendChild(this._renderer.view);
 	this._render();
 }
