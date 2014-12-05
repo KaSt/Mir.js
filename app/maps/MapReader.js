@@ -1,5 +1,4 @@
 var Map = require('./Map.js');
-var MapCell = require('./MapCell.js');
 
 function MapReader(mapName, dataBuffer) {
 	this._dataBuffer = dataBuffer;
@@ -75,7 +74,7 @@ MapReader.prototype._loadMapType2 = function(width, height) {
     var offset = 52;
     for (var x = 0; x < width; x++) {
         for (var y = 0; y < height; y++) {
-            var mapCell = new MapCell();                 
+            var mapCell = {};                 
 
             mapCell.backImage = this._dataBuffer.getInt16(offset, true);
             offset += 2;
@@ -91,6 +90,19 @@ MapReader.prototype._loadMapType2 = function(width, height) {
             mapCell.light = this._dataBuffer.getInt8(offset++);
             mapCell.backIndex = this._dataBuffer.getInt8(offset++) + 100;
             mapCell.middleIndex = this._dataBuffer.getInt8(offset++) + 110;
+
+            mapCell.middleAnimationFrame = null;
+            mapCell.middleAnimationTick = null;
+
+            mapCell.tileAnimationImage = null;
+            mapCell.tileAnimationOffset = null;
+            mapCell.tileAnimationFrames = null;
+
+            mapCell.backSprite = null;
+            mapCell.middleSprite = null;
+            mapCell.frontSprite = null;
+
+            mapCell.unknown;            
 
             if ((mapCell.backImage & 0x8000) !== 0) {
                 mapCell.backImage = (mapCell.backImage & 0x7FFF) | 0x20000000;

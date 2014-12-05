@@ -21,18 +21,17 @@ Renderer.prototype._render = function() {
 	var loop = function loop() {
 		var scene = GameService.scene;
 
-		this._fpsMeter.tick();
 		this._fpsMeter.tickStart();
 
-		//if the renderer has stopped
 		if(this._stopped === true) {
 			return;
 		}
 
-		if(scene !== null) {
-			scene.process().then(this._renderSceneStage.bind(this, loop));
-			return;
+		if(scene !== null && scene.isLoadingMap() === false) {
+			this._renderer.render(scene.getStage());
 		};
+
+		this._fpsMeter.tick();
 
 		requestAnimationFrame(loop.bind(this));
 
@@ -41,10 +40,6 @@ Renderer.prototype._render = function() {
 	requestAnimationFrame(loop.bind(this));
 }
 
-Renderer.prototype._renderSceneStage = function(loop, stage) {
-	this._renderer.render(stage);	
-	requestAnimationFrame(loop.bind(this));
-}
 
 Renderer.prototype.start = function() {
 	this._stopped = false;

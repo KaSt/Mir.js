@@ -4,17 +4,18 @@ var ResourceService = {
 			switch(index) {
 				case 100:
 					return {
-						path: "data/tiles" + (100 - index),
+						path: "data/tiles" + (index - 100),
 						type: 'jpg'					
 					};
 				case 110:
 					return {
-						path: "data/smtiles" + (110 - index),
+						path: "data/smtiles" + (index - 110),
 						type: 'jpg'					
 					};		
 				case 120:
+				case 123:
 					return {
-						path: "data/objects" + (120 - index),
+						path: "data/objects" + (index - 120),
 						type: 'png'					
 					};		
 				default:

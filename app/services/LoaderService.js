@@ -53,6 +53,7 @@ var LoaderService = {
                 resolve(texture);
             } else {
                 texture.on('update', function(texture) {
+                    texture.off('update');
                     resolve(texture);
                 }.bind(this, texture));
             }
