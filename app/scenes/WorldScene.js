@@ -1,5 +1,6 @@
 var LoaderService = require('../services/LoaderService.js');
 var GameService = require('../services/GameService.js');
+var InputService = require('../services/InputService.js');
 var PIXI = require('pixi.js');
 
 function WorldScene(appContainer) {
@@ -13,6 +14,8 @@ function WorldScene(appContainer) {
 	this._smTileLayer = new PIXI.SpriteBatch();
 	this._lastProcessedX = null;
 	this._lastProcessedY = null;
+	this._cameraDeltaX = 0;
+	this._cameraDeltaY = 0;
 }
 
 WorldScene.prototype.init = function() {
@@ -25,6 +28,44 @@ WorldScene.prototype.init = function() {
     this._stage.addChild(this._smTileLayer);
 
 	this._initGui();
+	this._enableInput();
+}
+
+WorldScene.prototype._enableInput = function() {
+	InputService.on('pressed left', this._moveLeft.bind(this), true);
+	InputService.on('pressed right', this._moveRight.bind(this), true);
+	InputService.on('pressed up', this._moveUp.bind(this), true);
+	InputService.on('pressed down', this._moveDown.bind(this), true);
+}
+
+WorldScene.prototype._moveLeft = function() {
+	this._updateCamera(-1, 0);
+}
+
+WorldScene.prototype._moveRight = function() {
+	this._updateCamera(1, 0);
+}
+
+WorldScene.prototype._moveUp = function() {
+	this._updateCamera(0, -1);
+}
+
+WorldScene.prototype._moveDown = function() {
+	this._updateCamera(0, 1);
+}
+
+WorldScene.prototype._updateCamera = function(diffX, diffY) {
+	var defaults = GameService.defaults;
+
+	//move this out eventually
+	GameService.player.x = GameService.player.x + diffX;
+	GameService.player.y = GameService.player.y + diffY;
+
+	this._cameraDeltaX = this._cameraDeltaX + (defaults.cellWidth * diffX);
+	this._cameraDeltaY = this._cameraDeltaY + (defaults.cellHeight * diffY);
+	
+	this._tileLayer.x = this._tileLayer.x + (defaults.cellWidth * -diffX);
+	this._tileLayer.y = this._tileLayer.y + (defaults.cellHeight * -diffY);
 }
 
 WorldScene.prototype.process = function() {
@@ -50,12 +91,12 @@ WorldScene.prototype._processMap = function() {
 	//if we have a different lastProcessed X/Y from now, our player has moved, so we need handle some old tiles
 	if(this._lastProcessedX !== null && this._lastProcessedY !== null) {
 		if(this._lastProcessedX !== player.x || this._lastProcessedY !== player.y) {
-			if(this._lastProcessedX === player.x + 1 && this._lastProcessedY === player.y) {
+			if(this._lastProcessedX > player.x && this._lastProcessedX < player.rightBound) {
 				//player has moved left, so let's clear the far right sprites
-				this._clearSpritesFromStage(rightBound + 1, rightBound + 1, topBound, bottomBound)
-			} else if(this._lastProcessedX === player.x - 1 && this._lastProcessedY === player.y) {
-				//player has moved right, so let's clear the far right sprites
-				this._clearSpritesFromStage(rightBound - 1, rightBound - 1, topBound, bottomBound)
+				this._clearSpritesFromStage(rightBound + 1, rightBound + this._lastProcessedX - player.x, topBound, bottomBound)
+			} else if(this._lastProcessedX < player.x && this._lastProcessedX > player.rightBound) {
+				//player has moved right, so let's clear the far left sprites
+				this._clearSpritesFromStage(leftBound - player.x + this._lastProcessedX, leftBound - 1, topBound, bottomBound)
 			} else if (this._lastProcessedX < leftBound || this._lastProcessedX > rightBound
 				|| this._lastProcessedY < topBound || this._lastProcessedY > bottomBound) {
 				//player has completely moved from the last place (new area, teleport)
@@ -72,6 +113,7 @@ WorldScene.prototype._processMap = function() {
 
 WorldScene.prototype._clearAllSpritesFromStage = function() {
 	this._tileLayer.removeChildren();
+	this._smTileLayer.removeChildren();
 	this._map.clearSprites();
 }
 
@@ -103,10 +145,10 @@ WorldScene.prototype._addSpritesToStage = function(leftBound, rightBound, topBou
 		mapCell;
 
 	for (var y = topBound; y <= bottomBound; y++) {
-		drawY = (y - player.y) * defaults.cellHeight + this._gameOffSetY; //Moving OffSet
+		drawY = (y - player.y) * defaults.cellHeight + this._gameOffSetY + this._cameraDeltaY; //Moving OffSet
 
 	    for (var x = leftBound; x <= rightBound; x++) {
-			drawX = (x - player.x) * defaults.cellWidth + this._gameOffSetX; //Moving OffSet
+			drawX = (x - player.x) * defaults.cellWidth + this._gameOffSetX + this._cameraDeltaX; //Moving OffSet
 			mapCell = this._map.getMapCell(x, y);
 
 			//handle tiles, objects and players/mobs/items
@@ -115,11 +157,8 @@ WorldScene.prototype._addSpritesToStage = function(leftBound, rightBound, topBou
 				if(mapCell.backSprite === null && mapCell.backIndex > 0 && mapCell.backImage > 0) {
 					imageUrl = mapCell.getBackImageUrl();
 					if(imageUrl !== null) {
-						texture = LoaderService.loadMapTexture(imageUrl);
-						mapCell.backSprite = new PIXI.Sprite(texture);
-						mapCell.backSprite.x = drawX;
-						mapCell.backSprite.y = drawY;
-						this._tileLayer.addChild(mapCell.backSprite);
+						mapCell.backSprite = false;
+						LoaderService.loadMapTexture(imageUrl).then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
@@ -130,17 +169,28 @@ WorldScene.prototype._addSpritesToStage = function(leftBound, rightBound, topBou
 			if(mapCell.middleSprite === null && mapCell.middleIndex > 0 && mapCell.middleImage > 0) {
 				imageUrl = mapCell.getMiddleImageUrl();
 				if(imageUrl !== null) {
-					texture = LoaderService.loadMapTexture(imageUrl);
-					mapCell.middleSprite = new PIXI.Sprite(texture);
-					mapCell.middleSprite.x = drawX;
-					mapCell.middleSprite.y = drawY;
-					this._smTileLayer.addChild(mapCell.middleSprite);
+					mapCell.backSprite = false;
+					LoaderService.loadMapTexture(imageUrl).then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.middleIndex);
 				}
 			}			
 	    }
 	}
+}
+
+WorldScene.prototype._addBackSprite = function(mapCell, drawX, drawY, texture){
+	mapCell.backSprite = new PIXI.Sprite(texture);
+	mapCell.backSprite.x = drawX;
+	mapCell.backSprite.y = drawY;
+	this._tileLayer.addChild(mapCell.backSprite);	
+}
+
+WorldScene.prototype._addMiddleSprite = function(mapCell, drawX, drawY, texture){
+	mapCell.middleSprite = new PIXI.Sprite(texture);
+	mapCell.middleSprite.x = drawX;
+	mapCell.middleSprite.y = drawY;
+	this._smTileLayer.addChild(mapCell.middleSprite);
 }
 
 WorldScene.prototype._loadMap = function() {

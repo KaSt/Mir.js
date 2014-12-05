@@ -1,11 +1,13 @@
 var GameService = require('./services/GameService.js');
 var PIXI = require('pixi.js');
+require('../fpsmeter.min.js');
 
 function Renderer(appContainer) {
 	this._stopped = false;
 	this._renderer = null;
 	this._appContainer = appContainer;
 	this._init();
+	this._fpsMeter = new FPSMeter();
 }
 
 Renderer.prototype._init = function() {
@@ -18,17 +20,17 @@ Renderer.prototype._render = function() {
 
 	var loop = function loop() {
 		var scene = GameService.scene;
+
+		this._fpsMeter.tick();
+		this._fpsMeter.tickStart();
+
 		//if the renderer has stopped
 		if(this._stopped === true) {
 			return;
 		}
 
 		if(scene !== null) {
-			scene.process().then(function(stage) {
-				this._renderer.render(stage);	
-
-				requestAnimationFrame(loop.bind(this));
-			}.bind(this));
+			scene.process().then(this._renderSceneStage.bind(this, loop));
 			return;
 		};
 
@@ -39,7 +41,10 @@ Renderer.prototype._render = function() {
 	requestAnimationFrame(loop.bind(this));
 }
 
-
+Renderer.prototype._renderSceneStage = function(loop, stage) {
+	this._renderer.render(stage);	
+	requestAnimationFrame(loop.bind(this));
+}
 
 Renderer.prototype.start = function() {
 	this._stopped = false;

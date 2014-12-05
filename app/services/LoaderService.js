@@ -47,9 +47,16 @@ var LoaderService = {
         });
     },
     loadMapTexture: function(assetPath) {
-        var texture = PIXI.Texture.fromImage("http://mirjs.com/" + assetPath);
-
-        return texture;
+        return new Promise(function(resolve, reject) {
+            var texture = PIXI.Texture.fromImage("http://mirjs.com/" + assetPath);
+            if(texture.baseTexture.hasLoaded) {
+                resolve(texture);
+            } else {
+                texture.on('update', function(texture) {
+                    resolve(texture);
+                }.bind(this, texture));
+            }
+        });
     }
 };
 
