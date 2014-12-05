@@ -81,10 +81,6 @@ Map.prototype.getMiddleImageUrl = function(mapCell) {
 Map.prototype.getFrontImageUrlAndPlacements = function(mapCell) {
     var index = mapCell.frontImage - 1;
 
-    if(mapCell.frontIndex === 123) {
-    	debugger;
-    }
-
     if(index < 0) {
         return null;
     }
