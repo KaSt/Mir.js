@@ -432,10 +432,20 @@ WorldScene.prototype._processMap = function() {
 			if(this._lastProcessedX > player.x && this._lastProcessedX < player.rightBound) {
 				//player has moved left, so let's clear the far right sprites
 				this._clearSpritesFromStage(rightBound + 1, rightBound + this._lastProcessedX - player.x, topBound, bottomBound)
-			} else if(this._lastProcessedX < player.x && this._lastProcessedX > player.rightBound) {
+			} else if(this._lastProcessedX < player.x && this._lastProcessedX > player.leftBound) {
 				//player has moved right, so let's clear the far left sprites
 				this._clearSpritesFromStage(leftBound - player.x + this._lastProcessedX, leftBound - 1, topBound, bottomBound)
-			} else if (this._lastProcessedX < leftBound || this._lastProcessedX > rightBound
+			}
+
+			if(this._lastProcessedY > player.y && this._lastProcessedY < player.bottomBound) {
+				//player has moved up, so let's clear the bottom sprites
+				this._clearSpritesFromStage(leftBound, rightBound, bottomBound + 1, bottomBound + this._lastProcessedY - player.y)
+			} else if(this._lastProcessedY < player.y && this._lastProcessedY > player.topBound) {
+				//player has moved right, so let's clear the far left sprites
+				this._clearSpritesFromStage(leftBound, rightBound, topBound - player.y + this._lastProcessedY, topBound - 1)
+			}			
+
+			if (this._lastProcessedX < leftBound || this._lastProcessedX > rightBound
 				|| this._lastProcessedY < topBound || this._lastProcessedY > bottomBound) {
 				//player has completely moved from the last place (new area, teleport)
 				this._clearAllSpritesFromStage();
