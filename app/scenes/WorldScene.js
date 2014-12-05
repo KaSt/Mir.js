@@ -4,6 +4,17 @@ var ResourceService = require('../services/ResourceService.js');
 var InputService = require('../services/InputService.js');
 var PIXI = require('pixi.js');
 
+function depthCompare(a,b) {
+	if (a.z < b.z) {
+	 return -1;
+	}
+	if (a.z > b.z) {
+		return 1;
+	}
+	return 0;
+}
+
+
 function WorldScene(appContainer) {
 	this._appContainer = appContainer;
 	this._stage = new PIXI.Stage();
@@ -11,9 +22,9 @@ function WorldScene(appContainer) {
 	this._isLoadingMap = false;
 	this._gameOffSetX = null;
 	this._gameOffSetY = null;
-	this._tileLayer = new PIXI.SpriteBatch();
-	this._smTileLayer = new PIXI.SpriteBatch();
-	this._objTileLayer = new PIXI.SpriteBatch();
+	this._tileLayer = new PIXI.DisplayObjectContainer();
+	this._smTileLayer = new PIXI.DisplayObjectContainer();
+	this._objTileLayer = new PIXI.DisplayObjectContainer();
 	this._lastProcessedX = null;
 	this._lastProcessedY = null;
 	this._cameraDeltaX = 0;
@@ -23,6 +34,7 @@ function WorldScene(appContainer) {
 	this._rightBound = null;
 	this._bottomBound = null;
 	this._graphicsPlacements = [];
+	this._readyForInput = false;
 }
 
 WorldScene.prototype.init = function() {
@@ -45,6 +57,7 @@ WorldScene.prototype.init = function() {
 			this._map = map;
 			this._lastProcessedX = GameService.player.x;
 			this._lastProcessedY = GameService.player.y;	
+			this._readyForInput = true;
 			this._updateCamera(0, 0);		
 			this._isLoadingMap = false;
 		}.bind(this));
@@ -56,6 +69,7 @@ WorldScene.prototype._enableInput = function() {
 	InputService.on('pressed up', this._moveUp.bind(this), true);
 	InputService.on('pressed down', this._moveDown.bind(this), true);
 }
+
 
 WorldScene.prototype._moveLeft = function() {
 	this._updateCamera(-1, 0);
@@ -76,23 +90,28 @@ WorldScene.prototype._moveDown = function() {
 WorldScene.prototype._updateCamera = function(diffX, diffY) {
 	var defaults = GameService.defaults;
 
-	//move this out eventually
-	GameService.player.x = GameService.player.x + diffX;
-	GameService.player.y = GameService.player.y + diffY;
+	if(this._readyForInput === true) {
 
-	this._cameraDeltaX = this._cameraDeltaX + (defaults.cellWidth * diffX);
-	this._cameraDeltaY = this._cameraDeltaY + (defaults.cellHeight * diffY);
-	
-	this._tileLayer.x = this._tileLayer.x + (defaults.cellWidth * -diffX);
-	this._tileLayer.y = this._tileLayer.y + (defaults.cellHeight * -diffY);
-	this._smTileLayer.x = this._smTileLayer.x + (defaults.cellWidth * -diffX);
-	this._smTileLayer.y = this._smTileLayer.y + (defaults.cellHeight * -diffY);
-	this._objTileLayer.x = this._objTileLayer.x + (defaults.cellWidth * -diffX);
-	this._objTileLayer.y = this._objTileLayer.y + (defaults.cellHeight * -diffY);
+		this._readyForInput = false;
+		//move this out eventually
+		GameService.player.x = GameService.player.x + diffX;
+		GameService.player.y = GameService.player.y + diffY;
 
-	this._updateBounds();
-	this._handleOldSprites();
-	this._handleNewSprites();
+		this._cameraDeltaX = this._cameraDeltaX + (defaults.cellWidth * diffX);
+		this._cameraDeltaY = this._cameraDeltaY + (defaults.cellHeight * diffY);
+		
+		this._tileLayer.x = this._tileLayer.x + (defaults.cellWidth * -diffX);
+		this._tileLayer.y = this._tileLayer.y + (defaults.cellHeight * -diffY);
+		this._smTileLayer.x = this._smTileLayer.x + (defaults.cellWidth * -diffX);
+		this._smTileLayer.y = this._smTileLayer.y + (defaults.cellHeight * -diffY);
+		this._objTileLayer.x = this._objTileLayer.x + (defaults.cellWidth * -diffX);
+		this._objTileLayer.y = this._objTileLayer.y + (defaults.cellHeight * -diffY);
+
+		this._updateBounds();
+		this._handleOldSprites();
+		this._handleNewSprites();
+		this._readyForInput = true;
+	}
 }
 
 WorldScene.prototype._updateBounds = function() {
@@ -101,8 +120,8 @@ WorldScene.prototype._updateBounds = function() {
 
 	this._topBound = player.y - defaults.viewRangeY < 0 ? 0 : player.y - defaults.viewRangeY;
 	this._leftBound = player.x - defaults.viewRangeX < 0 ? 0 : player.x - defaults.viewRangeX;
-	this._rightBound = player.x + defaults.viewRangeX > this._map.getWidth() ? this._map.getWidth() : player.x + defaults.viewRangeX;
-	this._bottomBound = player.y + defaults.viewRangeY > this._map.getHeight() ? this._map.getHeight() : player.y + defaults.viewRangeY;
+	this._rightBound = player.x + defaults.viewRangeX > this._map.getWidth() - 1 ? this._map.getWidth() - 1 : player.x + defaults.viewRangeX;
+	this._bottomBound = player.y + defaults.viewRangeY > this._map.getHeight() - 1 ? this._map.getHeight() - 1 : player.y + defaults.viewRangeY;
 }
 
 WorldScene.prototype._handleOldSprites = function() {
@@ -112,18 +131,18 @@ WorldScene.prototype._handleOldSprites = function() {
 	//if we have a different lastProcessed X/Y from now, our player has moved, so we need handle some old tiles
 	if(this._lastProcessedX !== null && this._lastProcessedY !== null) {
 		if(this._lastProcessedX !== player.x || this._lastProcessedY !== player.y) {
-			if(this._lastProcessedX > player.x && this._lastProcessedX < player.rightBound) {
+			if(this._lastProcessedX > player.x && this._lastProcessedX < this._rightBound) {
 				//player has moved left, so let's clear the far right sprites
 				this._clearSpritesFromStage(this._rightBound + 1, this._rightBound + this._lastProcessedX - player.x, this._topBound, this._bottomBound)
-			} else if(this._lastProcessedX < player.x && this._lastProcessedX > player.leftBound) {
+			} else if(this._lastProcessedX < player.x && this._lastProcessedX > this._leftBound) {
 				//player has moved right, so let's clear the far left sprites
 				this._clearSpritesFromStage(this._leftBound - player.x + this._lastProcessedX, this._leftBound - 1, this._topBound, this._bottomBound)
 			}
 
-			if(this._lastProcessedY > player.y && this._lastProcessedY < player.bottomBound) {
+			if(this._lastProcessedY > player.y && this._lastProcessedY < this._bottomBound) {
 				//player has moved up, so let's clear the bottom sprites
 				this._clearSpritesFromStage(this._leftBound, this._rightBound, this._bottomBound + 1, this._bottomBound + this._lastProcessedY - player.y)
-			} else if(this._lastProcessedY < player.y && this._lastProcessedY > player.topBound) {
+			} else if(this._lastProcessedY < player.y && this._lastProcessedY > this._topBound) {
 				//player has moved right, so let's clear the far left sprites
 				this._clearSpritesFromStage(this._leftBound, this._rightBound, this._topBound - player.y + this._lastProcessedY, this._topBound - 1)
 			}			
@@ -151,6 +170,18 @@ WorldScene.prototype._clearAllSpritesFromStage = function() {
 
 WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, topBound, bottomBound) {
 	var mapCell;
+	if(leftBound < 0) {
+		leftBound = 0;
+	}
+	if(rightBound > this._map.getWidth() - 1) {
+		rightBound = this._map.getWidth() - 1;
+	}
+	if(topBound < 0) {
+		topBound = 0;
+	}
+	if(bottomBound > this._map.getHeight() - 1) {
+		bottomBound = this._map.getHeight() - 1;
+	}	
 	for (var y = topBound; y <= bottomBound; y++) {
 		for (var x = leftBound; x <= rightBound; x++) {
 			mapCell = this._map.getMapCell(x, y);
@@ -182,12 +213,14 @@ WorldScene.prototype._handleNewSprites = function() {
 		drawY,
 		mapCell,
 		placementX,
-		placementY;
+		placementY,
+		x,
+		y;
 
-	for (var y = this._topBound; y <= this._bottomBound; y++) {
+	for (y = this._topBound; y <= this._bottomBound; y++) {
 		drawY = (y - player.y) * defaults.cellHeight + this._gameOffSetY + this._cameraDeltaY; //Moving OffSet
 
-	    for (var x = this._leftBound; x <= this._rightBound; x++) {
+	    for (x = this._leftBound; x <= this._rightBound; x++) {
 			drawX = (x - player.x) * defaults.cellWidth + this._gameOffSetX + this._cameraDeltaX; //Moving OffSet
 			mapCell = this._map.getMapCell(x, y);
 
@@ -204,7 +237,9 @@ WorldScene.prototype._handleNewSprites = function() {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
 				}
-			} 
+			} else if (mapCell.backSprite !== null) {
+				this._handleSpriteVisibility(mapCell.backSprite);
+			}		
 
 			//middle sprites (sm tiles)
 			if(mapCell.middleSprite === null && mapCell.middleIndex > 0 && mapCell.middleImage > 0) {
@@ -216,7 +251,9 @@ WorldScene.prototype._handleNewSprites = function() {
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.middleIndex);
 				}
-			}			
+			} else if (mapCell.middleSprite !== null) {
+				this._handleSpriteVisibility(mapCell.middleSprite);
+			}
 
 			//top sprites (objects)
 			if(mapCell.frontSprite === null && mapCell.frontIndex > 0 && mapCell.frontImage > 0) {
@@ -231,13 +268,33 @@ WorldScene.prototype._handleNewSprites = function() {
 							this, 
 							mapCell, 
 							drawX + placementX, 
-							drawY + placementY
+							drawY + placementY,
+							y
 						));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.frontIndex);
 				}
-			}				
+			} else if (mapCell.frontSprite !== null) {
+				this._handleSpriteVisibility(mapCell.frontSprite);
+			}		
 	    }
+	}
+
+	//handle layer order for objects
+	this._objTileLayer.children.sort(depthCompare);
+}
+
+WorldScene.prototype._handleSpriteVisibility = function(sprite) {
+	if(sprite.x + this._cameraDeltaX > GameService.screenWidth) {
+		sprite.visible = false;
+	} else if(sprite.x + sprite.width - this._cameraDeltaX < 0) {
+		sprite.visible = false;
+	} else if(sprite.y + sprite.height - this._cameraDeltaY < 0) {
+		sprite.visible = false;
+	} else if(sprite.y + this._cameraDeltaY > GameService.screenHeight) {
+		sprite.visible = false;
+	} else {
+		sprite.visible = true;
 	}
 }
 
@@ -255,10 +312,11 @@ WorldScene.prototype._addMiddleSprite = function(mapCell, drawX, drawY, texture)
 	this._smTileLayer.addChild(mapCell.middleSprite);
 }
 
-WorldScene.prototype._addFrontSprite = function(mapCell, drawX, drawY, texture){
+WorldScene.prototype._addFrontSprite = function(mapCell, drawX, drawY, z, texture){
 	mapCell.frontSprite = new PIXI.Sprite(texture);
 	mapCell.frontSprite.x = drawX;
 	mapCell.frontSprite.y = drawY - texture.height;
+	mapCell.frontSprite.z = z;
 	this._objTileLayer.addChild(mapCell.frontSprite);
 }
 
