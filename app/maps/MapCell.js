@@ -33,6 +33,7 @@ function MapCell() {
 
     this.backSprite = null;
     this.middleSprite = null;
+    this.frontSprite = null;
 }
 
 MapCell.prototype.getBackImageUrl = function() {
@@ -41,6 +42,10 @@ MapCell.prototype.getBackImageUrl = function() {
 	if(index < 0) {
 		return null;
 	}
+
+    if(mapLib === null) {
+        return null;
+    }    
 
 	var indexString = addPathNamePadding(index, 6),
 		mapLib = ResourceService.graphics.mapLib(this.backIndex);
@@ -55,15 +60,37 @@ MapCell.prototype.getMiddleImageUrl = function() {
 		return null;
 	}
 
+    if(mapLib === null) {
+        return null;
+    }    
+
 	var indexString = addPathNamePadding(index, 6),
 		mapLib = ResourceService.graphics.mapLib(this.middleIndex);
 
 	return mapLib.path + "/" + indexString + "." + mapLib.type;
 }
 
+MapCell.prototype.getFrontImageUrl = function() {
+    var index = this.frontImage - 1;
+
+    if(index < 0) {
+        return null;
+    }
+
+    var indexString = addPathNamePadding(index, 6),
+        mapLib = ResourceService.graphics.mapLib(this.frontIndex);
+
+    if(mapLib === null) {
+        return null;
+    }
+
+    return mapLib.path + "/" + indexString + "." + mapLib.type;
+}
+
 MapCell.prototype.clearSprite = function() {
 	this.backSprite = null;
 	this.middleSprite = null;
+    this.frontSprite = null;
 }
 
 module.exports = MapCell;

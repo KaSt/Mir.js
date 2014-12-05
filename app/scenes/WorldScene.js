@@ -12,6 +12,7 @@ function WorldScene(appContainer) {
 	this._gameOffSetY = null;
 	this._tileLayer = new PIXI.SpriteBatch();
 	this._smTileLayer = new PIXI.SpriteBatch();
+	this._objTileLayer = new PIXI.SpriteBatch();
 	this._lastProcessedX = null;
 	this._lastProcessedY = null;
 	this._cameraDeltaX = 0;
@@ -26,6 +27,7 @@ WorldScene.prototype.init = function() {
     //add
     this._stage.addChild(this._tileLayer);
     this._stage.addChild(this._smTileLayer);
+    this._stage.addChild(this._objTileLayer);
 
 	this._initGui();
 	this._enableInput();
@@ -66,6 +68,10 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 	
 	this._tileLayer.x = this._tileLayer.x + (defaults.cellWidth * -diffX);
 	this._tileLayer.y = this._tileLayer.y + (defaults.cellHeight * -diffY);
+	this._smTileLayer.x = this._smTileLayer.x + (defaults.cellWidth * -diffX);
+	this._smTileLayer.y = this._smTileLayer.y + (defaults.cellHeight * -diffY);
+	this._objTileLayer.x = this._objTileLayer.x + (defaults.cellWidth * -diffX);
+	this._objTileLayer.y = this._objTileLayer.y + (defaults.cellHeight * -diffY);
 }
 
 WorldScene.prototype.process = function() {
@@ -124,6 +130,7 @@ WorldScene.prototype._processMap = function() {
 WorldScene.prototype._clearAllSpritesFromStage = function() {
 	this._tileLayer.removeChildren();
 	this._smTileLayer.removeChildren();
+	this._objTileLayer.removeChildren();
 	this._map.clearSprites();
 }
 
@@ -141,6 +148,11 @@ WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, to
 				this._smTileLayer.removeChild(mapCell.middleSprite);
 				mapCell.clearSprite();
 			}			
+
+			if(mapCell.frontSprite !== null) {
+				this._objTileLayer.removeChild(mapCell.frontSprite);
+				mapCell.clearSprite();
+			}					
 		}
 	}
 }
@@ -161,7 +173,7 @@ WorldScene.prototype._addSpritesToStage = function(leftBound, rightBound, topBou
 			drawX = (x - player.x) * defaults.cellWidth + this._gameOffSetX + this._cameraDeltaX; //Moving OffSet
 			mapCell = this._map.getMapCell(x, y);
 
-			//handle tiles, objects and players/mobs/items
+			//handle big tiles
 			if(x % 2 === 0 && y % 2 === 0) {
 				//if we do not have backSprite for this tile, generate one and store it to the tileLayer
 				if(mapCell.backSprite === null && mapCell.backIndex > 0 && mapCell.backImage > 0) {
@@ -179,12 +191,23 @@ WorldScene.prototype._addSpritesToStage = function(leftBound, rightBound, topBou
 			if(mapCell.middleSprite === null && mapCell.middleIndex > 0 && mapCell.middleImage > 0) {
 				imageUrl = mapCell.getMiddleImageUrl();
 				if(imageUrl !== null) {
-					mapCell.backSprite = false;
+					mapCell.middleSprite = false;
 					LoaderService.loadMapTexture(imageUrl).then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.middleIndex);
 				}
 			}			
+
+			//top sprites (objects)
+			if(mapCell.frontSprite === null && mapCell.frontIndex > 0 && mapCell.frontImage > 0) {
+				imageUrl = mapCell.getFrontImageUrl();
+				if(imageUrl !== null) {
+					mapCell.frontSprite = false;
+					LoaderService.loadMapTexture(imageUrl).then(this._addFrontSprite.bind(this, mapCell, drawX, drawY));
+				} else {
+					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.frontIndex);
+				}
+			}				
 	    }
 	}
 }
@@ -201,6 +224,13 @@ WorldScene.prototype._addMiddleSprite = function(mapCell, drawX, drawY, texture)
 	mapCell.middleSprite.x = drawX;
 	mapCell.middleSprite.y = drawY;
 	this._smTileLayer.addChild(mapCell.middleSprite);
+}
+
+WorldScene.prototype._addFrontSprite = function(mapCell, drawX, drawY, texture){
+	mapCell.frontSprite = new PIXI.Sprite(texture);
+	mapCell.frontSprite.x = drawX;
+	mapCell.frontSprite.y = drawY;
+	this._objTileLayer.addChild(mapCell.frontSprite);
 }
 
 WorldScene.prototype._loadMap = function() {
