@@ -78,7 +78,7 @@ Map.prototype.getMiddleImageUrl = function(mapCell) {
 	return mapLib.path + "/" + indexString + "." + mapLib.type;
 }
 
-Map.prototype.getFrontImageUrl = function(mapCell) {
+Map.prototype.getFrontImageUrlAndPlacements = function(mapCell) {
     var index = mapCell.frontImage - 1;
 
     if(index < 0) {
@@ -92,7 +92,11 @@ Map.prototype.getFrontImageUrl = function(mapCell) {
         return null;
     }
 
-    return mapLib.path + "/" + indexString + "." + mapLib.type;
+    return {
+    	url: mapLib.path + "/" + indexString + "." + mapLib.type,
+    	placements: mapLib.path,
+    	index: index
+    }
 }
 
 Map.prototype.clearSprite = function(mapCell) {

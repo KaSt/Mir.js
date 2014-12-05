@@ -10,18 +10,23 @@ var ResourceService = {
 				case 110:
 					return {
 						path: "data/smtiles" + (index - 110),
-						type: 'jpg'					
+						type: 'jpg'			
 					};		
 				case 120:
 				case 123:
 					return {
 						path: "data/objects" + (index - 120),
-						type: 'png'					
+						type: 'png',
+						placements: 'data/objects' + (index - 120) + '.json'			
 					};		
 				default:
 					return null;		
 			}
-		}
+		},
+		placements: [
+			"data/objects0",
+			"data/objects3"
+		]
 	}
 }
 

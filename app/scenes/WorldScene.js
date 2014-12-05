@@ -1,5 +1,6 @@
 var LoaderService = require('../services/LoaderService.js');
 var GameService = require('../services/GameService.js');
+var ResourceService = require('../services/ResourceService.js');
 var InputService = require('../services/InputService.js');
 var PIXI = require('pixi.js');
 
@@ -21,6 +22,7 @@ function WorldScene(appContainer) {
 	this._leftBound = null;
 	this._rightBound = null;
 	this._bottomBound = null;
+	this._graphicsPlacements = [];
 }
 
 WorldScene.prototype.init = function() {
@@ -36,14 +38,16 @@ WorldScene.prototype.init = function() {
 	this._initGui();
 	this._enableInput();
 
-	//load the map
-	this._loadMap().then(function(map) {
-		this._map = map;
-		this._lastProcessedX = GameService.player.x;
-		this._lastProcessedY = GameService.player.y;	
-		this._updateCamera(0, 0);		
-		this._isLoadingMap = false;
-	}.bind(this));
+	//load the placements and the starting map
+	this._loadGraphicsPlacements()
+		.then(this._loadMap.bind(this))
+		.then(function(map) {
+			this._map = map;
+			this._lastProcessedX = GameService.player.x;
+			this._lastProcessedY = GameService.player.y;	
+			this._updateCamera(0, 0);		
+			this._isLoadingMap = false;
+		}.bind(this));
 }
 
 WorldScene.prototype._enableInput = function() {
@@ -171,11 +175,14 @@ WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, to
 WorldScene.prototype._handleNewSprites = function() {
 	var texture = null,
 		imageUrl = '',
+		imageUrlAndPlacements = {},
 		player = GameService.player,
 		defaults = GameService.defaults,
 		drawX,
 		drawY,
-		mapCell;
+		mapCell,
+		placementX,
+		placementY;
 
 	for (var y = this._topBound; y <= this._bottomBound; y++) {
 		drawY = (y - player.y) * defaults.cellHeight + this._gameOffSetY + this._cameraDeltaY; //Moving OffSet
@@ -191,7 +198,8 @@ WorldScene.prototype._handleNewSprites = function() {
 					imageUrl = this._map.getBackImageUrl(mapCell);
 					if(imageUrl !== null) {
 						mapCell.backSprite = false;
-						LoaderService.loadMapTexture(imageUrl).then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
+						LoaderService.loadMapTexture(imageUrl)
+							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
@@ -203,7 +211,8 @@ WorldScene.prototype._handleNewSprites = function() {
 				imageUrl = this._map.getMiddleImageUrl(mapCell);
 				if(imageUrl !== null) {
 					mapCell.middleSprite = false;
-					LoaderService.loadMapTexture(imageUrl).then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY));
+					LoaderService.loadMapTexture(imageUrl)
+						.then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.middleIndex);
 				}
@@ -211,10 +220,19 @@ WorldScene.prototype._handleNewSprites = function() {
 
 			//top sprites (objects)
 			if(mapCell.frontSprite === null && mapCell.frontIndex > 0 && mapCell.frontImage > 0) {
-				imageUrl = this._map.getFrontImageUrl(mapCell);
-				if(imageUrl !== null) {
+				imageUrlAndPlacements = this._map.getFrontImageUrlAndPlacements(mapCell);
+				if(imageUrlAndPlacements !== null) {
 					mapCell.frontSprite = false;
-					LoaderService.loadMapTexture(imageUrl).then(this._addFrontSprite.bind(this, mapCell, drawX, drawY));
+					placementX = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][0];
+					placementY = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][1];
+
+					LoaderService.loadMapTexture(imageUrlAndPlacements.url)
+						.then(this._addFrontSprite.bind(
+							this, 
+							mapCell, 
+							drawX + placementX, 
+							drawY + placementY
+						));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.frontIndex);
 				}
@@ -240,8 +258,26 @@ WorldScene.prototype._addMiddleSprite = function(mapCell, drawX, drawY, texture)
 WorldScene.prototype._addFrontSprite = function(mapCell, drawX, drawY, texture){
 	mapCell.frontSprite = new PIXI.Sprite(texture);
 	mapCell.frontSprite.x = drawX;
-	mapCell.frontSprite.y = drawY;
+	mapCell.frontSprite.y = drawY - texture.height;
 	this._objTileLayer.addChild(mapCell.frontSprite);
+}
+
+WorldScene.prototype._loadGraphicsPlacements = function() {
+	return new Promise(function(resolve, reject) {
+		var total = ResourceService.graphics.placements.length,
+			count = 0;
+		for(var i = 0; i < total; i++) {
+			var placementsName = ResourceService.graphics.placements[i];
+			LoaderService.loadGraphicsPlacements(placementsName).then(function(placementsName, placements) {
+				this._graphicsPlacements[placementsName] = placements;
+				count++
+
+				if(count === total) {
+					resolve();
+				}
+			}.bind(this, placementsName));
+		}
+	}.bind(this));
 }
 
 WorldScene.prototype._loadMap = function() {

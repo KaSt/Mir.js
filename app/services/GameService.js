@@ -4,8 +4,8 @@ var GameService = {
 	scene: null,
 	loggedIn: false,
 	defaults: {
-		viewRangeX: 15,
-		viewRangeY: 15,
+		viewRangeX: 25,
+		viewRangeY: 25,
 		cellWidth: 48,
         cellHeight: 32,
         screenWidth: 1024,

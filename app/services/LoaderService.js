@@ -59,6 +59,15 @@ var LoaderService = {
                 }.bind(this, texture));
             }
         });
+    },
+    loadGraphicsPlacements: function(assetPath) {
+        return new Promise(function(resolve, reject) {
+            var loader = new PIXI.JsonLoader("http://mirjs.com/" + assetPath + '.json');
+            loader.on('loaded', function(evt) {
+                resolve(evt.data.content.json);
+            });
+            loader.load();
+        });
     }
 };
 

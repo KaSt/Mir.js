@@ -157,7 +157,7 @@ Map.prototype.getMiddleImageUrl = function(mapCell) {
 	return mapLib.path + "/" + indexString + "." + mapLib.type;
 }
 
-Map.prototype.getFrontImageUrl = function(mapCell) {
+Map.prototype.getFrontImageUrlAndPlacements = function(mapCell) {
     var index = mapCell.frontImage - 1;
 
     if(index < 0) {
@@ -171,7 +171,11 @@ Map.prototype.getFrontImageUrl = function(mapCell) {
         return null;
     }
 
-    return mapLib.path + "/" + indexString + "." + mapLib.type;
+    return {
+    	url: mapLib.path + "/" + indexString + "." + mapLib.type,
+    	placements: mapLib.path,
+    	index: index
+    }
 }
 
 Map.prototype.clearSprite = function(mapCell) {
@@ -361,6 +365,7 @@ module.exports = SceneTypes;
 },{"./WorldScene.js":7}],7:[function(require,module,exports){
 var LoaderService = require('../services/LoaderService.js');
 var GameService = require('../services/GameService.js');
+var ResourceService = require('../services/ResourceService.js');
 var InputService = require('../services/InputService.js');
 var PIXI = require('pixi.js');
 
@@ -382,6 +387,7 @@ function WorldScene(appContainer) {
 	this._leftBound = null;
 	this._rightBound = null;
 	this._bottomBound = null;
+	this._graphicsPlacements = [];
 }
 
 WorldScene.prototype.init = function() {
@@ -397,14 +403,16 @@ WorldScene.prototype.init = function() {
 	this._initGui();
 	this._enableInput();
 
-	//load the map
-	this._loadMap().then(function(map) {
-		this._map = map;
-		this._lastProcessedX = GameService.player.x;
-		this._lastProcessedY = GameService.player.y;	
-		this._updateCamera(0, 0);		
-		this._isLoadingMap = false;
-	}.bind(this));
+	//load the placements and the starting map
+	this._loadGraphicsPlacements()
+		.then(this._loadMap.bind(this))
+		.then(function(map) {
+			this._map = map;
+			this._lastProcessedX = GameService.player.x;
+			this._lastProcessedY = GameService.player.y;	
+			this._updateCamera(0, 0);		
+			this._isLoadingMap = false;
+		}.bind(this));
 }
 
 WorldScene.prototype._enableInput = function() {
@@ -532,11 +540,14 @@ WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, to
 WorldScene.prototype._handleNewSprites = function() {
 	var texture = null,
 		imageUrl = '',
+		imageUrlAndPlacements = {},
 		player = GameService.player,
 		defaults = GameService.defaults,
 		drawX,
 		drawY,
-		mapCell;
+		mapCell,
+		placementX,
+		placementY;
 
 	for (var y = this._topBound; y <= this._bottomBound; y++) {
 		drawY = (y - player.y) * defaults.cellHeight + this._gameOffSetY + this._cameraDeltaY; //Moving OffSet
@@ -552,7 +563,8 @@ WorldScene.prototype._handleNewSprites = function() {
 					imageUrl = this._map.getBackImageUrl(mapCell);
 					if(imageUrl !== null) {
 						mapCell.backSprite = false;
-						LoaderService.loadMapTexture(imageUrl).then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
+						LoaderService.loadMapTexture(imageUrl)
+							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
@@ -564,7 +576,8 @@ WorldScene.prototype._handleNewSprites = function() {
 				imageUrl = this._map.getMiddleImageUrl(mapCell);
 				if(imageUrl !== null) {
 					mapCell.middleSprite = false;
-					LoaderService.loadMapTexture(imageUrl).then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY));
+					LoaderService.loadMapTexture(imageUrl)
+						.then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.middleIndex);
 				}
@@ -572,10 +585,19 @@ WorldScene.prototype._handleNewSprites = function() {
 
 			//top sprites (objects)
 			if(mapCell.frontSprite === null && mapCell.frontIndex > 0 && mapCell.frontImage > 0) {
-				imageUrl = this._map.getFrontImageUrl(mapCell);
-				if(imageUrl !== null) {
+				imageUrlAndPlacements = this._map.getFrontImageUrlAndPlacements(mapCell);
+				if(imageUrlAndPlacements !== null) {
 					mapCell.frontSprite = false;
-					LoaderService.loadMapTexture(imageUrl).then(this._addFrontSprite.bind(this, mapCell, drawX, drawY));
+					placementX = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][0];
+					placementY = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][1];
+
+					LoaderService.loadMapTexture(imageUrlAndPlacements.url)
+						.then(this._addFrontSprite.bind(
+							this, 
+							mapCell, 
+							drawX + placementX, 
+							drawY + placementY
+						));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.frontIndex);
 				}
@@ -601,8 +623,26 @@ WorldScene.prototype._addMiddleSprite = function(mapCell, drawX, drawY, texture)
 WorldScene.prototype._addFrontSprite = function(mapCell, drawX, drawY, texture){
 	mapCell.frontSprite = new PIXI.Sprite(texture);
 	mapCell.frontSprite.x = drawX;
-	mapCell.frontSprite.y = drawY;
+	mapCell.frontSprite.y = drawY - texture.height;
 	this._objTileLayer.addChild(mapCell.frontSprite);
+}
+
+WorldScene.prototype._loadGraphicsPlacements = function() {
+	return new Promise(function(resolve, reject) {
+		var total = ResourceService.graphics.placements.length,
+			count = 0;
+		for(var i = 0; i < total; i++) {
+			var placementsName = ResourceService.graphics.placements[i];
+			LoaderService.loadGraphicsPlacements(placementsName).then(function(placementsName, placements) {
+				this._graphicsPlacements[placementsName] = placements;
+				count++
+
+				if(count === total) {
+					resolve();
+				}
+			}.bind(this, placementsName));
+		}
+	}.bind(this));
 }
 
 WorldScene.prototype._loadMap = function() {
@@ -637,15 +677,15 @@ WorldScene.prototype.isLoadingMap = function() {
 }
 
 module.exports = WorldScene;
-},{"../services/GameService.js":8,"../services/InputService.js":9,"../services/LoaderService.js":10,"pixi.js":14}],8:[function(require,module,exports){
+},{"../services/GameService.js":8,"../services/InputService.js":9,"../services/LoaderService.js":10,"../services/ResourceService.js":11,"pixi.js":14}],8:[function(require,module,exports){
 
 var GameService = {
 	player: null,
 	scene: null,
 	loggedIn: false,
 	defaults: {
-		viewRangeX: 15,
-		viewRangeY: 15,
+		viewRangeX: 25,
+		viewRangeY: 25,
 		cellWidth: 48,
         cellHeight: 32,
         screenWidth: 1024,
@@ -767,6 +807,15 @@ var LoaderService = {
                 }.bind(this, texture));
             }
         });
+    },
+    loadGraphicsPlacements: function(assetPath) {
+        return new Promise(function(resolve, reject) {
+            var loader = new PIXI.JsonLoader("http://mirjs.com/" + assetPath + '.json');
+            loader.on('loaded', function(evt) {
+                resolve(evt.data.content.json);
+            });
+            loader.load();
+        });
     }
 };
 
@@ -784,18 +833,23 @@ var ResourceService = {
 				case 110:
 					return {
 						path: "data/smtiles" + (index - 110),
-						type: 'jpg'					
+						type: 'jpg'			
 					};		
 				case 120:
 				case 123:
 					return {
 						path: "data/objects" + (index - 120),
-						type: 'png'					
+						type: 'png',
+						placements: 'data/objects' + (index - 120) + '.json'			
 					};		
 				default:
 					return null;		
 			}
-		}
+		},
+		placements: [
+			"data/objects0",
+			"data/objects3"
+		]
 	}
 }
 
