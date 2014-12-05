@@ -507,7 +507,6 @@ WorldScene.prototype._clearAllSpritesFromStage = function() {
 
 WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, topBound, bottomBound) {
 	var mapCell;
-	console.log('Clear x1: ' + leftBound + ' x2: ' + rightBound + ' y1: ' + topBound + ' y2: ' + bottomBound);
 	for (var y = topBound; y <= bottomBound; y++) {
 		for (var x = leftBound; x <= rightBound; x++) {
 			mapCell = this._map.getMapCell(x, y);
@@ -608,7 +607,7 @@ WorldScene.prototype._addFrontSprite = function(mapCell, drawX, drawY, texture){
 WorldScene.prototype._loadMap = function() {
 	return new Promise(function(resolve, reject) {
 		this._isLoadingMap = true;
-		this._clearSpritesFromStage();
+		this._clearAllSpritesFromStage();
 		LoaderService.loadMap(GameService.player.map)
 			.then(function(map) {
 				resolve(map);
