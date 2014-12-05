@@ -34,9 +34,10 @@ var LoaderService = {
             console.log('Loading map ' + mapName);
             asyncLoad("http://mirjs.com/maps/" + mapName + ".map", 'arraybuffer')
                 .then(function(arrayBuffer) {
-                    var mapReader = new MapReader(mapName, new DataView(arrayBuffer));
+                    var mapReader = new MapReader(new DataView(arrayBuffer));
                     console.log('Loaded map ' + mapName);
                     resolve(mapReader.loadMap());
+                    mapReader = null;
                 }, function(error) {
                     console.log('Failed to load map ' + mapName);
                     reject(error);

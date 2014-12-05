@@ -1,9 +1,7 @@
 var Map = require('./Map.js');
 
-function MapReader(mapName, dataBuffer) {
+function MapReader(dataBuffer) {
 	this._dataBuffer = dataBuffer;
-	this._mapName = mapName;
-	this._map = null;
 }
 
 MapReader.prototype.loadMap = function() {
@@ -68,7 +66,7 @@ MapReader.prototype._loadMapType1 = function() {
 }
 
 MapReader.prototype._loadMapType2 = function(width, height) {
-    this._map = new Map(width, height);
+    var map = new Map(width, height);
 
     //now popular the map's cells
     var offset = 52;
@@ -108,11 +106,11 @@ MapReader.prototype._loadMapType2 = function(width, height) {
                 mapCell.backImage = (mapCell.backImage & 0x7FFF) | 0x20000000;
             }
 
-            this._map.setMapCell(mapCell, x, y);
+            map.setMapCell(mapCell, x, y);
     	}
 	}	
 
-    return this._map;	
+    return map;	
 }
 
 MapReader.prototype._loadMapType3 = function() {
@@ -123,5 +121,6 @@ MapReader.prototype._loadMapType4 = function() {
 
 MapReader.prototype._loadMapType5 = function() {
 }
+
 
 module.exports = MapReader;

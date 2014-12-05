@@ -140,7 +140,9 @@ WorldScene.prototype._clearAllSpritesFromStage = function() {
 	this._tileLayer.removeChildren();
 	this._smTileLayer.removeChildren();
 	this._objTileLayer.removeChildren();
-	this._map.clearSprites();
+	if(this._map) {
+		this._map.clearSprites();
+	}
 }
 
 WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, topBound, bottomBound) {

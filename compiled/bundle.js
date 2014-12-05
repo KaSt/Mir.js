@@ -206,10 +206,8 @@ module.exports = Map;
 },{"../services/ResourceService.js":11}],4:[function(require,module,exports){
 var Map = require('./Map.js');
 
-function MapReader(mapName, dataBuffer) {
+function MapReader(dataBuffer) {
 	this._dataBuffer = dataBuffer;
-	this._mapName = mapName;
-	this._map = null;
 }
 
 MapReader.prototype.loadMap = function() {
@@ -274,7 +272,7 @@ MapReader.prototype._loadMapType1 = function() {
 }
 
 MapReader.prototype._loadMapType2 = function(width, height) {
-    this._map = new Map(width, height);
+    var map = new Map(width, height);
 
     //now popular the map's cells
     var offset = 52;
@@ -314,11 +312,11 @@ MapReader.prototype._loadMapType2 = function(width, height) {
                 mapCell.backImage = (mapCell.backImage & 0x7FFF) | 0x20000000;
             }
 
-            this._map.setMapCell(mapCell, x, y);
+            map.setMapCell(mapCell, x, y);
     	}
 	}	
 
-    return this._map;	
+    return map;	
 }
 
 MapReader.prototype._loadMapType3 = function() {
@@ -329,6 +327,7 @@ MapReader.prototype._loadMapType4 = function() {
 
 MapReader.prototype._loadMapType5 = function() {
 }
+
 
 module.exports = MapReader;
 },{"./Map.js":3}],5:[function(require,module,exports){
@@ -502,7 +501,9 @@ WorldScene.prototype._clearAllSpritesFromStage = function() {
 	this._tileLayer.removeChildren();
 	this._smTileLayer.removeChildren();
 	this._objTileLayer.removeChildren();
-	this._map.clearSprites();
+	if(this._map) {
+		this._map.clearSprites();
+	}
 }
 
 WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, topBound, bottomBound) {
@@ -741,9 +742,10 @@ var LoaderService = {
             console.log('Loading map ' + mapName);
             asyncLoad("http://mirjs.com/maps/" + mapName + ".map", 'arraybuffer')
                 .then(function(arrayBuffer) {
-                    var mapReader = new MapReader(mapName, new DataView(arrayBuffer));
+                    var mapReader = new MapReader(new DataView(arrayBuffer));
                     console.log('Loaded map ' + mapName);
                     resolve(mapReader.loadMap());
+                    mapReader = null;
                 }, function(error) {
                     console.log('Failed to load map ' + mapName);
                     reject(error);
