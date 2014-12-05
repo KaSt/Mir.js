@@ -4,28 +4,29 @@ var ResourceService = {
 			switch(index) {
 				case 100:
 					return {
-						path: "data/tiles" + (index - 100),
+						path: "data/tiles" + (index - 99),
 						type: 'jpg'					
 					};
 				case 110:
 					return {
-						path: "data/smtiles" + (index - 110),
+						path: "data/smtiles" + (index - 109),
 						type: 'jpg'			
 					};		
 				case 120:
 				case 123:
 					return {
-						path: "data/objects" + (index - 120),
+						path: "data/objects" + (index - 119),
 						type: 'png',
-						placements: 'data/objects' + (index - 120) + '.json'			
+						placements: 'data/objects' + (index - 119) + '.json'			
 					};		
 				default:
 					return null;		
 			}
 		},
 		placements: [
-			"data/objects0",
-			"data/objects3"
+			"data/objects1",
+			"data/objects3",
+			"data/objects4"
 		]
 	}
 }

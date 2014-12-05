@@ -160,6 +160,10 @@ Map.prototype.getMiddleImageUrl = function(mapCell) {
 Map.prototype.getFrontImageUrlAndPlacements = function(mapCell) {
     var index = mapCell.frontImage - 1;
 
+    if(mapCell.frontIndex === 123) {
+    	debugger;
+    }
+
     if(index < 0) {
         return null;
     }
@@ -282,7 +286,7 @@ MapReader.prototype._loadMapType2 = function(width, height) {
     var offset = 52;
     for (var x = 0; x < width; x++) {
         for (var y = 0; y < height; y++) {
-            var mapCell = {};                 
+            var mapCell = {};           
 
             mapCell.backImage = this._dataBuffer.getInt16(offset, true);
             offset += 2;
@@ -308,7 +312,7 @@ MapReader.prototype._loadMapType2 = function(width, height) {
 
             mapCell.backSprite = null;
             mapCell.middleSprite = null;
-            mapCell.frontSprite = null;
+            mapCell.frontSprite = null;      
 
             mapCell.unknown;            
 
@@ -827,28 +831,29 @@ var ResourceService = {
 			switch(index) {
 				case 100:
 					return {
-						path: "data/tiles" + (index - 100),
+						path: "data/tiles" + (index - 99),
 						type: 'jpg'					
 					};
 				case 110:
 					return {
-						path: "data/smtiles" + (index - 110),
+						path: "data/smtiles" + (index - 109),
 						type: 'jpg'			
 					};		
 				case 120:
 				case 123:
 					return {
-						path: "data/objects" + (index - 120),
+						path: "data/objects" + (index - 119),
 						type: 'png',
-						placements: 'data/objects' + (index - 120) + '.json'			
+						placements: 'data/objects' + (index - 119) + '.json'			
 					};		
 				default:
 					return null;		
 			}
 		},
 		placements: [
-			"data/objects0",
-			"data/objects3"
+			"data/objects1",
+			"data/objects3",
+			"data/objects4"
 		]
 	}
 }

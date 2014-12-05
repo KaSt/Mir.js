@@ -72,7 +72,7 @@ MapReader.prototype._loadMapType2 = function(width, height) {
     var offset = 52;
     for (var x = 0; x < width; x++) {
         for (var y = 0; y < height; y++) {
-            var mapCell = {};                 
+            var mapCell = {};           
 
             mapCell.backImage = this._dataBuffer.getInt16(offset, true);
             offset += 2;
@@ -98,7 +98,7 @@ MapReader.prototype._loadMapType2 = function(width, height) {
 
             mapCell.backSprite = null;
             mapCell.middleSprite = null;
-            mapCell.frontSprite = null;
+            mapCell.frontSprite = null;      
 
             mapCell.unknown;            
 
