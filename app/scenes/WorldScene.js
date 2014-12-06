@@ -63,6 +63,7 @@ WorldScene.prototype.init = function() {
 		}.bind(this));
 }
 
+
 WorldScene.prototype._enableInput = function() {
 	InputService.on('pressed left', this._moveLeft.bind(this), true);
 	InputService.on('pressed right', this._moveRight.bind(this), true);
@@ -228,19 +229,11 @@ WorldScene.prototype._handleNewSprites = function() {
 			if(x % 2 === 0 && y % 2 === 0) {
 				//if we do not have backSprite for this tile, generate one and store it to the tileLayer
 				if(mapCell.backSprite === null && mapCell.backIndex > 0 && mapCell.backImage > 0) {
-					imageUrlAndPlacements = this._map.getBackImageUrlAndPlacements(mapCell);
-					if(imageUrlAndPlacements !== null) {
-						mapCell.backSprite = false;
-
-						placementX = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][0];
-						placementY = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][1];						
-						LoaderService.loadMapTexture(imageUrlAndPlacements.url)
-							.then(this._addBackSprite.bind(
-								this, 
-								mapCell, 
-								drawX + placementX, 
-								drawY - placementY + 32
-							));
+					getBackImageUrl = this._map.getBackImageUrl(mapCell);
+					if(getBackImageUrl !== null) {
+						mapCell.backSprite = false;					
+						LoaderService.loadMapTexture(getBackImageUrl)
+							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
@@ -309,7 +302,7 @@ WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 
 WorldScene.prototype._addBackSprite = function(mapCell, drawX, drawY, texture){
 	mapCell.backSprite = new PIXI.Sprite(texture);
-	mapCell.backSprite.x = drawX;
+	mapCell.backSprite.x = drawX + 7;
 	mapCell.backSprite.y = drawY - texture.height - 24;
 	this._tileLayer.addChild(mapCell.backSprite);	
 }
@@ -325,7 +318,8 @@ WorldScene.prototype._addFrontSprite = function(mapCell, drawX, drawY, z, textur
 	mapCell.frontSprite = new PIXI.Sprite(texture);
 	mapCell.frontSprite.z = z;
 
-	if(mapCell.light === 5) {
+	//light source
+	if(mapCell.light === 5 && mapCell.frontImage >= 2723 && mapCell.frontImage  <= 2732) {
 		mapCell.frontSprite.blendMode = PIXI.blendModes.SCREEN;
 		mapCell.frontSprite.y = drawY - texture.height - 44;
 		mapCell.frontSprite.x = drawX + 4;

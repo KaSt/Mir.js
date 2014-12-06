@@ -20,13 +20,14 @@ GameService.player = new Player({
 	level: 30,
 	exp: 2000,
 	map: "0",
-	x: 300,
-	y: 300,
+	x: 350,
+	y: 350,
 	hp: 100,
 	mp: 100,
 	bag: [],
 	equiped: {}
 });
+
 
 window.GameService = GameService;
 

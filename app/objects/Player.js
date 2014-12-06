@@ -1,3 +1,4 @@
+var HumanSprite = require('../sprites/HumanSprite.js');
 
 function Player( data ) {
 	this.name = data.name || null;
@@ -12,6 +13,15 @@ function Player( data ) {
 	this.mp = data.mp || null;
 	this.bag = data.bag || [];
 	this.equiped = data.equiped || {};
+	this.humanSprite = null;
+
+	this._init();
 }
+
+Player.prototype._init = function() {
+	//make the human sprite for the player
+	this.humanSprite = new HumanSprite();
+}
+
 
 module.exports = Player
