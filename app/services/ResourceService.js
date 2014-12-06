@@ -14,6 +14,7 @@ var ResourceService = {
 					};		
 				case 120:
 				case 123:
+				case 125:
 					return {
 						path: "data/objects" + (index - 119),
 						type: 'png',
@@ -26,7 +27,8 @@ var ResourceService = {
 		placements: [
 			"data/objects1",
 			"data/objects3",
-			"data/objects4"
+			"data/objects4",
+			"data/objects6"
 		]
 	}
 }

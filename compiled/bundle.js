@@ -666,14 +666,14 @@ WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 WorldScene.prototype._addBackSprite = function(mapCell, drawX, drawY, texture){
 	mapCell.backSprite = new PIXI.Sprite(texture);
 	mapCell.backSprite.x = drawX;
-	mapCell.backSprite.y = drawY;
+	mapCell.backSprite.y = drawY - texture.height;
 	this._tileLayer.addChild(mapCell.backSprite);	
 }
 
 WorldScene.prototype._addMiddleSprite = function(mapCell, drawX, drawY, texture){
 	mapCell.middleSprite = new PIXI.Sprite(texture);
 	mapCell.middleSprite.x = drawX;
-	mapCell.middleSprite.y = drawY;
+	mapCell.middleSprite.y = drawY - texture.height;
 	this._smTileLayer.addChild(mapCell.middleSprite);
 }
 
@@ -895,6 +895,7 @@ var ResourceService = {
 					};		
 				case 120:
 				case 123:
+				case 125:
 					return {
 						path: "data/objects" + (index - 119),
 						type: 'png',
@@ -907,7 +908,8 @@ var ResourceService = {
 		placements: [
 			"data/objects1",
 			"data/objects3",
-			"data/objects4"
+			"data/objects4",
+			"data/objects6"
 		]
 	}
 }
