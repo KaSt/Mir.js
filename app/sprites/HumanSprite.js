@@ -4,6 +4,8 @@ function HumanSprite( data ) {
 	this._hasLight = data.hasLight || false;
 	this._direction = data.direction || null;
 	this._action = null;
+	this._x = data.x || null;
+	this._y = data.y || null;
 	this._z = data.z || null;
 	this._look = data.look || null;
 
