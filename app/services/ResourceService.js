@@ -5,7 +5,8 @@ var ResourceService = {
 				case 100:
 					return {
 						path: "data/tiles" + (index - 99),
-						type: 'jpg'					
+						type: 'jpg',
+						placements: 'data/tiles' + (index - 99) + '.json'
 					};
 				case 110:
 					return {
@@ -18,13 +19,14 @@ var ResourceService = {
 					return {
 						path: "data/objects" + (index - 119),
 						type: 'png',
-						placements: 'data/objects' + (index - 119) + '.json'			
+						placements: 'data/objects' + (index - 119) + '.json'		
 					};		
 				default:
 					return null;		
 			}
 		},
 		placements: [
+			"data/tiles1",
 			"data/objects1",
 			"data/objects3",
 			"data/objects4",

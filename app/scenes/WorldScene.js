@@ -228,11 +228,19 @@ WorldScene.prototype._handleNewSprites = function() {
 			if(x % 2 === 0 && y % 2 === 0) {
 				//if we do not have backSprite for this tile, generate one and store it to the tileLayer
 				if(mapCell.backSprite === null && mapCell.backIndex > 0 && mapCell.backImage > 0) {
-					imageUrl = this._map.getBackImageUrl(mapCell);
-					if(imageUrl !== null) {
+					imageUrlAndPlacements = this._map.getBackImageUrlAndPlacements(mapCell);
+					if(imageUrlAndPlacements !== null) {
 						mapCell.backSprite = false;
-						LoaderService.loadMapTexture(imageUrl)
-							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
+
+						placementX = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][0];
+						placementY = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][1];						
+						LoaderService.loadMapTexture(imageUrlAndPlacements.url)
+							.then(this._addBackSprite.bind(
+								this, 
+								mapCell, 
+								drawX + placementX, 
+								drawY - placementY + 32
+							));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
@@ -260,6 +268,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				imageUrlAndPlacements = this._map.getFrontImageUrlAndPlacements(mapCell);
 				if(imageUrlAndPlacements !== null) {
 					mapCell.frontSprite = false;
+
 					placementX = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][0];
 					placementY = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][1];
 
@@ -301,7 +310,7 @@ WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 WorldScene.prototype._addBackSprite = function(mapCell, drawX, drawY, texture){
 	mapCell.backSprite = new PIXI.Sprite(texture);
 	mapCell.backSprite.x = drawX;
-	mapCell.backSprite.y = drawY - texture.height;
+	mapCell.backSprite.y = drawY - texture.height - 24;
 	this._tileLayer.addChild(mapCell.backSprite);	
 }
 
@@ -314,9 +323,16 @@ WorldScene.prototype._addMiddleSprite = function(mapCell, drawX, drawY, texture)
 
 WorldScene.prototype._addFrontSprite = function(mapCell, drawX, drawY, z, texture){
 	mapCell.frontSprite = new PIXI.Sprite(texture);
-	mapCell.frontSprite.x = drawX;
-	mapCell.frontSprite.y = drawY - texture.height;
 	mapCell.frontSprite.z = z;
+
+	if(mapCell.light === 5) {
+		mapCell.frontSprite.blendMode = PIXI.blendModes.SCREEN;
+		mapCell.frontSprite.y = drawY - texture.height - 44;
+		mapCell.frontSprite.x = drawX + 4;
+	} else {
+		mapCell.frontSprite.y = drawY - texture.height;
+		mapCell.frontSprite.x = drawX;
+	}
 	this._objTileLayer.addChild(mapCell.frontSprite);
 }
 

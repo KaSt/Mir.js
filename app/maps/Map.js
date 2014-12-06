@@ -43,23 +43,26 @@ Map.prototype.clearSprites = function() {
 	}
 }
 
-Map.prototype.getBackImageUrl = function(mapCell) {
-	var index = (mapCell.backImage & 0x1FFFF) - 1;
+Map.prototype.getBackImageUrlAndPlacements = function(mapCell) {
+    var index = (mapCell.backImage & 0x1FFFF) - 1;
 
-	if(index < 0) {
-		return null;
-	}
+    if(index < 0) {
+        return null;
+    }
+
+    var indexString = addPathNamePadding(index, 6),
+        mapLib = ResourceService.graphics.mapLib(mapCell.backIndex);
 
     if(mapLib === null) {
         return null;
-    }    
+    }
 
-	var indexString = addPathNamePadding(index, 6),
-		mapLib = ResourceService.graphics.mapLib(mapCell.backIndex);
-
-	return mapLib.path + "/" + indexString + "." + mapLib.type;
+    return {
+    	url: mapLib.path + "/" + indexString + "." + mapLib.type,
+    	placements: mapLib.path,
+    	index: index
+    }
 }
-
 
 Map.prototype.getMiddleImageUrl = function(mapCell) {
 	var index = mapCell.middleImage - 1;
