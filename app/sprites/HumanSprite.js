@@ -1,27 +1,64 @@
 var PIXI = require('pixi.js');
+var LoaderService = require('../services/LoaderService.js');
+var ResourceService = require('../services/ResourceService.js');
 
-function HumanSprite( data ) {
-	this._hasLight = data.hasLight || false;
-	this._direction = data.direction || null;
-	this._action = null;
-	this._x = data.x || null;
-	this._y = data.y || null;
-	this._z = data.z || null;
-	this._look = data.look || null;
+var addPathNamePadding = function(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
 
-	this._sprites = new PIXI.DisplayObjectContainer();
+function HumanSprite( scene, data ) {
+	this.hasLight = data.hasLight !== null ? data.hasLight : null;
+	this.direction = data.direction !== null ? data.direction : null;
+	this.action = data.action || null;
+	this.z = data.z !== null ? data.z : null;
+	this.look = data.look !== null ? data.look : null;
 
-	this._bodySprite = null;
+	this.animationX = 0;
+	this.animationY = 0;
+
+	this.sprites = new PIXI.DisplayObjectContainer();
+
+	this._scene = scene;
 	this._bodySprite = null;
 	this._weaponSprite = null;
 	this._effectsSprite = null;
 	this._hairSprite = null;	
-
-	this._init();
+	this.loaded = false;
 }
 
-HumanSprite.prototype._init = function() {
-	//from the look, we can create the differnet sprites
+HumanSprite.prototype.init = function() {
+	//add the sprites to our container
+	this.sprites.x = this.x;
+	this.sprites.y = this.y;
+	this.sprites.z = this.z + 0.1;
+
+	this._updateBodyTexture();
+}
+
+HumanSprite.prototype.updateZ = function(z) {
+	this.z = z;
+	this.sprites.z = this.z + 0.1;	
+}
+
+HumanSprite.prototype._updateBodyTexture = function() {
+	//fow now we simply set it to 9
+	var index = this.look; // 0 in this case
+	var humLib = ResourceService.graphics.humLib(this.look);
+
+	var placementX = this._scene._graphicsPlacements[humLib.path][index][0];
+	var placementY = this._scene._graphicsPlacements[humLib.path][index][1];	
+
+	LoaderService.loadTexture(humLib.path + '/' + addPathNamePadding(index, 6) + '.' + humLib.type).then(function(texture) {
+		if(this._bodySprite === null) {
+			this._bodySprite = new PIXI.Sprite(texture);
+			this.sprites.addChild(this._bodySprite);
+			
+			this._bodySprite.x = placementX;
+			this._bodySprite.y = -this._bodySprite.height + placementY;
+		}
+	}.bind(this));
 }
 
 module.exports = HumanSprite;

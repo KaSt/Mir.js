@@ -35,6 +35,7 @@ function WorldScene(appContainer) {
 	this._bottomBound = null;
 	this._graphicsPlacements = [];
 	this._readyForInput = false;
+	this._mainPlayer = GameService.player;
 }
 
 WorldScene.prototype.init = function() {
@@ -50,13 +51,15 @@ WorldScene.prototype.init = function() {
 	this._initGui();
 	this._enableInput();
 
+	this._mainPlayer.initHumanSprite(this);
+
 	//load the placements and the starting map
 	this._loadGraphicsPlacements()
 		.then(this._loadMap.bind(this))
 		.then(function(map) {
 			this._map = map;
-			this._lastProcessedX = GameService.player.x;
-			this._lastProcessedY = GameService.player.y;	
+			this._lastProcessedX = this._mainPlayer.x;
+			this._lastProcessedY = this._mainPlayer.y;	
 			this._readyForInput = true;
 			this._updateCamera(0, 0);		
 			this._isLoadingMap = false;
@@ -95,8 +98,7 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 
 		this._readyForInput = false;
 		//move this out eventually
-		GameService.player.x = GameService.player.x + diffX;
-		GameService.player.y = GameService.player.y + diffY;
+		this._mainPlayer.setLocation(this._mainPlayer.x + diffX, this._mainPlayer.y + diffY);
 
 		this._cameraDeltaX = this._cameraDeltaX + (defaults.cellWidth * diffX);
 		this._cameraDeltaY = this._cameraDeltaY + (defaults.cellHeight * diffY);
@@ -116,36 +118,34 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 }
 
 WorldScene.prototype._updateBounds = function() {
-	var player = GameService.player,
-		defaults = GameService.defaults;
+	var defaults = GameService.defaults;
 
-	this._topBound = player.y - defaults.viewRangeY < 0 ? 0 : player.y - defaults.viewRangeY;
-	this._leftBound = player.x - defaults.viewRangeX < 0 ? 0 : player.x - defaults.viewRangeX;
-	this._rightBound = player.x + defaults.viewRangeX > this._map.getWidth() - 1 ? this._map.getWidth() - 1 : player.x + defaults.viewRangeX;
-	this._bottomBound = player.y + defaults.viewRangeY > this._map.getHeight() - 1 ? this._map.getHeight() - 1 : player.y + defaults.viewRangeY;
+	this._topBound = this._mainPlayer.y - defaults.viewRangeY < 0 ? 0 : this._mainPlayer.y - defaults.viewRangeY;
+	this._leftBound = this._mainPlayer.x - defaults.viewRangeX < 0 ? 0 : this._mainPlayer.x - defaults.viewRangeX;
+	this._rightBound = this._mainPlayer.x + defaults.viewRangeX > this._map.getWidth() - 1 ? this._map.getWidth() - 1 : this._mainPlayer.x + defaults.viewRangeX;
+	this._bottomBound = this._mainPlayer.y + defaults.viewRangeY > this._map.getHeight() - 1 ? this._map.getHeight() - 1 : this._mainPlayer.y + defaults.viewRangeY;
 }
 
 WorldScene.prototype._handleOldSprites = function() {
-	var player = GameService.player,
-		defaults = GameService.defaults;
+	var defaults = GameService.defaults;
 
 	//if we have a different lastProcessed X/Y from now, our player has moved, so we need handle some old tiles
 	if(this._lastProcessedX !== null && this._lastProcessedY !== null) {
-		if(this._lastProcessedX !== player.x || this._lastProcessedY !== player.y) {
-			if(this._lastProcessedX > player.x && this._lastProcessedX < this._rightBound) {
+		if(this._lastProcessedX !== this._mainPlayer.x || this._lastProcessedY !== this._mainPlayer.y) {
+			if(this._lastProcessedX > this._mainPlayer.x && this._lastProcessedX < this._rightBound) {
 				//player has moved left, so let's clear the far right sprites
-				this._clearSpritesFromStage(this._rightBound + 1, this._rightBound + this._lastProcessedX - player.x, this._topBound, this._bottomBound)
-			} else if(this._lastProcessedX < player.x && this._lastProcessedX > this._leftBound) {
+				this._clearSpritesFromStage(this._rightBound + 1, this._rightBound + this._lastProcessedX - this._mainPlayer.x, this._topBound, this._bottomBound)
+			} else if(this._lastProcessedX < this._mainPlayer.x && this._lastProcessedX > this._leftBound) {
 				//player has moved right, so let's clear the far left sprites
-				this._clearSpritesFromStage(this._leftBound - player.x + this._lastProcessedX, this._leftBound - 1, this._topBound, this._bottomBound)
+				this._clearSpritesFromStage(this._leftBound - this._mainPlayer.x + this._lastProcessedX, this._leftBound - 1, this._topBound, this._bottomBound)
 			}
 
-			if(this._lastProcessedY > player.y && this._lastProcessedY < this._bottomBound) {
+			if(this._lastProcessedY > this._mainPlayer.y && this._lastProcessedY < this._bottomBound) {
 				//player has moved up, so let's clear the bottom sprites
-				this._clearSpritesFromStage(this._leftBound, this._rightBound, this._bottomBound + 1, this._bottomBound + this._lastProcessedY - player.y)
-			} else if(this._lastProcessedY < player.y && this._lastProcessedY > this._topBound) {
+				this._clearSpritesFromStage(this._leftBound, this._rightBound, this._bottomBound + 1, this._bottomBound + this._lastProcessedY - this._mainPlayer.y)
+			} else if(this._lastProcessedY < this._mainPlayer.y && this._lastProcessedY > this._topBound) {
 				//player has moved right, so let's clear the far left sprites
-				this._clearSpritesFromStage(this._leftBound, this._rightBound, this._topBound - player.y + this._lastProcessedY, this._topBound - 1)
+				this._clearSpritesFromStage(this._leftBound, this._rightBound, this._topBound - this._mainPlayer.y + this._lastProcessedY, this._topBound - 1)
 			}			
 
 			if (this._lastProcessedX < this._leftBound || this._lastProcessedX > this._rightBound
@@ -154,8 +154,8 @@ WorldScene.prototype._handleOldSprites = function() {
 				this._clearAllSpritesFromStage();
 			}
 
-			this._lastProcessedX = player.x;
-			this._lastProcessedY = player.y;				
+			this._lastProcessedX = this._mainPlayer.x;
+			this._lastProcessedY = this._mainPlayer.y;				
 		}
 	}
 }
@@ -208,7 +208,6 @@ WorldScene.prototype._handleNewSprites = function() {
 	var texture = null,
 		imageUrl = '',
 		imageUrlAndPlacements = {},
-		player = GameService.player,
 		defaults = GameService.defaults,
 		drawX,
 		drawY,
@@ -219,10 +218,10 @@ WorldScene.prototype._handleNewSprites = function() {
 		y;
 
 	for (y = this._topBound; y <= this._bottomBound; y++) {
-		drawY = (y - player.y) * defaults.cellHeight + this._gameOffSetY + this._cameraDeltaY; //Moving OffSet
+		drawY = (y - this._mainPlayer.y) * defaults.cellHeight + this._gameOffSetY + this._cameraDeltaY; //Moving OffSet
 
 	    for (x = this._leftBound; x <= this._rightBound; x++) {
-			drawX = (x - player.x) * defaults.cellWidth + this._gameOffSetX + this._cameraDeltaX; //Moving OffSet
+			drawX = (x - this._mainPlayer.x) * defaults.cellWidth + this._gameOffSetX + this._cameraDeltaX; //Moving OffSet
 			mapCell = this._map.getMapCell(x, y);
 
 			//handle big tiles
@@ -232,7 +231,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					getBackImageUrl = this._map.getBackImageUrl(mapCell);
 					if(getBackImageUrl !== null) {
 						mapCell.backSprite = false;					
-						LoaderService.loadMapTexture(getBackImageUrl)
+						LoaderService.loadTexture(getBackImageUrl)
 							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
@@ -247,7 +246,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				imageUrl = this._map.getMiddleImageUrl(mapCell);
 				if(imageUrl !== null) {
 					mapCell.middleSprite = false;
-					LoaderService.loadMapTexture(imageUrl)
+					LoaderService.loadTexture(imageUrl)
 						.then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.middleIndex);
@@ -265,7 +264,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					placementX = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][0];
 					placementY = this._graphicsPlacements[imageUrlAndPlacements.placements][imageUrlAndPlacements.index][1];
 
-					LoaderService.loadMapTexture(imageUrlAndPlacements.url)
+					LoaderService.loadTexture(imageUrlAndPlacements.url)
 						.then(this._addFrontSprite.bind(
 							this, 
 							mapCell, 
@@ -279,6 +278,15 @@ WorldScene.prototype._handleNewSprites = function() {
 			} else if (mapCell.frontSprite !== null) {
 				this._handleSpriteVisibility(mapCell.frontSprite);
 			}		
+
+			//handle main player
+			if(this._mainPlayer.x === x && this._mainPlayer.y === y && this._mainPlayer.humanSprite.loaded === false) {
+				this._mainPlayer.humanSprite.loaded === true;
+				this._mainPlayer.humanSprite.init();
+				this._mainPlayer.humanSprite.sprites.x = drawX;
+				this._mainPlayer.humanSprite.sprites.y = drawY;
+				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
+			}
 	    }
 	}
 
@@ -352,7 +360,7 @@ WorldScene.prototype._loadMap = function() {
 	return new Promise(function(resolve, reject) {
 		this._isLoadingMap = true;
 		this._clearAllSpritesFromStage();
-		LoaderService.loadMap(GameService.player.map)
+		LoaderService.loadMap(this._mainPlayer.map)
 			.then(function(map) {
 				resolve(map);
 			});

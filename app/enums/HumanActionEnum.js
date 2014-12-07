@@ -16,7 +16,7 @@ var HumanActionEnum = {
     AttackRange1: 13,
     AttackRange2: 14,
     AttackRange3: 15,
-    Special 16,
+    Special: 16,
     Struck: 17,
     Harvest: 18,
     Spell: 19,

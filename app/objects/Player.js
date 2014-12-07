@@ -1,4 +1,5 @@
 var HumanSprite = require('../sprites/HumanSprite.js');
+var HumanActionEnum = require('../enums/HumanActionEnum.js');
 
 function Player( data ) {
 	this.name = data.name || null;
@@ -12,14 +13,20 @@ function Player( data ) {
 	this.bag = data.bag || [];
 	this.equiped = data.equiped || {};
 	this.humanSprite = null;
-
-	this._init();
 }
 
-Player.prototype._init = function() {
+Player.prototype.initHumanSprite = function(scene) {
 	//make the human sprite for the player
-	this.humanSprite = new HumanSprite();
+	this.humanSprite = new HumanSprite(scene, {
+		z: this.y,
+		look: 0
+	});
 }
 
+Player.prototype.setLocation = function(x, y) {
+	this.x = x;
+	this.y = y;
+	this.humanSprite.updateZ(y);	
+}
 
 module.exports = Player
