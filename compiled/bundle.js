@@ -54,6 +54,7 @@ Renderer.prototype._render = function() {
 		}
 
 		if(scene !== null && scene.isLoadingMap() === false) {
+			scene.updateAnimations().
 			this._renderer.render(scene.getStage());
 		};
 
@@ -415,12 +416,16 @@ Player.prototype.initHumanSprite = function(scene) {
 Player.prototype.setLocation = function(x, y) {
 	this.x = x;
 	this.y = y;
-	this.humanSprite.updateZ(y);	
+	this.humanSprite.setZ(y);	
+}
+
+Player.prototype.update = function() {
+	this.humanSprite.update();
 }
 
 Player.prototype.setDirection = function(direction) {
 	this.direction = direction;
-	this.humanSprite.updateDirection(direction);	
+	this.humanSprite.setDirection(direction);	
 }
 
 module.exports = Player
@@ -556,6 +561,11 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 		this._handleNewSprites();
 		this._readyForInput = true;
 	}
+}
+
+WorldScene.prototype.updateAnimation = function() {
+	//update main player
+	this._mainPlayer.update();
 }
 
 WorldScene.prototype._updateBounds = function() {
@@ -1040,8 +1050,7 @@ function HumanSprite( scene, data ) {
 	this._z = data.z !== null ? data.z : null;
 	this.look = data.look !== null ? data.look : null;
 
-	this.animationX = 0;
-	this.animationY = 0;
+	this._animationFrame = 0;
 
 	this.sprites = new PIXI.DisplayObjectContainer();
 
@@ -1062,19 +1071,29 @@ HumanSprite.prototype.init = function() {
 	this._updateBodyTexture();
 }
 
-HumanSprite.prototype.updateZ = function(z) {
+HumanSprite.prototype.setZ = function(z) {
 	this.z = z;
 	this.sprites.z = this.z + 0.1;	
 }
 
-HumanSprite.prototype.updateDirection = function(direction) {
+HumanSprite.prototype.setDirection = function(direction) {
 	this._direction = direction;
+	this._updateBodyTexture();
+}
+
+HumanSprite.prototype.update = function() {
+	this._animationFrame++
+
+	if(this._animationFrame === 4) {
+		this._animationFrame = 0;
+	}
+
 	this._updateBodyTexture();
 }
 
 HumanSprite.prototype._updateBodyTexture = function() {
 	//fow now we simply set it to 9
-	var index = this.look + (8 * this._direction); // 0 in this case
+	var index = (this.look * 600) + (8 * this._direction) + this._animationFrame; // 0 in this case
 	var humLib = ResourceService.graphics.humLib(this.look);
 
 	var placementX = this._scene._graphicsPlacements[humLib.path][index][0];

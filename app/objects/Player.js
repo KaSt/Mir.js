@@ -28,12 +28,16 @@ Player.prototype.initHumanSprite = function(scene) {
 Player.prototype.setLocation = function(x, y) {
 	this.x = x;
 	this.y = y;
-	this.humanSprite.updateZ(y);	
+	this.humanSprite.setZ(y);	
+}
+
+Player.prototype.update = function() {
+	this.humanSprite.update();
 }
 
 Player.prototype.setDirection = function(direction) {
 	this.direction = direction;
-	this.humanSprite.updateDirection(direction);	
+	this.humanSprite.setDirection(direction);	
 }
 
 module.exports = Player

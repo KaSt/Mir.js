@@ -121,6 +121,11 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 	}
 }
 
+WorldScene.prototype.updateAnimation = function() {
+	//update main player
+	this._mainPlayer.update();
+}
+
 WorldScene.prototype._updateBounds = function() {
 	var defaults = GameService.defaults;
 
