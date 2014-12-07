@@ -28,7 +28,7 @@ Renderer.prototype._render = function() {
 		}
 
 		if(scene !== null && scene.isLoadingMap() === false) {
-			scene.updateAnimations().
+			scene.updateAnimations();
 			this._renderer.render(scene.getStage());
 		};
 
