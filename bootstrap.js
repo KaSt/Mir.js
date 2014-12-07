@@ -24,6 +24,7 @@ GameService.player = new Player({
 	y: 300,
 	hp: 100,
 	mp: 100,
+	direction: 0,
 	bag: [],
 	equiped: {}
 });

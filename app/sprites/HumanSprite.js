@@ -10,9 +10,9 @@ var addPathNamePadding = function(n, width, z) {
 
 function HumanSprite( scene, data ) {
 	this.hasLight = data.hasLight !== null ? data.hasLight : null;
-	this.direction = data.direction !== null ? data.direction : null;
+	this._direction = data.direction !== null ? data.direction : null;
 	this.action = data.action || null;
-	this.z = data.z !== null ? data.z : null;
+	this._z = data.z !== null ? data.z : null;
 	this.look = data.look !== null ? data.look : null;
 
 	this.animationX = 0;
@@ -42,9 +42,14 @@ HumanSprite.prototype.updateZ = function(z) {
 	this.sprites.z = this.z + 0.1;	
 }
 
+HumanSprite.prototype.updateDirection = function(direction) {
+	this._direction = direction;
+	this._updateBodyTexture();
+}
+
 HumanSprite.prototype._updateBodyTexture = function() {
 	//fow now we simply set it to 9
-	var index = this.look; // 0 in this case
+	var index = this.look + (8 * this._direction); // 0 in this case
 	var humLib = ResourceService.graphics.humLib(this.look);
 
 	var placementX = this._scene._graphicsPlacements[humLib.path][index][0];
@@ -57,6 +62,8 @@ HumanSprite.prototype._updateBodyTexture = function() {
 			
 			this._bodySprite.x = placementX;
 			this._bodySprite.y = -this._bodySprite.height + placementY;
+		} else {
+			this._bodySprite.setTexture(texture);
 		}
 	}.bind(this));
 }

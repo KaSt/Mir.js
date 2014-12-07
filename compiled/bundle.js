@@ -395,6 +395,7 @@ function Player( data ) {
 	this.map = data.map || null;
 	this.x = data.x || null;
 	this.y = data.y || null;
+	this.direction = data.direction || 0;
 	this.hp = data.hp || null;
 	this.mp = data.mp || null;
 	this.bag = data.bag || [];
@@ -406,6 +407,7 @@ Player.prototype.initHumanSprite = function(scene) {
 	//make the human sprite for the player
 	this.humanSprite = new HumanSprite(scene, {
 		z: this.y,
+		direction: this.direction,
 		look: 0
 	});
 }
@@ -414,6 +416,11 @@ Player.prototype.setLocation = function(x, y) {
 	this.x = x;
 	this.y = y;
 	this.humanSprite.updateZ(y);	
+}
+
+Player.prototype.setDirection = function(direction) {
+	this.direction = direction;
+	this.humanSprite.updateDirection(direction);	
 }
 
 module.exports = Player
@@ -506,18 +513,22 @@ WorldScene.prototype._enableInput = function() {
 
 
 WorldScene.prototype._moveLeft = function() {
+	this._mainPlayer.setDirection(6);
 	this._updateCamera(-1, 0);
 }
 
 WorldScene.prototype._moveRight = function() {
+	this._mainPlayer.setDirection(2);
 	this._updateCamera(1, 0);
 }
 
 WorldScene.prototype._moveUp = function() {
+	this._mainPlayer.setDirection(0);
 	this._updateCamera(0, -1);
 }
 
 WorldScene.prototype._moveDown = function() {
+	this._mainPlayer.setDirection(4);
 	this._updateCamera(0, 1);
 }
 
@@ -1024,9 +1035,9 @@ var addPathNamePadding = function(n, width, z) {
 
 function HumanSprite( scene, data ) {
 	this.hasLight = data.hasLight !== null ? data.hasLight : null;
-	this.direction = data.direction !== null ? data.direction : null;
+	this._direction = data.direction !== null ? data.direction : null;
 	this.action = data.action || null;
-	this.z = data.z !== null ? data.z : null;
+	this._z = data.z !== null ? data.z : null;
 	this.look = data.look !== null ? data.look : null;
 
 	this.animationX = 0;
@@ -1056,9 +1067,14 @@ HumanSprite.prototype.updateZ = function(z) {
 	this.sprites.z = this.z + 0.1;	
 }
 
+HumanSprite.prototype.updateDirection = function(direction) {
+	this._direction = direction;
+	this._updateBodyTexture();
+}
+
 HumanSprite.prototype._updateBodyTexture = function() {
 	//fow now we simply set it to 9
-	var index = this.look; // 0 in this case
+	var index = this.look + (8 * this._direction); // 0 in this case
 	var humLib = ResourceService.graphics.humLib(this.look);
 
 	var placementX = this._scene._graphicsPlacements[humLib.path][index][0];
@@ -1071,6 +1087,8 @@ HumanSprite.prototype._updateBodyTexture = function() {
 			
 			this._bodySprite.x = placementX;
 			this._bodySprite.y = -this._bodySprite.height + placementY;
+		} else {
+			this._bodySprite.setTexture(texture);
 		}
 	}.bind(this));
 }
@@ -1103,6 +1121,7 @@ GameService.player = new Player({
 	y: 300,
 	hp: 100,
 	mp: 100,
+	direction: 0,
 	bag: [],
 	equiped: {}
 });

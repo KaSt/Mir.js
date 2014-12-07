@@ -76,18 +76,22 @@ WorldScene.prototype._enableInput = function() {
 
 
 WorldScene.prototype._moveLeft = function() {
+	this._mainPlayer.setDirection(6);
 	this._updateCamera(-1, 0);
 }
 
 WorldScene.prototype._moveRight = function() {
+	this._mainPlayer.setDirection(2);
 	this._updateCamera(1, 0);
 }
 
 WorldScene.prototype._moveUp = function() {
+	this._mainPlayer.setDirection(0);
 	this._updateCamera(0, -1);
 }
 
 WorldScene.prototype._moveDown = function() {
+	this._mainPlayer.setDirection(4);
 	this._updateCamera(0, 1);
 }
 
