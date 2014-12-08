@@ -564,14 +564,28 @@ WorldScene.prototype.init = function() {
 
 
 WorldScene.prototype._enableInput = function() {
-	InputService.on('pressed left', this._moveLeft.bind(this), true);
-	InputService.on('pressed right', this._moveRight.bind(this), true);
-	InputService.on('pressed up', this._moveUp.bind(this), true);
-	InputService.on('pressed down', this._moveDown.bind(this), true);
+	//InputService.on('pressed left', this._moveLeft.bind(this), true);
+	//InputService.on('pressed right', this._moveRight.bind(this), true);
+	//InputService.on('pressed up', this._moveUp.bind(this), true);
+	//InputService.on('pressed down', this._moveDown.bind(this), true);
+}
+
+WorldScene.prototype._moveNorthWest = function() {
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		
+		this._mainPlayer.walk(7, function cameraMove(value) {
+			this._updateCameraOffset(-value, -value);
+		}.bind(this), function done() {
+			this._updateCamera(-1, -1);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
 }
 
 
-WorldScene.prototype._moveLeft = function() {
+WorldScene.prototype._moveWest = function() {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
@@ -585,7 +599,7 @@ WorldScene.prototype._moveLeft = function() {
 	}
 }
 
-WorldScene.prototype._moveRight = function() {
+WorldScene.prototype._moveEast = function() {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
@@ -599,7 +613,7 @@ WorldScene.prototype._moveRight = function() {
 	}
 }
 
-WorldScene.prototype._moveUp = function() {
+WorldScene.prototype._moveNorth = function() {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
@@ -613,7 +627,21 @@ WorldScene.prototype._moveUp = function() {
 	}
 }
 
-WorldScene.prototype._moveDown = function() {
+WorldScene.prototype._moveNorthEast = function() {
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		
+		this._mainPlayer.walk(1, function cameraMove(value) {
+			this._updateCameraOffset(value, -value);
+		}.bind(this), function done() {
+			this._updateCamera(1, -1);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
+}
+
+WorldScene.prototype._moveSouth = function() {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
@@ -621,6 +649,34 @@ WorldScene.prototype._moveDown = function() {
 			this._updateCameraOffset(0, value);
 		}.bind(this), function done() {
 			this._updateCamera(0, 1);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
+}
+
+WorldScene.prototype._moveSouthWest = function() {
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		
+		this._mainPlayer.walk(5, function cameraMove(value) {
+			this._updateCameraOffset(-value, value);
+		}.bind(this), function done() {
+			this._updateCamera(-1, 1);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
+}
+
+WorldScene.prototype._moveSouthEast = function() {
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		
+		this._mainPlayer.walk(3, function cameraMove(value) {
+			this._updateCameraOffset(value, value);
+		}.bind(this), function done() {
+			this._updateCamera(1, 1);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
@@ -662,7 +718,7 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 
 }
 
-WorldScene.prototype._calculateInput = function() {
+WorldScene.prototype._calculateDirection = function() {
     var fCenterOfViewportX = GameService.defaults.screenWidth / 2; 
     var fCenterOfViewportY = GameService.defaults.screenHeight / 2; 
 
@@ -681,20 +737,57 @@ WorldScene.prototype._calculateInput = function() {
     else 
         fMouseDir = 90 * ( fDistanceX / n ) + 270; 
 
-    if( fMouseDir > 337.499 || fMouseDir < 22.5 ) { return DirectionEnum.NorthEast; } 
-    if( fMouseDir > 22.499 && fMouseDir < 67.5 ) { return DirectionEnum.East; } 
-    if( fMouseDir > 67.499 && fMouseDir < 112.5 ) { return DirectionEnum.SouthEast; } 
-    if( fMouseDir > 112.499 && fMouseDir < 157.5 ) { return DirectionEnum.South; } 
-    if( fMouseDir > 157.499 && fMouseDir < 202.5 ) { return DirectionEnum.SouthWest; } 
-    if( fMouseDir > 202.499 && fMouseDir < 247.5 ) { return DirectionEnum.West; } 
-    if( fMouseDir > 247.499 && fMouseDir < 292.5 ) { return DirectionEnum.NorthWest; } 
-    if( fMouseDir > 292.499 && fMouseDir < 337.5 ) { return DirectionEnum.North; } 
+    var direction;
+
+    //225  270  315
+    //    - - -
+    //180 - X - 0
+    //    - - -
+    //135  90   45
+
+    if( fMouseDir > 315 - 22.5 && fMouseDir < 315 + 22.5  ) { direction = DirectionEnum.NorthEast; } 
+    if( fMouseDir > 360 - 22.5 || fMouseDir < 22.5 ) { direction = DirectionEnum.East; } 
+    if( fMouseDir > 45 - 22.25 && fMouseDir < 45 + 22.5 ) { direction = DirectionEnum.SouthEast; } 
+    if( fMouseDir > 90 - 22.5 && fMouseDir < 90 + 22.5 ) { direction = DirectionEnum.South; } 
+    if( fMouseDir > 135 - 22.5 && fMouseDir < 135 + 22.5 ) { direction = DirectionEnum.SouthWest; } 
+    if( fMouseDir > 180 - 22.5 && fMouseDir < 180 + 22.5 ) { direction = DirectionEnum.West; } 
+    if( fMouseDir > 225 - 22.5 && fMouseDir < 225 + 22.5 ) { direction = DirectionEnum.NorthWest; } 
+    if( fMouseDir > 270 - 22.5 && fMouseDir < 270 + 22.5 ) { direction = DirectionEnum.North; } 
+
+    return direction;
 }
 
 WorldScene.prototype.checkInputs = function() {
 	if(this._readyForInput === true) {
 		if(InputService.leftMouseButtonDown === true) {
-			console.log(this._calculateInput());
+			var direction = this._calculateDirection();
+
+			switch(direction) {
+				case DirectionEnum.North:
+					this._moveNorth();
+					break;
+				case DirectionEnum.NorthEast:
+					this._moveNorthEast();
+					break;
+				case DirectionEnum.East:
+					this._moveEast();
+					break;
+				case DirectionEnum.SouthEast:
+					this._moveSouthEast();
+					break;
+				case DirectionEnum.South:
+					this._moveSouth();
+					break;
+				case DirectionEnum.SouthWest:
+					this._moveSouthWest();
+					break;
+				case DirectionEnum.West:
+					this._moveWest();
+					break;
+				case DirectionEnum.NorthWest:
+					this._moveNorthWest();
+					break;										
+			}
 		}
 	}
 }
@@ -882,13 +975,13 @@ WorldScene.prototype._handleNewSprites = function() {
 }
 
 WorldScene.prototype._handleSpriteVisibility = function(sprite) {
-	if(sprite.x + this._cameraDeltaX > GameService.defaults.screenWidth + 100) {
+	if(sprite.x - this._cameraDeltaX > GameService.defaults.screenWidth + (defaults.cellWidth * 3)) {
 		sprite.visible = false;
-	} else if(sprite.x + sprite.width - this._cameraDeltaX < -100) {
+	} else if(sprite.x + sprite.width - this._cameraDeltaX < (defaults.cellWidth * -3)) {
 		sprite.visible = false;
-	} else if(sprite.y + sprite.height - this._cameraDeltaY < -100) {
+	} else if(sprite.y + sprite.height - this._cameraDeltaY < (defaults.cellheight * -3)) {
 		sprite.visible = false;
-	} else if(sprite.y + this._cameraDeltaY > GameService.defaults.screenHeight + 100) {
+	} else if(sprite.y - this._cameraDeltaY > GameService.defaults.screenHeight + (defaults.cellheight * 5)) {
 		sprite.visible = false;
 	} else {
 		sprite.visible = true;
@@ -1028,6 +1121,9 @@ function InputService() {
 	window.addEventListener('mousedown', this._mouseDown.bind(this), true)
 	window.addEventListener('mouseup', this._mouseUp.bind(this), true)
 	window.addEventListener('mousemove', this._mouseMove.bind(this), true)
+	document.addEventListener('contextmenu', function(e) {
+    	e.preventDefault();
+	}, false);
 }
 
 util.inherits(InputService, EventEmitter);
@@ -1051,7 +1147,7 @@ InputService.prototype._keyDown = function(e) {
 
 InputService.prototype._mouseDown = function(e) {
 	switch(e.button) {
-		case 1:
+		case 0:
 			this.leftMouseButtonDown = true;
 			this.emit('mousedown left', e.keyCode);
 			break;							
@@ -1064,7 +1160,7 @@ InputService.prototype._mouseDown = function(e) {
 
 InputService.prototype._mouseUp = function(e) {
 	switch(e.button) {
-		case 1:
+		case 0:
 			this.leftMouseButtonDown = false;
 			this.emit('mouseup left', e.keyCode);
 			break;							
@@ -1076,8 +1172,11 @@ InputService.prototype._mouseUp = function(e) {
 }
 
 InputService.prototype._mouseMove = function(e) {
-	this.mouseX = e.offsetX;
-	this.mouseY = e.offsetY;
+	var x = e.offsetX === undefined ? e.layerX : e.offsetX;
+	var y = e.offsetY === undefined ? e.layerY : e.offsetY;
+
+	this.mouseX = x;
+	this.mouseY = y;
 }
 
 module.exports = new InputService();

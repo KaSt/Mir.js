@@ -11,6 +11,9 @@ function InputService() {
 	window.addEventListener('mousedown', this._mouseDown.bind(this), true)
 	window.addEventListener('mouseup', this._mouseUp.bind(this), true)
 	window.addEventListener('mousemove', this._mouseMove.bind(this), true)
+	document.addEventListener('contextmenu', function(e) {
+    	e.preventDefault();
+	}, false);
 }
 
 util.inherits(InputService, EventEmitter);
@@ -34,7 +37,7 @@ InputService.prototype._keyDown = function(e) {
 
 InputService.prototype._mouseDown = function(e) {
 	switch(e.button) {
-		case 1:
+		case 0:
 			this.leftMouseButtonDown = true;
 			this.emit('mousedown left', e.keyCode);
 			break;							
@@ -47,7 +50,7 @@ InputService.prototype._mouseDown = function(e) {
 
 InputService.prototype._mouseUp = function(e) {
 	switch(e.button) {
-		case 1:
+		case 0:
 			this.leftMouseButtonDown = false;
 			this.emit('mouseup left', e.keyCode);
 			break;							
@@ -59,8 +62,11 @@ InputService.prototype._mouseUp = function(e) {
 }
 
 InputService.prototype._mouseMove = function(e) {
-	this.mouseX = e.offsetX;
-	this.mouseY = e.offsetY;
+	var x = e.offsetX === undefined ? e.layerX : e.offsetX;
+	var y = e.offsetY === undefined ? e.layerY : e.offsetY;
+
+	this.mouseX = x;
+	this.mouseY = y;
 }
 
 module.exports = new InputService();
