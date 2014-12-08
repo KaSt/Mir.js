@@ -78,9 +78,8 @@ WorldScene.prototype._enableInput = function() {
 WorldScene.prototype._moveLeft = function() {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
-		this._mainPlayer.setDirection(6);
 		
-		this._mainPlayer.walk(function cameraMove(value) {
+		this._mainPlayer.walk(6, function cameraMove(value) {
 			this._updateCameraOffset(-value, 0);
 		}.bind(this), function done() {
 			this._updateCamera(-1, 0);
@@ -93,9 +92,8 @@ WorldScene.prototype._moveLeft = function() {
 WorldScene.prototype._moveRight = function() {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
-		this._mainPlayer.setDirection(2);
 		
-		this._mainPlayer.walk(function cameraMove(value) {
+		this._mainPlayer.walk(2, function cameraMove(value) {
 			this._updateCameraOffset(value, 0);
 		}.bind(this), function done() {
 			this._updateCamera(1, 0);
@@ -108,9 +106,8 @@ WorldScene.prototype._moveRight = function() {
 WorldScene.prototype._moveUp = function() {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
-		this._mainPlayer.setDirection(0);
 		
-		this._mainPlayer.walk(function cameraMove(value) {
+		this._mainPlayer.walk(0, function cameraMove(value) {
 			this._updateCameraOffset(0, -value);
 		}.bind(this), function done() {
 			this._updateCamera(0, -1);
@@ -123,15 +120,14 @@ WorldScene.prototype._moveUp = function() {
 WorldScene.prototype._moveDown = function() {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
-		this._mainPlayer.setDirection(4);
 		
-		this._mainPlayer.walk(function cameraMove(value) {
+		this._mainPlayer.walk(4, function cameraMove(value) {
 			this._updateCameraOffset(0, value);
 		}.bind(this), function done() {
 			this._updateCamera(0, 1);
-		}.bind(this)), function inputReady() {
+		}.bind(this), function inputReady() {
 			this._readyForInput = true;
-		}.bind(this);
+		}.bind(this));
 	}
 }
 
@@ -165,15 +161,10 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 	this._cameraDeltaY = this._cameraDeltaY + moveY;
 
 
-	this._mainPlayer.humanSprite.sprites.x = this._mainPlayer.humanSprite.sprites.x - moveX;
-	this._mainPlayer.humanSprite.sprites.y = this._mainPlayer.humanSprite.sprites.y - moveY;
-
 	this._updateBounds();
 	this._handleOldSprites();
 	this._handleNewSprites();
 
-	console.log(this._mainPlayer.humanSprite.sprites.y);
-	
 }
 
 WorldScene.prototype.updateAnimations = function() {
@@ -345,7 +336,7 @@ WorldScene.prototype._handleNewSprites = function() {
 
 			//handle main player
 			if(this._mainPlayer.x === x && this._mainPlayer.y === y && this._mainPlayer.humanSprite.loaded === false) {
-				this._mainPlayer.humanSprite.loaded === true;
+				this._mainPlayer.humanSprite.loaded = true;
 				this._mainPlayer.humanSprite.init();
 				this._mainPlayer.humanSprite.sprites.x = drawX;
 				this._mainPlayer.humanSprite.sprites.y = drawY;

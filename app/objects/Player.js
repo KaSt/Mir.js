@@ -1,5 +1,6 @@
 var HumanSprite = require('../sprites/HumanSprite.js');
 var HumanActionEnum = require('../enums/HumanActionEnum.js');
+var AnimationControl = require('../animations/AnimationControl.js');
 
 function Player( data ) {
 	this.name = data.name || null;
@@ -21,7 +22,6 @@ Player.prototype.initHumanSprite = function(scene) {
 	this.humanSprite = new HumanSprite(scene, {
 		z: this.y,
 		direction: this.direction,
-		action: HumanActionEnum.Standing,
 		look: 0
 	});
 }
@@ -36,32 +36,20 @@ Player.prototype.update = function() {
 	this.humanSprite.update();
 }
 
-Player.prototype.setDirection = function(direction) {
-	this.direction = direction;
-	this.humanSprite.setDirection(direction);	
-}
-
-Player.prototype.walk = function(cameraMoveCallback, doneCallback, inputReadyCallback) {
-	this.humanSprite.queueAnimation(HumanActionEnum.Walking);
-
-	var animationFrameEvent = function(animationFrame) {
-		cameraMoveCallback(1/5);
-	}
-
-	var inputReadyEvent = function(animationFrame) {
-		inputReadyCallback();
-	}	
-
-	var animationDoneEvent = function() {
-		this.humanSprite.removeListener('animationFrame', animationFrameEvent);
-		this.humanSprite.removeListener('animationDone', animationDoneEvent);
-		this.humanSprite.removeListener('inputReady', inputReadyEvent);
-		doneCallback();
-	}.bind(this);
-
-	this.humanSprite.on('animationFrame', animationFrameEvent);
-	this.humanSprite.on('animationDone', animationDoneEvent);
-	this.humanSprite.on('inputReady', inputReadyEvent);
+Player.prototype.walk = function(direction, cameraMoveCallback, doneCallback, inputReadyCallback) {
+	this.humanSprite.queueAnimation(new AnimationControl(
+		HumanActionEnum.Walking,
+		direction,
+		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
+			cameraMoveCallback(1/4);
+			if(_animationCameraFrame === 2) {
+				inputReadyCallback();
+			}
+		}.bind(this, cameraMoveCallback, inputReadyCallback),
+		function(doneCallback) {
+			doneCallback();
+		}.bind(this, doneCallback)
+	));
 }
 
 module.exports = Player
