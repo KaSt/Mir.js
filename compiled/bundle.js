@@ -54,7 +54,7 @@ Renderer.prototype._render = function() {
 		}
 
 		if(scene !== null && scene.isLoadingMap() === false) {
-			scene.updateAnimations().
+			scene.updateAnimations();
 			this._renderer.render(scene.getStage());
 		};
 
@@ -409,6 +409,7 @@ Player.prototype.initHumanSprite = function(scene) {
 	this.humanSprite = new HumanSprite(scene, {
 		z: this.y,
 		direction: this.direction,
+		action: HumanActionEnum.Standing,
 		look: 0
 	});
 }
@@ -426,6 +427,29 @@ Player.prototype.update = function() {
 Player.prototype.setDirection = function(direction) {
 	this.direction = direction;
 	this.humanSprite.setDirection(direction);	
+}
+
+Player.prototype.walk = function(cameraMoveCallback, doneCallback, inputReadyCallback) {
+	this.humanSprite.queueAnimation(HumanActionEnum.Walking);
+
+	var animationFrameEvent = function(animationFrame) {
+		cameraMoveCallback(1/5);
+	}
+
+	var inputReadyEvent = function(animationFrame) {
+		inputReadyCallback();
+	}	
+
+	var animationDoneEvent = function() {
+		this.humanSprite.removeListener('animationFrame', animationFrameEvent);
+		this.humanSprite.removeListener('animationDone', animationDoneEvent);
+		this.humanSprite.removeListener('inputReady', inputReadyEvent);
+		doneCallback();
+	}.bind(this);
+
+	this.humanSprite.on('animationFrame', animationFrameEvent);
+	this.humanSprite.on('animationDone', animationDoneEvent);
+	this.humanSprite.on('inputReady', inputReadyEvent);
 }
 
 module.exports = Player
@@ -518,52 +542,107 @@ WorldScene.prototype._enableInput = function() {
 
 
 WorldScene.prototype._moveLeft = function() {
-	this._mainPlayer.setDirection(6);
-	this._updateCamera(-1, 0);
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		this._mainPlayer.setDirection(6);
+		
+		this._mainPlayer.walk(function cameraMove(value) {
+			this._updateCameraOffset(-value, 0);
+		}.bind(this), function done() {
+			this._updateCamera(-1, 0);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
 }
 
 WorldScene.prototype._moveRight = function() {
-	this._mainPlayer.setDirection(2);
-	this._updateCamera(1, 0);
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		this._mainPlayer.setDirection(2);
+		
+		this._mainPlayer.walk(function cameraMove(value) {
+			this._updateCameraOffset(value, 0);
+		}.bind(this), function done() {
+			this._updateCamera(1, 0);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
 }
 
 WorldScene.prototype._moveUp = function() {
-	this._mainPlayer.setDirection(0);
-	this._updateCamera(0, -1);
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		this._mainPlayer.setDirection(0);
+		
+		this._mainPlayer.walk(function cameraMove(value) {
+			this._updateCameraOffset(0, -value);
+		}.bind(this), function done() {
+			this._updateCamera(0, -1);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
 }
 
 WorldScene.prototype._moveDown = function() {
-	this._mainPlayer.setDirection(4);
-	this._updateCamera(0, 1);
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		this._mainPlayer.setDirection(4);
+		
+		this._mainPlayer.walk(function cameraMove(value) {
+			this._updateCameraOffset(0, value);
+		}.bind(this), function done() {
+			this._updateCamera(0, 1);
+		}.bind(this)), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this);
+	}
+}
+
+WorldScene.prototype._updateCameraOffset = function(diffX, diffY) {
+	var defaults = GameService.defaults;
+
+	var moveX = parseInt(defaults.cellWidth * diffX);
+	var moveY = parseInt(defaults.cellHeight * diffY);
+
+	this._tileLayer.x = this._tileLayer.x - moveX;
+	this._tileLayer.y = this._tileLayer.y - moveY;
+	this._smTileLayer.x = this._smTileLayer.x - moveX;
+	this._smTileLayer.y = this._smTileLayer.y - moveY;
+	this._objTileLayer.x = this._objTileLayer.x - moveX;
+	this._objTileLayer.y = this._objTileLayer.y - moveY;
+
+	this._mainPlayer.humanSprite.sprites.x = this._mainPlayer.humanSprite.sprites.x + moveX;
+	this._mainPlayer.humanSprite.sprites.y = this._mainPlayer.humanSprite.sprites.y + moveY;
 }
 
 WorldScene.prototype._updateCamera = function(diffX, diffY) {
 	var defaults = GameService.defaults;
 
-	if(this._readyForInput === true) {
+	var moveX = parseInt(defaults.cellWidth * diffX);
+	var moveY = parseInt(defaults.cellHeight * diffY);
 
-		this._readyForInput = false;
-		//move this out eventually
-		this._mainPlayer.setLocation(this._mainPlayer.x + diffX, this._mainPlayer.y + diffY);
+	//move this out eventually
+	this._mainPlayer.setLocation(this._mainPlayer.x + diffX, this._mainPlayer.y + diffY);
 
-		this._cameraDeltaX = this._cameraDeltaX + (defaults.cellWidth * diffX);
-		this._cameraDeltaY = this._cameraDeltaY + (defaults.cellHeight * diffY);
-		
-		this._tileLayer.x = this._tileLayer.x + (defaults.cellWidth * -diffX);
-		this._tileLayer.y = this._tileLayer.y + (defaults.cellHeight * -diffY);
-		this._smTileLayer.x = this._smTileLayer.x + (defaults.cellWidth * -diffX);
-		this._smTileLayer.y = this._smTileLayer.y + (defaults.cellHeight * -diffY);
-		this._objTileLayer.x = this._objTileLayer.x + (defaults.cellWidth * -diffX);
-		this._objTileLayer.y = this._objTileLayer.y + (defaults.cellHeight * -diffY);
+	this._cameraDeltaX = this._cameraDeltaX + moveX;
+	this._cameraDeltaY = this._cameraDeltaY + moveY;
 
-		this._updateBounds();
-		this._handleOldSprites();
-		this._handleNewSprites();
-		this._readyForInput = true;
-	}
+
+	this._mainPlayer.humanSprite.sprites.x = this._mainPlayer.humanSprite.sprites.x - moveX;
+	this._mainPlayer.humanSprite.sprites.y = this._mainPlayer.humanSprite.sprites.y - moveY;
+
+	this._updateBounds();
+	this._handleOldSprites();
+	this._handleNewSprites();
+
+	console.log(this._mainPlayer.humanSprite.sprites.y);
+	
 }
 
-WorldScene.prototype.updateAnimation = function() {
+WorldScene.prototype.updateAnimations = function() {
 	//update main player
 	this._mainPlayer.update();
 }
@@ -746,13 +825,13 @@ WorldScene.prototype._handleNewSprites = function() {
 }
 
 WorldScene.prototype._handleSpriteVisibility = function(sprite) {
-	if(sprite.x + this._cameraDeltaX > GameService.screenWidth) {
+	if(sprite.x + this._cameraDeltaX > GameService.screenWidth + 100) {
 		sprite.visible = false;
-	} else if(sprite.x + sprite.width - this._cameraDeltaX < 0) {
+	} else if(sprite.x + sprite.width - this._cameraDeltaX < -100) {
 		sprite.visible = false;
-	} else if(sprite.y + sprite.height - this._cameraDeltaY < 0) {
+	} else if(sprite.y + sprite.height - this._cameraDeltaY < -100) {
 		sprite.visible = false;
-	} else if(sprite.y + this._cameraDeltaY > GameService.screenHeight) {
+	} else if(sprite.y + this._cameraDeltaY > GameService.screenHeight + 100) {
 		sprite.visible = false;
 	} else {
 		sprite.visible = true;
@@ -1033,9 +1112,12 @@ var ResourceService = {
 
 module.exports = ResourceService;
 },{}],13:[function(require,module,exports){
+var EventEmitter = require('events').EventEmitter;
+var util = require('util');
 var PIXI = require('pixi.js');
 var LoaderService = require('../services/LoaderService.js');
 var ResourceService = require('../services/ResourceService.js');
+var HumanActionEnum = require('../enums/HumanActionEnum.js');
 
 var addPathNamePadding = function(n, width, z) {
   z = z || '0';
@@ -1044,15 +1126,20 @@ var addPathNamePadding = function(n, width, z) {
 }
 
 function HumanSprite( scene, data ) {
+	EventEmitter.call(this);
 	this.hasLight = data.hasLight !== null ? data.hasLight : null;
 	this._direction = data.direction !== null ? data.direction : null;
-	this.action = data.action || null;
+	this._action = data.action !== null ? data.action : null;
 	this._z = data.z !== null ? data.z : null;
 	this.look = data.look !== null ? data.look : null;
 
+	this._animationKeyFrame = 0;
 	this._animationFrame = 0;
+	this._lastAnimationTime = 0;
 
 	this.sprites = new PIXI.DisplayObjectContainer();
+
+	this._actionQueue = [];
 
 	this._scene = scene;
 	this._bodySprite = null;
@@ -1061,6 +1148,8 @@ function HumanSprite( scene, data ) {
 	this._hairSprite = null;	
 	this.loaded = false;
 }
+
+util.inherits(HumanSprite, EventEmitter);
 
 HumanSprite.prototype.init = function() {
 	//add the sprites to our container
@@ -1078,42 +1167,114 @@ HumanSprite.prototype.setZ = function(z) {
 
 HumanSprite.prototype.setDirection = function(direction) {
 	this._direction = direction;
-	this._updateBodyTexture();
 }
 
 HumanSprite.prototype.update = function() {
-	this._animationFrame++
-
-	if(this._animationFrame === 4) {
-		this._animationFrame = 0;
+	if(this._bodySprite === null) {
+		return false;
 	}
 
+	switch(this._action) {
+		case HumanActionEnum.Standing:
+			this._handleStandingAnimation();
+			break;
+		case HumanActionEnum.Walking:
+			this._handleWalkingAnimation();
+			break;
+	}
+
+
 	this._updateBodyTexture();
+}
+
+HumanSprite.prototype._nextAnimation = function() {
+	//if nothing left, we set back to normal
+	if(this._actionQueue.length === 0) {
+		this._action = HumanActionEnum.Standing;
+	} else {
+		this._action = this._actionQueue[0];
+		this._actionQueue.shift();
+		this._updateTick();
+	}
+	this._animationFrame = 0;
+}
+
+HumanSprite.prototype.queueAnimation = function(action) {
+	this._actionQueue.push(action);
+}
+
+HumanSprite.prototype._handleStandingAnimation = function() {
+	if(this._tickElapsed(200)) {	
+		this._animationKeyFrame = 0;
+
+		if(this._animationFrame === 3) {
+			this._nextAnimation();
+		} else {
+			this._animationFrame++
+			this._updateTick();
+		}	
+	}	
+}
+
+HumanSprite.prototype._handleWalkingAnimation = function() {
+	this._animationKeyFrame = 64;
+
+	if(this._animationFrame === 5) {
+		if(this._tickElapsed(250)) {
+			this.emit('animationDone');
+			//check queue for more animations
+			this._nextAnimation();
+		}
+	} else {
+		if(this._tickElapsed(100)) {
+			if(this._animationFrame === 3) {
+				this.emit('inputReady');
+			} else {
+				this.emit('animationFrame', this._animationFrame);
+				this._animationFrame++
+				this._updateTick();
+			}	
+		}			
+	}
+
+}
+
+HumanSprite.prototype._updateTick = function() {
+	this._lastAnimationTime = Date.now();
+}
+
+HumanSprite.prototype._tickElapsed = function(value) {
+	return Date.now() - this._lastAnimationTime > value;
+}
+
+HumanSprite.prototype.setAction = function(action) {
+	this._action = action;
 }
 
 HumanSprite.prototype._updateBodyTexture = function() {
 	//fow now we simply set it to 9
-	var index = (this.look * 600) + (8 * this._direction) + this._animationFrame; // 0 in this case
+	var index = (this.look * 600) + (8 * this._direction) + this._animationFrame + this._animationKeyFrame; // 0 in this case
 	var humLib = ResourceService.graphics.humLib(this.look);
 
 	var placementX = this._scene._graphicsPlacements[humLib.path][index][0];
 	var placementY = this._scene._graphicsPlacements[humLib.path][index][1];	
 
+
 	LoaderService.loadTexture(humLib.path + '/' + addPathNamePadding(index, 6) + '.' + humLib.type).then(function(texture) {
 		if(this._bodySprite === null) {
 			this._bodySprite = new PIXI.Sprite(texture);
 			this.sprites.addChild(this._bodySprite);
-			
-			this._bodySprite.x = placementX;
-			this._bodySprite.y = -this._bodySprite.height + placementY;
 		} else {
 			this._bodySprite.setTexture(texture);
 		}
+
+		this._bodySprite.x = + placementX;
+		this._bodySprite.y = -this._bodySprite.height + placementY;
 	}.bind(this));
 }
 
 module.exports = HumanSprite;
-},{"../services/LoaderService.js":11,"../services/ResourceService.js":12,"pixi.js":16}],14:[function(require,module,exports){
+},{"../enums/HumanActionEnum.js":3,"../services/LoaderService.js":11,"../services/ResourceService.js":12,"events":17,"pixi.js":16,"util":21}],14:[function(require,module,exports){
 /*
 
 	Mir.js

@@ -76,52 +76,107 @@ WorldScene.prototype._enableInput = function() {
 
 
 WorldScene.prototype._moveLeft = function() {
-	this._mainPlayer.setDirection(6);
-	this._updateCamera(-1, 0);
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		this._mainPlayer.setDirection(6);
+		
+		this._mainPlayer.walk(function cameraMove(value) {
+			this._updateCameraOffset(-value, 0);
+		}.bind(this), function done() {
+			this._updateCamera(-1, 0);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
 }
 
 WorldScene.prototype._moveRight = function() {
-	this._mainPlayer.setDirection(2);
-	this._updateCamera(1, 0);
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		this._mainPlayer.setDirection(2);
+		
+		this._mainPlayer.walk(function cameraMove(value) {
+			this._updateCameraOffset(value, 0);
+		}.bind(this), function done() {
+			this._updateCamera(1, 0);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
 }
 
 WorldScene.prototype._moveUp = function() {
-	this._mainPlayer.setDirection(0);
-	this._updateCamera(0, -1);
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		this._mainPlayer.setDirection(0);
+		
+		this._mainPlayer.walk(function cameraMove(value) {
+			this._updateCameraOffset(0, -value);
+		}.bind(this), function done() {
+			this._updateCamera(0, -1);
+		}.bind(this), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this));
+	}
 }
 
 WorldScene.prototype._moveDown = function() {
-	this._mainPlayer.setDirection(4);
-	this._updateCamera(0, 1);
+	if(this._readyForInput === true) {
+		this._readyForInput = false;
+		this._mainPlayer.setDirection(4);
+		
+		this._mainPlayer.walk(function cameraMove(value) {
+			this._updateCameraOffset(0, value);
+		}.bind(this), function done() {
+			this._updateCamera(0, 1);
+		}.bind(this)), function inputReady() {
+			this._readyForInput = true;
+		}.bind(this);
+	}
+}
+
+WorldScene.prototype._updateCameraOffset = function(diffX, diffY) {
+	var defaults = GameService.defaults;
+
+	var moveX = parseInt(defaults.cellWidth * diffX);
+	var moveY = parseInt(defaults.cellHeight * diffY);
+
+	this._tileLayer.x = this._tileLayer.x - moveX;
+	this._tileLayer.y = this._tileLayer.y - moveY;
+	this._smTileLayer.x = this._smTileLayer.x - moveX;
+	this._smTileLayer.y = this._smTileLayer.y - moveY;
+	this._objTileLayer.x = this._objTileLayer.x - moveX;
+	this._objTileLayer.y = this._objTileLayer.y - moveY;
+
+	this._mainPlayer.humanSprite.sprites.x = this._mainPlayer.humanSprite.sprites.x + moveX;
+	this._mainPlayer.humanSprite.sprites.y = this._mainPlayer.humanSprite.sprites.y + moveY;
 }
 
 WorldScene.prototype._updateCamera = function(diffX, diffY) {
 	var defaults = GameService.defaults;
 
-	if(this._readyForInput === true) {
+	var moveX = parseInt(defaults.cellWidth * diffX);
+	var moveY = parseInt(defaults.cellHeight * diffY);
 
-		this._readyForInput = false;
-		//move this out eventually
-		this._mainPlayer.setLocation(this._mainPlayer.x + diffX, this._mainPlayer.y + diffY);
+	//move this out eventually
+	this._mainPlayer.setLocation(this._mainPlayer.x + diffX, this._mainPlayer.y + diffY);
 
-		this._cameraDeltaX = this._cameraDeltaX + (defaults.cellWidth * diffX);
-		this._cameraDeltaY = this._cameraDeltaY + (defaults.cellHeight * diffY);
-		
-		this._tileLayer.x = this._tileLayer.x + (defaults.cellWidth * -diffX);
-		this._tileLayer.y = this._tileLayer.y + (defaults.cellHeight * -diffY);
-		this._smTileLayer.x = this._smTileLayer.x + (defaults.cellWidth * -diffX);
-		this._smTileLayer.y = this._smTileLayer.y + (defaults.cellHeight * -diffY);
-		this._objTileLayer.x = this._objTileLayer.x + (defaults.cellWidth * -diffX);
-		this._objTileLayer.y = this._objTileLayer.y + (defaults.cellHeight * -diffY);
+	this._cameraDeltaX = this._cameraDeltaX + moveX;
+	this._cameraDeltaY = this._cameraDeltaY + moveY;
 
-		this._updateBounds();
-		this._handleOldSprites();
-		this._handleNewSprites();
-		this._readyForInput = true;
-	}
+
+	this._mainPlayer.humanSprite.sprites.x = this._mainPlayer.humanSprite.sprites.x - moveX;
+	this._mainPlayer.humanSprite.sprites.y = this._mainPlayer.humanSprite.sprites.y - moveY;
+
+	this._updateBounds();
+	this._handleOldSprites();
+	this._handleNewSprites();
+
+	console.log(this._mainPlayer.humanSprite.sprites.y);
+	
 }
 
-WorldScene.prototype.updateAnimation = function() {
+WorldScene.prototype.updateAnimations = function() {
 	//update main player
 	this._mainPlayer.update();
 }
@@ -304,13 +359,13 @@ WorldScene.prototype._handleNewSprites = function() {
 }
 
 WorldScene.prototype._handleSpriteVisibility = function(sprite) {
-	if(sprite.x + this._cameraDeltaX > GameService.screenWidth) {
+	if(sprite.x + this._cameraDeltaX > GameService.screenWidth + 100) {
 		sprite.visible = false;
-	} else if(sprite.x + sprite.width - this._cameraDeltaX < 0) {
+	} else if(sprite.x + sprite.width - this._cameraDeltaX < -100) {
 		sprite.visible = false;
-	} else if(sprite.y + sprite.height - this._cameraDeltaY < 0) {
+	} else if(sprite.y + sprite.height - this._cameraDeltaY < -100) {
 		sprite.visible = false;
-	} else if(sprite.y + this._cameraDeltaY > GameService.screenHeight) {
+	} else if(sprite.y + this._cameraDeltaY > GameService.screenHeight + 100) {
 		sprite.visible = false;
 	} else {
 		sprite.visible = true;

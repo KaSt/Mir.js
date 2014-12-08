@@ -21,6 +21,7 @@ Player.prototype.initHumanSprite = function(scene) {
 	this.humanSprite = new HumanSprite(scene, {
 		z: this.y,
 		direction: this.direction,
+		action: HumanActionEnum.Standing,
 		look: 0
 	});
 }
@@ -38,6 +39,29 @@ Player.prototype.update = function() {
 Player.prototype.setDirection = function(direction) {
 	this.direction = direction;
 	this.humanSprite.setDirection(direction);	
+}
+
+Player.prototype.walk = function(cameraMoveCallback, doneCallback, inputReadyCallback) {
+	this.humanSprite.queueAnimation(HumanActionEnum.Walking);
+
+	var animationFrameEvent = function(animationFrame) {
+		cameraMoveCallback(1/5);
+	}
+
+	var inputReadyEvent = function(animationFrame) {
+		inputReadyCallback();
+	}	
+
+	var animationDoneEvent = function() {
+		this.humanSprite.removeListener('animationFrame', animationFrameEvent);
+		this.humanSprite.removeListener('animationDone', animationDoneEvent);
+		this.humanSprite.removeListener('inputReady', inputReadyEvent);
+		doneCallback();
+	}.bind(this);
+
+	this.humanSprite.on('animationFrame', animationFrameEvent);
+	this.humanSprite.on('animationDone', animationDoneEvent);
+	this.humanSprite.on('inputReady', inputReadyEvent);
 }
 
 module.exports = Player
