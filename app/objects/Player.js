@@ -41,7 +41,7 @@ Player.prototype.walk = function(direction, cameraMoveCallback, doneCallback, in
 		HumanActionEnum.Walking,
 		direction,
 		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
-			cameraMoveCallback(1/4);
+			cameraMoveCallback(1/8);
 			if(_animationCameraFrame === 2) {
 				inputReadyCallback();
 			}

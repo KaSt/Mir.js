@@ -113,15 +113,15 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 }
 
 HumanSprite.prototype._handleWalkingAnimation = function() {
-	var tickTime = 100;
+	var tickTime = 50;
 
 	this._animationKeyFrame = 64;
 
-	if(this._actionQueue.length === 0 && this._animationCameraFrame === 4) {
-		tickTime = 500;
+	if(this._actionQueue.length === 0 && this._animationCameraFrame === 8) {
+		tickTime = 300;
 	}
 	if(this._tickElapsed(tickTime)) {
-		if(this._animationCameraFrame === 4) { 
+		if(this._animationCameraFrame === 8) { 
 			this._animationControl.getAnimationCompleteEvent().call();
 			//check queue for more animations
 			this._nextAnimation();
@@ -129,13 +129,12 @@ HumanSprite.prototype._handleWalkingAnimation = function() {
 			this._animationControl.getNewFrameEvent().call(this, this._animationCameraFrame);
 			this._animationCameraFrame++
 
-			if(this._animationCameraFrame % 2 === 0) {
+			if(this._animationCameraFrame % 4 === 0) {
 				this._animationFrame++;
 			}
 			this._updateTick();
 		}
-		
-	}			
+	}		
 }
 
 HumanSprite.prototype._updateTick = function() {
@@ -147,13 +146,11 @@ HumanSprite.prototype._tickElapsed = function(value) {
 }
 
 HumanSprite.prototype._updateBodyTexture = function() {
-	//fow now we simply set it to 9
 	var index = (this.look * 600) + (8 * this._direction) + (this._animationAlt === true ? this._animationFrame + 3 : this._animationFrame) + this._animationKeyFrame; // 0 in this case
 	var humLib = ResourceService.graphics.humLib(this.look);
 
 	var placementX = this._scene._graphicsPlacements[humLib.path][index][0];
 	var placementY = this._scene._graphicsPlacements[humLib.path][index][1];	
-
 
 	LoaderService.loadTexture(humLib.path + '/' + addPathNamePadding(index, 6) + '.' + humLib.type).then(function(texture) {
 		if(this._bodySprite === null) {
