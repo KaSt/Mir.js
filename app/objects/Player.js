@@ -36,12 +36,12 @@ Player.prototype.update = function() {
 	this.humanSprite.update();
 }
 
-Player.prototype.walk = function(direction, cameraMoveCallback, doneCallback, inputReadyCallback) {
+Player.prototype.move = function(distance, direction, cameraMoveCallback, doneCallback, inputReadyCallback) {
 	this.humanSprite.queueAnimation(new AnimationControl(
-		HumanActionEnum.Walking,
+		distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
 		direction,
 		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
-			cameraMoveCallback(1/8);
+			cameraMoveCallback(distance / 8);
 			if(_animationCameraFrame === 2) {
 				inputReadyCallback();
 			}

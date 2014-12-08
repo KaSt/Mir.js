@@ -466,12 +466,12 @@ Player.prototype.update = function() {
 	this.humanSprite.update();
 }
 
-Player.prototype.walk = function(direction, cameraMoveCallback, doneCallback, inputReadyCallback) {
+Player.prototype.move = function(distance, direction, cameraMoveCallback, doneCallback, inputReadyCallback) {
 	this.humanSprite.queueAnimation(new AnimationControl(
-		HumanActionEnum.Walking,
+		distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
 		direction,
 		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
-			cameraMoveCallback(1/8);
+			cameraMoveCallback(distance / 8);
 			if(_animationCameraFrame === 2) {
 				inputReadyCallback();
 			}
@@ -570,14 +570,14 @@ WorldScene.prototype._enableInput = function() {
 	//InputService.on('pressed down', this._moveDown.bind(this), true);
 }
 
-WorldScene.prototype._moveNorthWest = function() {
+WorldScene.prototype._moveNorthWest = function(distance) {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
-		this._mainPlayer.walk(7, function cameraMove(value) {
+		this._mainPlayer.move(distance, 7, function cameraMove(value) {
 			this._updateCameraOffset(-value, -value);
 		}.bind(this), function done() {
-			this._updateCamera(-1, -1);
+			this._updateCamera(-distance, -distance);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
@@ -585,98 +585,98 @@ WorldScene.prototype._moveNorthWest = function() {
 }
 
 
-WorldScene.prototype._moveWest = function() {
+WorldScene.prototype._moveWest = function(distance) {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
-		this._mainPlayer.walk(6, function cameraMove(value) {
+		this._mainPlayer.move(distance, 6, function cameraMove(value) {
 			this._updateCameraOffset(-value, 0);
 		}.bind(this), function done() {
-			this._updateCamera(-1, 0);
+			this._updateCamera(-distance, 0);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
 	}
 }
 
-WorldScene.prototype._moveEast = function() {
+WorldScene.prototype._moveEast = function(distance) {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
-		this._mainPlayer.walk(2, function cameraMove(value) {
+		this._mainPlayer.move(distance, 2, function cameraMove(value) {
 			this._updateCameraOffset(value, 0);
 		}.bind(this), function done() {
-			this._updateCamera(1, 0);
+			this._updateCamera(distance, 0);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
 	}
 }
 
-WorldScene.prototype._moveNorth = function() {
+WorldScene.prototype._moveNorth = function(distance) {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
-		this._mainPlayer.walk(0, function cameraMove(value) {
+		this._mainPlayer.move(distance, 0, function cameraMove(value) {
 			this._updateCameraOffset(0, -value);
 		}.bind(this), function done() {
-			this._updateCamera(0, -1);
+			this._updateCamera(0, -distance);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
 	}
 }
 
-WorldScene.prototype._moveNorthEast = function() {
+WorldScene.prototype._moveNorthEast = function(distance) {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
-		this._mainPlayer.walk(1, function cameraMove(value) {
+		this._mainPlayer.move(distance, 1, function cameraMove(value) {
 			this._updateCameraOffset(value, -value);
 		}.bind(this), function done() {
-			this._updateCamera(1, -1);
+			this._updateCamera(distance, -distance);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
 	}
 }
 
-WorldScene.prototype._moveSouth = function() {
+WorldScene.prototype._moveSouth = function(distance) {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
-		this._mainPlayer.walk(4, function cameraMove(value) {
+		this._mainPlayer.move(distance, 4, function cameraMove(value) {
 			this._updateCameraOffset(0, value);
 		}.bind(this), function done() {
-			this._updateCamera(0, 1);
+			this._updateCamera(0, distance);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
 	}
 }
 
-WorldScene.prototype._moveSouthWest = function() {
+WorldScene.prototype._moveSouthWest = function(distance) {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
-		this._mainPlayer.walk(5, function cameraMove(value) {
+		this._mainPlayer.move(distance, 5, function cameraMove(value) {
 			this._updateCameraOffset(-value, value);
 		}.bind(this), function done() {
-			this._updateCamera(-1, 1);
+			this._updateCamera(-distance, distance);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
 	}
 }
 
-WorldScene.prototype._moveSouthEast = function() {
+WorldScene.prototype._moveSouthEast = function(distance) {
 	if(this._readyForInput === true) {
 		this._readyForInput = false;
 		
-		this._mainPlayer.walk(3, function cameraMove(value) {
+		this._mainPlayer.move(distance, 3, function cameraMove(value) {
 			this._updateCameraOffset(value, value);
 		}.bind(this), function done() {
-			this._updateCamera(1, 1);
+			this._updateCamera(distance, distance);
 		}.bind(this), function inputReady() {
 			this._readyForInput = true;
 		}.bind(this));
@@ -759,33 +759,34 @@ WorldScene.prototype._calculateDirection = function() {
 
 WorldScene.prototype.checkInputs = function() {
 	if(this._readyForInput === true) {
-		if(InputService.leftMouseButtonDown === true) {
-			var direction = this._calculateDirection();
+		if(InputService.leftMouseButtonDown === true || InputService.rightMouseButtonDown === true) {
+			var direction = this._calculateDirection(),
+				distance = InputService.rightMouseButtonDown === true ? 2 : 1;
 
 			switch(direction) {
 				case DirectionEnum.North:
-					this._moveNorth();
+					this._moveNorth(distance);
 					break;
 				case DirectionEnum.NorthEast:
-					this._moveNorthEast();
+					this._moveNorthEast(distance);
 					break;
 				case DirectionEnum.East:
-					this._moveEast();
+					this._moveEast(distance);
 					break;
 				case DirectionEnum.SouthEast:
-					this._moveSouthEast();
+					this._moveSouthEast(distance);
 					break;
 				case DirectionEnum.South:
-					this._moveSouth();
+					this._moveSouth(distance);
 					break;
 				case DirectionEnum.SouthWest:
-					this._moveSouthWest();
+					this._moveSouthWest(distance);
 					break;
 				case DirectionEnum.West:
-					this._moveWest();
+					this._moveWest(distance);
 					break;
 				case DirectionEnum.NorthWest:
-					this._moveNorthWest();
+					this._moveNorthWest(distance);
 					break;										
 			}
 		}
@@ -976,7 +977,7 @@ WorldScene.prototype._handleNewSprites = function() {
 
 WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 	var defaults = GameService.defaults;
-	
+
 	if(sprite.x - this._cameraDeltaX > GameService.defaults.screenWidth + (defaults.cellWidth * 3)) {
 		sprite.visible = false;
 	} else if(sprite.x + sprite.width - this._cameraDeltaX < (defaults.cellWidth * -3)) {
@@ -1380,7 +1381,8 @@ HumanSprite.prototype.update = function() {
 			this._handleStandingAnimation();
 			break;
 		case HumanActionEnum.Walking:
-			this._handleWalkingAnimation();
+		case HumanActionEnum.Running:
+			this._handleMovingAnimation();
 			break;
 	}
 
@@ -1422,10 +1424,10 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 	}	
 }
 
-HumanSprite.prototype._handleWalkingAnimation = function() {
+HumanSprite.prototype._handleMovingAnimation = function() {
 	var tickTime = 40;
 
-	this._animationKeyFrame = 64;
+	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
 
 	if(this._actionQueue.length === 0 && this._animationCameraFrame === 8) {
 		tickTime = 400;
@@ -1451,6 +1453,7 @@ HumanSprite.prototype._handleWalkingAnimation = function() {
 		}
 	}		
 }
+
 
 HumanSprite.prototype._updateTick = function() {
 	this._lastAnimationTime = Date.now();

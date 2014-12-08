@@ -70,7 +70,8 @@ HumanSprite.prototype.update = function() {
 			this._handleStandingAnimation();
 			break;
 		case HumanActionEnum.Walking:
-			this._handleWalkingAnimation();
+		case HumanActionEnum.Running:
+			this._handleMovingAnimation();
 			break;
 	}
 
@@ -112,10 +113,10 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 	}	
 }
 
-HumanSprite.prototype._handleWalkingAnimation = function() {
+HumanSprite.prototype._handleMovingAnimation = function() {
 	var tickTime = 40;
 
-	this._animationKeyFrame = 64;
+	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
 
 	if(this._actionQueue.length === 0 && this._animationCameraFrame === 8) {
 		tickTime = 400;
@@ -141,6 +142,7 @@ HumanSprite.prototype._handleWalkingAnimation = function() {
 		}
 	}		
 }
+
 
 HumanSprite.prototype._updateTick = function() {
 	this._lastAnimationTime = Date.now();
