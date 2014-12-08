@@ -339,7 +339,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._mainPlayer.humanSprite.loaded = true;
 				this._mainPlayer.humanSprite.init();
 				this._mainPlayer.humanSprite.sprites.x = drawX;
-				this._mainPlayer.humanSprite.sprites.y = drawY;
+				this._mainPlayer.humanSprite.sprites.y = drawY - defaults.cellHeight;
 				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
 			}
 	    }

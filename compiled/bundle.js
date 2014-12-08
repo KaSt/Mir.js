@@ -819,7 +819,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._mainPlayer.humanSprite.loaded = true;
 				this._mainPlayer.humanSprite.init();
 				this._mainPlayer.humanSprite.sprites.x = drawX;
-				this._mainPlayer.humanSprite.sprites.y = drawY;
+				this._mainPlayer.humanSprite.sprites.y = drawY - defaults.cellHeight;
 				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
 			}
 	    }
@@ -1210,7 +1210,6 @@ HumanSprite.prototype._nextAnimation = function() {
 		this._direction = this._animationControl.getDirection();
 		this._actionQueue.shift();
 	}
-	this._animationFrame = 0;
 	this._animationCameraFrame = 0;
 }
 
@@ -1223,6 +1222,7 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 		this._animationKeyFrame = 0;
 
 		if(this._animationFrame === 3) {
+			this._animationFrame = 0;
 			this._nextAnimation();
 		} else {
 			this._animationFrame++
@@ -1232,18 +1232,23 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 }
 
 HumanSprite.prototype._handleWalkingAnimation = function() {
-	var tickTime = 50;
+	var tickTime = 40;
 
 	this._animationKeyFrame = 64;
 
 	if(this._actionQueue.length === 0 && this._animationCameraFrame === 8) {
-		tickTime = 300;
+		tickTime = 400;
 	}
 	if(this._tickElapsed(tickTime)) {
 		if(this._animationCameraFrame === 8) { 
 			this._animationControl.getAnimationCompleteEvent().call();
 			//check queue for more animations
 			this._nextAnimation();
+			if(tickTime === 400) {
+				this._updateTick();	
+			} else {
+				this._animationFrame = 0
+			}
 		} else {
 			this._animationControl.getNewFrameEvent().call(this, this._animationCameraFrame);
 			this._animationCameraFrame++
@@ -1279,8 +1284,8 @@ HumanSprite.prototype._updateBodyTexture = function() {
 			this._bodySprite.setTexture(texture);
 		}
 
-		this._bodySprite.x = + placementX;
-		this._bodySprite.y = -this._bodySprite.height + placementY;
+		this._bodySprite.x = placementX;
+		this._bodySprite.y = placementY;
 	}.bind(this));
 }
 
