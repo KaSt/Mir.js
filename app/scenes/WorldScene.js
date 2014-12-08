@@ -2,6 +2,7 @@ var LoaderService = require('../services/LoaderService.js');
 var GameService = require('../services/GameService.js');
 var ResourceService = require('../services/ResourceService.js');
 var InputService = require('../services/InputService.js');
+var DirectionEnum = require('../enums/DirectionEnum.js');
 var PIXI = require('pixi.js');
 
 function depthCompare(a,b) {
@@ -13,7 +14,6 @@ function depthCompare(a,b) {
 	}
 	return 0;
 }
-
 
 function WorldScene(appContainer) {
 	this._appContainer = appContainer;
@@ -160,11 +160,47 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 	this._cameraDeltaX = this._cameraDeltaX + moveX;
 	this._cameraDeltaY = this._cameraDeltaY + moveY;
 
-
 	this._updateBounds();
 	this._handleOldSprites();
 	this._handleNewSprites();
 
+}
+
+WorldScene.prototype._calculateInput = function() {
+    var fCenterOfViewportX = GameService.defaults.screenWidth / 2; 
+    var fCenterOfViewportY = GameService.defaults.screenHeight / 2; 
+
+    var fDistanceX = InputService.mouseX - fCenterOfViewportX; 
+    var fDistanceY = InputService.mouseY - fCenterOfViewportY; 
+
+    var n = Math.abs(fDistanceX) + Math.abs(fDistanceY); 
+
+    var fMouseDir; 
+
+    if( ( fDistanceX >= 0 ) & ( fDistanceY >= 0 ) ) fMouseDir = 90 * ( fDistanceY / n ); 
+    else 
+    if( ( fDistanceX <= 0 ) && ( fDistanceY >= 0 ) ) fMouseDir = -90 * ( fDistanceX / n ) + 90; 
+    else 
+    if( ( fDistanceX <= 0 ) && ( ( fDistanceY ) <= 0 ) ) fMouseDir = -90 * ( fDistanceY / n ) + 180; 
+    else 
+        fMouseDir = 90 * ( fDistanceX / n ) + 270; 
+
+    if( fMouseDir > 337.499 || fMouseDir < 22.5 ) { return DirectionEnum.NorthEast; } 
+    if( fMouseDir > 22.499 && fMouseDir < 67.5 ) { return DirectionEnum.East; } 
+    if( fMouseDir > 67.499 && fMouseDir < 112.5 ) { return DirectionEnum.SouthEast; } 
+    if( fMouseDir > 112.499 && fMouseDir < 157.5 ) { return DirectionEnum.South; } 
+    if( fMouseDir > 157.499 && fMouseDir < 202.5 ) { return DirectionEnum.SouthWest; } 
+    if( fMouseDir > 202.499 && fMouseDir < 247.5 ) { return DirectionEnum.West; } 
+    if( fMouseDir > 247.499 && fMouseDir < 292.5 ) { return DirectionEnum.NorthWest; } 
+    if( fMouseDir > 292.499 && fMouseDir < 337.5 ) { return DirectionEnum.North; } 
+}
+
+WorldScene.prototype.checkInputs = function() {
+	if(this._readyForInput === true) {
+		if(InputService.leftMouseButtonDown === true) {
+			console.log(this._calculateInput());
+		}
+	}
 }
 
 WorldScene.prototype.updateAnimations = function() {
@@ -350,13 +386,13 @@ WorldScene.prototype._handleNewSprites = function() {
 }
 
 WorldScene.prototype._handleSpriteVisibility = function(sprite) {
-	if(sprite.x + this._cameraDeltaX > GameService.screenWidth + 100) {
+	if(sprite.x + this._cameraDeltaX > GameService.defaults.screenWidth + 100) {
 		sprite.visible = false;
 	} else if(sprite.x + sprite.width - this._cameraDeltaX < -100) {
 		sprite.visible = false;
 	} else if(sprite.y + sprite.height - this._cameraDeltaY < -100) {
 		sprite.visible = false;
-	} else if(sprite.y + this._cameraDeltaY > GameService.screenHeight + 100) {
+	} else if(sprite.y + this._cameraDeltaY > GameService.defaults.screenHeight + 100) {
 		sprite.visible = false;
 	} else {
 		sprite.visible = true;
