@@ -479,6 +479,8 @@ WorldScene.prototype._handleNewSprites = function() {
 }
 
 WorldScene.prototype._handleSpriteVisibility = function(sprite) {
+	var defaults = GameService.defaults;
+	
 	if(sprite.x - this._cameraDeltaX > GameService.defaults.screenWidth + (defaults.cellWidth * 3)) {
 		sprite.visible = false;
 	} else if(sprite.x + sprite.width - this._cameraDeltaX < (defaults.cellWidth * -3)) {
