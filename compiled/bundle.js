@@ -80,10 +80,11 @@ Renderer.prototype.end = function() {
 module.exports = Renderer;
 },{"../fpsmeter.min.js":19,"./services/GameService.js":12,"pixi.js":20}],3:[function(require,module,exports){
 
-function AnimationControl(action, direction, newFrameEvent, animationCompleteEvent) {
+function AnimationControl(action, direction, beginEvent, newFrameEvent, animationCompleteEvent) {
 	this._direction = direction;
 	this._action = action;
 	this._newFrameEvent = newFrameEvent;
+	this._beginEvent = beginEvent;
 	this._animationCompleteEvent = animationCompleteEvent;
 }
 
@@ -97,6 +98,10 @@ AnimationControl.prototype.getDirection = function() {
 
 AnimationControl.prototype.getNewFrameEvent = function() {
 	return this._newFrameEvent;
+}
+
+AnimationControl.prototype.getBeginEvent = function() {
+	return this._beginEvent;
 }
 
 AnimationControl.prototype.getAnimationCompleteEvent = function() {
@@ -406,7 +411,10 @@ MapReader.prototype._loadMapType2 = function(width, height) {
             mapCell.unknown;            
 
             if ((mapCell.backImage & 0x8000) !== 0) {
+                mapCell.collision = true;
                 mapCell.backImage = (mapCell.backImage & 0x7FFF) | 0x20000000;
+            } else {
+                mapCell.collision = false;
             }
 
             map.setMapCell(mapCell, x, y);
@@ -471,6 +479,9 @@ function Player( data ) {
 	this.map = data.map || null;
 	this.x = data.x !== null ? data.x : null;
 	this.y = data.y !== null ? data.y : null;
+	this.virtualX = data.x !== null ? data.x : null;
+	this.virtualY = data.y !== null ? data.y : null;
+
 	this.direction = data.direction !== null ? data.direction : null;
 	this.hp = data.hp !== null ? data.hp : null;
 	this.mp = data.mp !== null ? data.mp : null;
@@ -494,14 +505,27 @@ Player.prototype.setLocation = function(x, y) {
 	this.humanSprite.setZ(y);	
 }
 
+Player.prototype.setZ = function(z) {
+	this.humanSprite.setZ(z);	
+}
+
+Player.prototype.setVirtualLocation = function(diffX, diffY) {
+	this.virtualX = this.virtualX + diffX;
+	this.virtualY = this.virtualY + diffY;
+}
+
 Player.prototype.update = function() {
 	this.humanSprite.update();
 }
 
-Player.prototype.move = function(distance, direction, cameraMoveCallback, doneCallback, inputReadyCallback) {
+Player.prototype.move = function(distance, direction, beginMoveCallback, cameraMoveCallback, doneCallback, inputReadyCallback) {
+	//first we check we can move there
 	this.humanSprite.queueAnimation(new AnimationControl(
 		distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
 		direction,
+		function(beginMoveCallback) {
+			beginMoveCallback();
+		}.bind(this, beginMoveCallback),
 		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
 			cameraMoveCallback(distance / 8);
 			if(_animationCameraFrame === 2) {
@@ -609,10 +633,13 @@ WorldScene.prototype._enableInput = function() {
 }
 
 WorldScene.prototype._moveNorthWest = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(-distance, -distance) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 7, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(-distance, -distance);
+	
+		this._mainPlayer.move(distance, 7, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(-value, -value);
 		}.bind(this), function done() {
 			this._updateCamera(-distance, -distance);
@@ -624,10 +651,13 @@ WorldScene.prototype._moveNorthWest = function(distance) {
 
 
 WorldScene.prototype._moveWest = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(-distance, 0) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 6, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(-distance, 0);
+	
+		this._mainPlayer.move(distance, 6, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(-value, 0);
 		}.bind(this), function done() {
 			this._updateCamera(-distance, 0);
@@ -638,10 +668,13 @@ WorldScene.prototype._moveWest = function(distance) {
 }
 
 WorldScene.prototype._moveEast = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(distance, 0) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 2, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(distance, 0);
+	
+		this._mainPlayer.move(distance, 2, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(value, 0);
 		}.bind(this), function done() {
 			this._updateCamera(distance, 0);
@@ -652,10 +685,13 @@ WorldScene.prototype._moveEast = function(distance) {
 }
 
 WorldScene.prototype._moveNorth = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(0, -distance) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 0, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(0, -distance);
+	
+		this._mainPlayer.move(distance, 0, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(0, -value);
 		}.bind(this), function done() {
 			this._updateCamera(0, -distance);
@@ -666,10 +702,13 @@ WorldScene.prototype._moveNorth = function(distance) {
 }
 
 WorldScene.prototype._moveNorthEast = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(distance, -distance) === false) {
 		this._readyForInput = false;
+		this._mainPlayer.setVirtualLocation(distance, -distance);
 		
-		this._mainPlayer.move(distance, 1, function cameraMove(value) {
+		this._mainPlayer.move(distance, 1, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(value, -value);
 		}.bind(this), function done() {
 			this._updateCamera(distance, -distance);
@@ -680,10 +719,14 @@ WorldScene.prototype._moveNorthEast = function(distance) {
 }
 
 WorldScene.prototype._moveSouth = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(0, distance) === false) {
 		this._readyForInput = false;
+		this._mainPlayer.setVirtualLocation(0, distance);
 		
-		this._mainPlayer.move(distance, 4, function cameraMove(value) {
+		this._mainPlayer.move(distance, 4, function begin() {
+			this._mainPlayer.setZ(this._mainPlayer.y + distance);
+			this._objTileLayer.children.sort(depthCompare);
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(0, value);
 		}.bind(this), function done() {
 			this._updateCamera(0, distance);
@@ -694,10 +737,14 @@ WorldScene.prototype._moveSouth = function(distance) {
 }
 
 WorldScene.prototype._moveSouthWest = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(-distance, distance) === false) {
 		this._readyForInput = false;
+		this._mainPlayer.setVirtualLocation(-distance, distance);
 		
-		this._mainPlayer.move(distance, 5, function cameraMove(value) {
+		this._mainPlayer.move(distance, 5, function begin() {
+			this._mainPlayer.setZ(this._mainPlayer.y + distance);
+			this._objTileLayer.children.sort(depthCompare);
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(-value, value);
 		}.bind(this), function done() {
 			this._updateCamera(-distance, distance);
@@ -708,10 +755,14 @@ WorldScene.prototype._moveSouthWest = function(distance) {
 }
 
 WorldScene.prototype._moveSouthEast = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(distance, distance) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 3, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(distance, distance);
+
+		this._mainPlayer.move(distance, 3, function begin() {
+			this._mainPlayer.setZ(this._mainPlayer.y + distance);
+			this._objTileLayer.children.sort(depthCompare);
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(value, value);
 		}.bind(this), function done() {
 			this._updateCamera(distance, distance);
@@ -719,6 +770,12 @@ WorldScene.prototype._moveSouthEast = function(distance) {
 			this._readyForInput = true;
 		}.bind(this));
 	}
+}
+
+WorldScene.prototype.checkCollision = function(x, y) {
+	var mapCell = this._map.getMapCell(this._mainPlayer.virtualX + x, this._mainPlayer.virtualY + y);
+
+	return mapCell.collision;
 }
 
 WorldScene.prototype._updateCameraOffset = function(diffX, diffY) {
@@ -736,6 +793,7 @@ WorldScene.prototype._updateCameraOffset = function(diffX, diffY) {
 
 	this._mainPlayer.humanSprite.sprites.x = this._mainPlayer.humanSprite.sprites.x + moveX;
 	this._mainPlayer.humanSprite.sprites.y = this._mainPlayer.humanSprite.sprites.y + moveY;
+	this._mainPlayer.humanSprite.sprites.z = this._mainPlayer.humanSprite.sprites.z + 0.1; 
 }
 
 WorldScene.prototype._updateCamera = function(diffX, diffY) {
@@ -928,6 +986,10 @@ WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, to
 	}
 }
 
+WorldScene.prototype.getMap = function() {
+	return this._map;
+}
+
 WorldScene.prototype._handleNewSprites = function() {
 	var texture = null,
 		imageUrl = '',
@@ -1015,7 +1077,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._mainPlayer.humanSprite.loaded = true;
 				this._mainPlayer.humanSprite.init();
 				this._mainPlayer.humanSprite.sprites.x = drawX;
-				this._mainPlayer.humanSprite.sprites.y = drawY - defaults.cellHeight;
+				this._mainPlayer.humanSprite.sprites.y = drawY - defaults.cellHeight * 2;
 				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
 			}
 
@@ -1026,7 +1088,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					npc.npcSprite.loaded = true;
 					npc.npcSprite.init();
 					npc.npcSprite.sprites.x = drawX;
-					npc.npcSprite.sprites.y = drawY  - defaults.cellHeight;
+					npc.npcSprite.sprites.y = drawY  - defaults.cellHeight * 2;
 					this._objTileLayer.addChild(npc.npcSprite.sprites);
 				}
 			}
@@ -1040,13 +1102,13 @@ WorldScene.prototype._handleNewSprites = function() {
 WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 	var defaults = GameService.defaults;
 
-	if(sprite.x - this._cameraDeltaX > GameService.defaults.screenWidth + (defaults.cellWidth * 3)) {
+	if(sprite.x - this._cameraDeltaX > defaults.screenWidth + (defaults.cellWidth * 3)) {
 		sprite.visible = false;
 	} else if(sprite.x + sprite.width - this._cameraDeltaX < (defaults.cellWidth * -3)) {
 		sprite.visible = false;
 	} else if(sprite.y + sprite.height - this._cameraDeltaY < (defaults.cellheight * -3)) {
 		sprite.visible = false;
-	} else if(sprite.y - this._cameraDeltaY > GameService.defaults.screenHeight + (defaults.cellheight * 5)) {
+	} else if(sprite.y - this._cameraDeltaY > defaults.screenHeight + (defaults.cellheight * 5)) {
 		sprite.visible = false;
 	} else {
 		sprite.visible = true;
@@ -1056,7 +1118,7 @@ WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 WorldScene.prototype._addBackSprite = function(mapCell, drawX, drawY, texture){
 	mapCell.backSprite = new PIXI.Sprite(texture);
 	mapCell.backSprite.x = drawX + 7;
-	mapCell.backSprite.y = drawY - texture.height - 24;
+	mapCell.backSprite.y = drawY - texture.height;
 	this._tileLayer.addChild(mapCell.backSprite);	
 }
 
@@ -1409,7 +1471,7 @@ function HumanSprite( scene, data ) {
 	this.hasLight = data.hasLight !== null ? data.hasLight : null;
 	this._direction = data.direction !== null ? data.direction : null;
 	this._action = data.action !== null ? data.action : null;
-	this.z = data.z !== null ? data.z : null;
+	this.z = null;
 	this.look = data.look !== null ? data.look : null;
 
 	this._animationControl = null;
@@ -1443,7 +1505,12 @@ HumanSprite.prototype.init = function() {
 
 HumanSprite.prototype.setZ = function(z) {
 	this.z = z;
+	console.log(z);
 	this.sprites.z = this.z + 0.1;	
+}
+
+HumanSprite.prototype.getScene = function() {
+	return this._scene;	
 }
 
 HumanSprite.prototype.setDirection = function(direction) {
@@ -1479,6 +1546,9 @@ HumanSprite.prototype._nextAnimation = function() {
 			this._animationAlt = !this._animationAlt;	
 		}
 		this._animationControl = this._actionQueue[0];
+		if(this._animationControl.getBeginEvent() != null) {
+			this._animationControl.getBeginEvent().call();
+		}
 		this._direction = this._animationControl.getDirection();
 		this._actionQueue.shift();
 	}
@@ -1509,7 +1579,7 @@ HumanSprite.prototype._handleMovingAnimation = function() {
 	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
 
 	if(this._actionQueue.length === 0 && this._animationCameraFrame === 8) {
-		tickTime = 400;
+		tickTime = 100;
 	}
 	if(this._tickElapsed(tickTime)) {
 		if(this._animationCameraFrame === 8) { 

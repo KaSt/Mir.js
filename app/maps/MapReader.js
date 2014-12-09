@@ -103,7 +103,10 @@ MapReader.prototype._loadMapType2 = function(width, height) {
             mapCell.unknown;            
 
             if ((mapCell.backImage & 0x8000) !== 0) {
+                mapCell.collision = true;
                 mapCell.backImage = (mapCell.backImage & 0x7FFF) | 0x20000000;
+            } else {
+                mapCell.collision = false;
             }
 
             map.setMapCell(mapCell, x, y);

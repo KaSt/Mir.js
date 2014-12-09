@@ -9,6 +9,9 @@ function Player( data ) {
 	this.map = data.map || null;
 	this.x = data.x !== null ? data.x : null;
 	this.y = data.y !== null ? data.y : null;
+	this.virtualX = data.x !== null ? data.x : null;
+	this.virtualY = data.y !== null ? data.y : null;
+
 	this.direction = data.direction !== null ? data.direction : null;
 	this.hp = data.hp !== null ? data.hp : null;
 	this.mp = data.mp !== null ? data.mp : null;
@@ -32,14 +35,27 @@ Player.prototype.setLocation = function(x, y) {
 	this.humanSprite.setZ(y);	
 }
 
+Player.prototype.setZ = function(z) {
+	this.humanSprite.setZ(z);	
+}
+
+Player.prototype.setVirtualLocation = function(diffX, diffY) {
+	this.virtualX = this.virtualX + diffX;
+	this.virtualY = this.virtualY + diffY;
+}
+
 Player.prototype.update = function() {
 	this.humanSprite.update();
 }
 
-Player.prototype.move = function(distance, direction, cameraMoveCallback, doneCallback, inputReadyCallback) {
+Player.prototype.move = function(distance, direction, beginMoveCallback, cameraMoveCallback, doneCallback, inputReadyCallback) {
+	//first we check we can move there
 	this.humanSprite.queueAnimation(new AnimationControl(
 		distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
 		direction,
+		function(beginMoveCallback) {
+			beginMoveCallback();
+		}.bind(this, beginMoveCallback),
 		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
 			cameraMoveCallback(distance / 8);
 			if(_animationCameraFrame === 2) {

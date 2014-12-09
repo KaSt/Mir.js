@@ -81,10 +81,13 @@ WorldScene.prototype._enableInput = function() {
 }
 
 WorldScene.prototype._moveNorthWest = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(-distance, -distance) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 7, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(-distance, -distance);
+	
+		this._mainPlayer.move(distance, 7, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(-value, -value);
 		}.bind(this), function done() {
 			this._updateCamera(-distance, -distance);
@@ -96,10 +99,13 @@ WorldScene.prototype._moveNorthWest = function(distance) {
 
 
 WorldScene.prototype._moveWest = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(-distance, 0) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 6, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(-distance, 0);
+	
+		this._mainPlayer.move(distance, 6, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(-value, 0);
 		}.bind(this), function done() {
 			this._updateCamera(-distance, 0);
@@ -110,10 +116,13 @@ WorldScene.prototype._moveWest = function(distance) {
 }
 
 WorldScene.prototype._moveEast = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(distance, 0) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 2, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(distance, 0);
+	
+		this._mainPlayer.move(distance, 2, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(value, 0);
 		}.bind(this), function done() {
 			this._updateCamera(distance, 0);
@@ -124,10 +133,13 @@ WorldScene.prototype._moveEast = function(distance) {
 }
 
 WorldScene.prototype._moveNorth = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(0, -distance) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 0, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(0, -distance);
+	
+		this._mainPlayer.move(distance, 0, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(0, -value);
 		}.bind(this), function done() {
 			this._updateCamera(0, -distance);
@@ -138,10 +150,13 @@ WorldScene.prototype._moveNorth = function(distance) {
 }
 
 WorldScene.prototype._moveNorthEast = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(distance, -distance) === false) {
 		this._readyForInput = false;
+		this._mainPlayer.setVirtualLocation(distance, -distance);
 		
-		this._mainPlayer.move(distance, 1, function cameraMove(value) {
+		this._mainPlayer.move(distance, 1, function begin() {
+			//do nothing
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(value, -value);
 		}.bind(this), function done() {
 			this._updateCamera(distance, -distance);
@@ -152,10 +167,14 @@ WorldScene.prototype._moveNorthEast = function(distance) {
 }
 
 WorldScene.prototype._moveSouth = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(0, distance) === false) {
 		this._readyForInput = false;
+		this._mainPlayer.setVirtualLocation(0, distance);
 		
-		this._mainPlayer.move(distance, 4, function cameraMove(value) {
+		this._mainPlayer.move(distance, 4, function begin() {
+			this._mainPlayer.setZ(this._mainPlayer.y + distance);
+			this._objTileLayer.children.sort(depthCompare);
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(0, value);
 		}.bind(this), function done() {
 			this._updateCamera(0, distance);
@@ -166,10 +185,14 @@ WorldScene.prototype._moveSouth = function(distance) {
 }
 
 WorldScene.prototype._moveSouthWest = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(-distance, distance) === false) {
 		this._readyForInput = false;
+		this._mainPlayer.setVirtualLocation(-distance, distance);
 		
-		this._mainPlayer.move(distance, 5, function cameraMove(value) {
+		this._mainPlayer.move(distance, 5, function begin() {
+			this._mainPlayer.setZ(this._mainPlayer.y + distance);
+			this._objTileLayer.children.sort(depthCompare);
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(-value, value);
 		}.bind(this), function done() {
 			this._updateCamera(-distance, distance);
@@ -180,10 +203,14 @@ WorldScene.prototype._moveSouthWest = function(distance) {
 }
 
 WorldScene.prototype._moveSouthEast = function(distance) {
-	if(this._readyForInput === true) {
+	if(this._readyForInput === true && this.checkCollision(distance, distance) === false) {
 		this._readyForInput = false;
-		
-		this._mainPlayer.move(distance, 3, function cameraMove(value) {
+		this._mainPlayer.setVirtualLocation(distance, distance);
+
+		this._mainPlayer.move(distance, 3, function begin() {
+			this._mainPlayer.setZ(this._mainPlayer.y + distance);
+			this._objTileLayer.children.sort(depthCompare);
+		}.bind(this), function cameraMove(value) {
 			this._updateCameraOffset(value, value);
 		}.bind(this), function done() {
 			this._updateCamera(distance, distance);
@@ -191,6 +218,12 @@ WorldScene.prototype._moveSouthEast = function(distance) {
 			this._readyForInput = true;
 		}.bind(this));
 	}
+}
+
+WorldScene.prototype.checkCollision = function(x, y) {
+	var mapCell = this._map.getMapCell(this._mainPlayer.virtualX + x, this._mainPlayer.virtualY + y);
+
+	return mapCell.collision;
 }
 
 WorldScene.prototype._updateCameraOffset = function(diffX, diffY) {
@@ -208,6 +241,7 @@ WorldScene.prototype._updateCameraOffset = function(diffX, diffY) {
 
 	this._mainPlayer.humanSprite.sprites.x = this._mainPlayer.humanSprite.sprites.x + moveX;
 	this._mainPlayer.humanSprite.sprites.y = this._mainPlayer.humanSprite.sprites.y + moveY;
+	this._mainPlayer.humanSprite.sprites.z = this._mainPlayer.humanSprite.sprites.z + 0.1; 
 }
 
 WorldScene.prototype._updateCamera = function(diffX, diffY) {
@@ -400,6 +434,10 @@ WorldScene.prototype._clearSpritesFromStage = function(leftBound, rightBound, to
 	}
 }
 
+WorldScene.prototype.getMap = function() {
+	return this._map;
+}
+
 WorldScene.prototype._handleNewSprites = function() {
 	var texture = null,
 		imageUrl = '',
@@ -487,7 +525,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._mainPlayer.humanSprite.loaded = true;
 				this._mainPlayer.humanSprite.init();
 				this._mainPlayer.humanSprite.sprites.x = drawX;
-				this._mainPlayer.humanSprite.sprites.y = drawY - defaults.cellHeight;
+				this._mainPlayer.humanSprite.sprites.y = drawY - defaults.cellHeight * 2;
 				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
 			}
 
@@ -498,7 +536,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					npc.npcSprite.loaded = true;
 					npc.npcSprite.init();
 					npc.npcSprite.sprites.x = drawX;
-					npc.npcSprite.sprites.y = drawY  - defaults.cellHeight;
+					npc.npcSprite.sprites.y = drawY  - defaults.cellHeight * 2;
 					this._objTileLayer.addChild(npc.npcSprite.sprites);
 				}
 			}
@@ -512,13 +550,13 @@ WorldScene.prototype._handleNewSprites = function() {
 WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 	var defaults = GameService.defaults;
 
-	if(sprite.x - this._cameraDeltaX > GameService.defaults.screenWidth + (defaults.cellWidth * 3)) {
+	if(sprite.x - this._cameraDeltaX > defaults.screenWidth + (defaults.cellWidth * 3)) {
 		sprite.visible = false;
 	} else if(sprite.x + sprite.width - this._cameraDeltaX < (defaults.cellWidth * -3)) {
 		sprite.visible = false;
 	} else if(sprite.y + sprite.height - this._cameraDeltaY < (defaults.cellheight * -3)) {
 		sprite.visible = false;
-	} else if(sprite.y - this._cameraDeltaY > GameService.defaults.screenHeight + (defaults.cellheight * 5)) {
+	} else if(sprite.y - this._cameraDeltaY > defaults.screenHeight + (defaults.cellheight * 5)) {
 		sprite.visible = false;
 	} else {
 		sprite.visible = true;
@@ -528,7 +566,7 @@ WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 WorldScene.prototype._addBackSprite = function(mapCell, drawX, drawY, texture){
 	mapCell.backSprite = new PIXI.Sprite(texture);
 	mapCell.backSprite.x = drawX + 7;
-	mapCell.backSprite.y = drawY - texture.height - 24;
+	mapCell.backSprite.y = drawY - texture.height;
 	this._tileLayer.addChild(mapCell.backSprite);	
 }
 

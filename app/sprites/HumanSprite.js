@@ -14,7 +14,7 @@ function HumanSprite( scene, data ) {
 	this.hasLight = data.hasLight !== null ? data.hasLight : null;
 	this._direction = data.direction !== null ? data.direction : null;
 	this._action = data.action !== null ? data.action : null;
-	this.z = data.z !== null ? data.z : null;
+	this.z = null;
 	this.look = data.look !== null ? data.look : null;
 
 	this._animationControl = null;
@@ -48,7 +48,12 @@ HumanSprite.prototype.init = function() {
 
 HumanSprite.prototype.setZ = function(z) {
 	this.z = z;
+	console.log(z);
 	this.sprites.z = this.z + 0.1;	
+}
+
+HumanSprite.prototype.getScene = function() {
+	return this._scene;	
 }
 
 HumanSprite.prototype.setDirection = function(direction) {
@@ -84,6 +89,9 @@ HumanSprite.prototype._nextAnimation = function() {
 			this._animationAlt = !this._animationAlt;	
 		}
 		this._animationControl = this._actionQueue[0];
+		if(this._animationControl.getBeginEvent() != null) {
+			this._animationControl.getBeginEvent().call();
+		}
 		this._direction = this._animationControl.getDirection();
 		this._actionQueue.shift();
 	}
@@ -114,7 +122,7 @@ HumanSprite.prototype._handleMovingAnimation = function() {
 	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
 
 	if(this._actionQueue.length === 0 && this._animationCameraFrame === 8) {
-		tickTime = 400;
+		tickTime = 100;
 	}
 	if(this._tickElapsed(tickTime)) {
 		if(this._animationCameraFrame === 8) { 
