@@ -35,8 +35,19 @@ var ResourceService = {
 					};
 			}
 		},
+		npcLib: function(look) {
+			switch(look) {
+				case 0:
+					return {
+						path: "data/npc" + (look + 1),
+						type: 'png',
+						placements: 'data/npc' + (look + 1) + '.json'
+					};
+			}
+		},		
 		placements: [
 			"data/hum1",
+			"data/npc1",
 			"data/tiles1",
 			"data/objects1",
 			"data/objects3",

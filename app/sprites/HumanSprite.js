@@ -1,5 +1,3 @@
-var EventEmitter = require('events').EventEmitter;
-var util = require('util');
 var PIXI = require('pixi.js');
 var LoaderService = require('../services/LoaderService.js');
 var ResourceService = require('../services/ResourceService.js');
@@ -13,11 +11,10 @@ var addPathNamePadding = function(n, width, z) {
 }
 
 function HumanSprite( scene, data ) {
-	EventEmitter.call(this);
 	this.hasLight = data.hasLight !== null ? data.hasLight : null;
 	this._direction = data.direction !== null ? data.direction : null;
 	this._action = data.action !== null ? data.action : null;
-	this._z = data.z !== null ? data.z : null;
+	this.z = data.z !== null ? data.z : null;
 	this.look = data.look !== null ? data.look : null;
 
 	this._animationControl = null;
@@ -38,8 +35,6 @@ function HumanSprite( scene, data ) {
 	this._hairSprite = null;	
 	this.loaded = false;
 }
-
-util.inherits(HumanSprite, EventEmitter);
 
 HumanSprite.prototype.init = function() {
 	//add the sprites to our container

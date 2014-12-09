@@ -50,8 +50,7 @@ WorldScene.prototype.init = function() {
 
 	this._initGui();
 	this._enableInput();
-
-	this._mainPlayer.initHumanSprite(this);
+	this._initObjects();
 
 	//load the placements and the starting map
 	this._loadGraphicsPlacements()
@@ -66,6 +65,13 @@ WorldScene.prototype.init = function() {
 		}.bind(this));
 }
 
+WorldScene.prototype._initObjects = function() {
+	//init the sprites for our objects
+	this._mainPlayer.initHumanSprite(this);
+	for(var i = 0; i < GameService.npcs.length; i++) {
+		GameService.npcs[i].initNpcSprite(this);
+	}
+}
 
 WorldScene.prototype._enableInput = function() {
 	//InputService.on('pressed left', this._moveLeft.bind(this), true);
@@ -298,8 +304,13 @@ WorldScene.prototype.checkInputs = function() {
 }
 
 WorldScene.prototype.updateAnimations = function() {
+	var npcs = GameService.npcs;
 	//update main player
 	this._mainPlayer.update();
+	//update npcs
+	for(var i = 0; i < npcs.length; i++) {
+		npcs[i].update();
+	}	
 }
 
 WorldScene.prototype._updateBounds = function() {
@@ -394,13 +405,20 @@ WorldScene.prototype._handleNewSprites = function() {
 		imageUrl = '',
 		imageUrlAndPlacements = {},
 		defaults = GameService.defaults,
-		drawX,
-		drawY,
-		mapCell,
-		placementX,
-		placementY,
-		x,
-		y;
+		drawX = 0,
+		drawY = 0,
+		mapCell = null,
+		placementX = 0,
+		placementY = 0,
+		x = 0,
+		y = 0,
+		i = 0,
+		npcs = GameService.npcs,
+		mobs = GameService.mobs,
+		otherPlayers = GameService.otherPlayers,
+		npc = null,
+		mob = null,
+		otherPlayer = null;
 
 	for (y = this._topBound; y <= this._bottomBound; y++) {
 		drawY = (y - this._mainPlayer.y) * defaults.cellHeight + this._gameOffSetY + this._cameraDeltaY; //Moving OffSet
@@ -471,6 +489,18 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._mainPlayer.humanSprite.sprites.x = drawX;
 				this._mainPlayer.humanSprite.sprites.y = drawY - defaults.cellHeight;
 				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
+			}
+
+			//handle Npcs
+			for(i = 0; i < npcs.length; i++) {
+				npc = npcs[i];
+				if(npc.x === x & npc.y === y && npc.npcSprite.loaded === false) {
+					npc.npcSprite.loaded = true;
+					npc.npcSprite.init();
+					npc.npcSprite.sprites.x = drawX;
+					npc.npcSprite.sprites.y = drawY  - defaults.cellHeight;
+					this._objTileLayer.addChild(npc.npcSprite.sprites);
+				}
 			}
 	    }
 	}

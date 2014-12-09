@@ -1,6 +1,9 @@
 
 var GameService = {
 	player: null,
+	npcs: [],
+	otherPlayers: [],
+	mobs: [],
 	scene: null,
 	loggedIn: false,
 	defaults: {
@@ -32,7 +35,15 @@ var GameService = {
 		} else {
 			processScene();
 		}
-	}
+	},
+
+	addNpc: function(npc) {
+		this.npcs.push(npc);
+	},
+
+	addMob: function(mob) {
+		this.mobs.push(mob);
+	}	
 };
 
 module.exports = GameService;

@@ -12,6 +12,7 @@
 
 var GameService = require('./app/services/GameService.js');
 var Player = require('./app/objects/Player.js');
+var Npc = require('./app/objects/Npc.js');
 var App = require('./app/App.js');
 
 //make a dummy player for our game server
@@ -29,6 +30,14 @@ GameService.player = new Player({
 	equiped: {}
 });
 
+//add an NPC into the middle of BW
+GameService.addNpc(new Npc({
+	id: 1,
+	name: 'Fred',
+	look: 0,
+	x: 300,
+	y: 290
+}));
 
 window.GameService = GameService;
 
