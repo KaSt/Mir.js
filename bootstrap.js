@@ -20,15 +20,20 @@ GameService.player = new Player({
 	name: 'TrueADM',
 	level: 30,
 	exp: 2000,
-	map: "0",
 	x: 300,
 	y: 300,
 	hp: 100,
 	mp: 100,
+	maxHp: 100,
+	maxMp: 100,
 	direction: 0,
 	bag: [],
 	equiped: {}
 });
+
+//set map
+GameService.map.file = "0";
+GameService.map.name = "BichonProvince";
 
 //add an NPC into the middle of BW
 GameService.addNpc(new Npc({

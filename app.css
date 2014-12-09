@@ -1,6 +1,12 @@
 body {
 	padding: 0;
 	margin: 0;
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #app {
@@ -32,3 +38,56 @@ body {
 	height: 229px;
 	background: url('gui/bottom-interface.png') no-repeat;
 }
+
+#app #game-interface-container #hp-mp-container {
+	position: absolute;
+	bottom: 27px;
+	left: 17px;
+	width: 154px;
+	height: 140px;
+	background: url('gui/hp-mp-container.png') no-repeat top center;
+}
+
+#app #game-interface-container #hp-mp-container #hp-bar {
+	position: absolute;
+	bottom: 46px;
+	left: 30px;
+	width: 94px;
+	background: url('gui/hp-bar.png') no-repeat bottom center;
+}
+
+#app #game-interface-container #hp-mp-container #hp-mp-label {
+	position: absolute;
+	bottom: 1px;
+	color: #fff;
+	font-size: 10px;
+	text-align: center;
+	font-family: Arial;
+	left: 0;
+	width: 154px;
+}
+
+#app #game-interface-container #hp-mp-container #hp-mp-label span {
+	display: inline-block;
+	margin: 0 10px;
+}
+
+#app #game-interface-container #bottom-interface #coords-label {
+	display: block;
+	position: absolute;
+	color: #fff;
+	font-family: Arial;
+	font-size: 10px;
+	bottom: 6px;
+	left: 15px;
+	text-align: center;
+	width: 155px;
+}
+#app #game-interface-container #bottom-interface #chat-container {
+	position: absolute;
+	left: 210px;
+	top: 93px;
+	width: 608px;
+	height: 130px;
+}
+

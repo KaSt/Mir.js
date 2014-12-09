@@ -6,7 +6,6 @@ function Player( data ) {
 	this.name = data.name || null;
 	this.level = data.level || null;
 	this.exp = data.exp !== null ? data.exp : null;
-	this.map = data.map || null;
 	this.x = data.x !== null ? data.x : null;
 	this.y = data.y !== null ? data.y : null;
 	this.virtualX = data.x !== null ? data.x : null;
@@ -15,6 +14,8 @@ function Player( data ) {
 	this.direction = data.direction !== null ? data.direction : null;
 	this.hp = data.hp !== null ? data.hp : null;
 	this.mp = data.mp !== null ? data.mp : null;
+	this.maxHp = data.maxHp !== null ? data.maxHp : null;
+	this.maxMp = data.maxMp !== null ? data.maxMp : null;
 	this.bag = data.bag || [];
 	this.equiped = data.equiped || {};
 	this.humanSprite = null;

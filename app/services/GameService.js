@@ -6,6 +6,10 @@ var GameService = {
 	mobs: [],
 	scene: null,
 	loggedIn: false,
+	map: {
+		file: '',
+		name: ''
+	},
 	defaults: {
 		viewRangeX: 35,
 		viewRangeY: 35,

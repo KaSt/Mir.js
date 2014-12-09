@@ -36,37 +36,46 @@ InputService.prototype._keyDown = function(e) {
 }
 
 InputService.prototype._mouseDown = function(e) {
-	switch(e.button) {
-		case 0:
-			this.leftMouseButtonDown = true;
-			this.emit('mousedown left', e.keyCode);
-			break;							
-		case 2:
-			this.rightMouseButtonDown = true;
-			this.emit('mousedown right', e.keyCode);
-			break;						
+	if(!e.target.excludeFromInput || e.target.excludeFromInput === false) {
+		switch(e.button) {
+			case 0:
+				this.leftMouseButtonDown = true;
+				this.emit('mousedown left', e.keyCode);
+				break;							
+			case 2:
+				this.rightMouseButtonDown = true;
+				this.emit('mousedown right', e.keyCode);
+				break;						
+		}
 	}
 }
 
 InputService.prototype._mouseUp = function(e) {
-	switch(e.button) {
-		case 0:
-			this.leftMouseButtonDown = false;
-			this.emit('mouseup left', e.keyCode);
-			break;							
-		case 2:
-			this.rightMouseButtonDown = false;
-			this.emit('mouseup right', e.keyCode);
-			break;						
+	if(!e.target.excludeFromInput || e.target.excludeFromInput === false) {
+		switch(e.button) {
+			case 0:
+				this.leftMouseButtonDown = false;
+				this.emit('mouseup left', e.keyCode);
+				break;							
+			case 2:
+				this.rightMouseButtonDown = false;
+				this.emit('mouseup right', e.keyCode);
+				break;						
+		}
 	}
 }
 
 InputService.prototype._mouseMove = function(e) {
-	var x = e.offsetX === undefined ? e.layerX : e.offsetX;
-	var y = e.offsetY === undefined ? e.layerY : e.offsetY;
+	if(!e.target.excludeFromInput || e.target.excludeFromInput === false) {
+		var x = e.offsetX === undefined ? e.layerX : e.offsetX;
+		var y = e.offsetY === undefined ? e.layerY : e.offsetY;
 
-	this.mouseX = x;
-	this.mouseY = y;
+		this.mouseX = x;
+		this.mouseY = y;
+	} else {
+		this.leftMouseButtonDown = false;
+		this.rightMouseButtonDown = false;
+	}
 }
 
 module.exports = new InputService();

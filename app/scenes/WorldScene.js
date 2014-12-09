@@ -330,7 +330,7 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 
 WorldScene.prototype._calculateDirection = function() {
     var fDistanceX = InputService.mouseX - this._gameOffSetX; 
-    var fDistanceY = InputService.mouseY - this._gameOffSetY; 
+    var fDistanceY = InputService.mouseY - this._gameOffSetY + 64; 
 
     var n = Math.abs(fDistanceX) + Math.abs(fDistanceY); 
 
@@ -678,7 +678,7 @@ WorldScene.prototype._loadMap = function() {
 	return new Promise(function(resolve, reject) {
 		this._isLoadingMap = true;
 		this._clearAllSpritesFromStage();
-		LoaderService.loadMap(this._mainPlayer.map)
+		LoaderService.loadMap(GameService.map.file)
 			.then(function(map) {
 				resolve(map);
 			});
