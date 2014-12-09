@@ -56,6 +56,14 @@ body {
 	background: url('gui/hp-bar.png') no-repeat bottom center;
 }
 
+#app #game-interface-container #hp-mp-container #mp-bar {
+	position: absolute;
+	bottom: 46px;
+	right: 30px;
+	width: 94px;
+	background: url('gui/mp-bar.png') no-repeat bottom center;
+}
+
 #app #game-interface-container #hp-mp-container #hp-mp-label {
 	position: absolute;
 	bottom: 1px;

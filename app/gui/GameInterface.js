@@ -53,6 +53,7 @@ GameInterface.prototype._initHpMpContainer = function() {
 
 	this._initHpMpLabel();
 	this._initHpBar();
+	this._initMpBar();
 }
 
 GameInterface.prototype._initHpBar = function() {
@@ -70,6 +71,23 @@ GameInterface.prototype._initHpBar = function() {
 	observePlayerHpChange.open(updateHpBar);
 
 	updateHpBar();
+}
+
+GameInterface.prototype._initMpBar = function() {
+	this._mpBar = document.createElement('div');
+	this._mpBar.id = "mp-bar";
+	
+
+	var updateMpBar = function() {
+		this._mpBar.style.height = parseInt(GameService.player.mp / GameService.player.maxMp * 94);
+	}.bind(this);
+
+	var observePlayerMpChange = new PathObserver(GameService, 'player.mp');
+
+	this._hpMpContainer.appendChild(this._mpBar);
+	observePlayerMpChange.open(updateMpBar);
+
+	updateMpBar();
 }
 
 GameInterface.prototype._initHpMpLabel = function() {
