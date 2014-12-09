@@ -187,6 +187,7 @@ function GameInterface(appContainer) {
 	this._hpMpContainer = null;
 	this._chatContainer = null;
 	this._coordsLabel = null;
+	this._levelLabel = null;
 	this._hpMpLabel = null;
 	this._hpBar = null;
 	this._mpBar = null;
@@ -212,6 +213,7 @@ GameInterface.prototype._initBottomInterface = function() {
 	this._gameInterfaceContainer.appendChild(this._bottomInterface);
 
 	this._initCoordsLabel();
+	this._initLevelLabel();
 	this._initHpMpContainer();
 	this._initChatContainer();
 }
@@ -309,6 +311,25 @@ GameInterface.prototype._initCoordsLabel = function() {
 	updateLabelText();
 
 	this._bottomInterface.appendChild(this._coordsLabel);
+}
+
+GameInterface.prototype._initLevelLabel = function() {
+	//Cords label
+	this._levelLabel = document.createElement('div');
+	this._levelLabel.id = "level-label";
+
+	var updateLabelText = function() {
+		this._levelLabel.innerHTML = GameService.player.level;
+	}.bind(this);
+
+	var observePlayerLevelChange = new PathObserver(GameService, 'player.level');
+
+	observePlayerLevelChange.open(updateLabelText);
+
+	//update label
+	updateLabelText();
+
+	this._bottomInterface.appendChild(this._levelLabel);
 }
 
 module.exports = GameInterface;
