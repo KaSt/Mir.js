@@ -220,10 +220,72 @@ WorldScene.prototype._moveSouthEast = function(distance) {
 	}
 }
 
-WorldScene.prototype.checkCollision = function(x, y) {
-	var mapCell = this._map.getMapCell(this._mainPlayer.virtualX + x, this._mainPlayer.virtualY + y);
+WorldScene.prototype.checkCollision = function(diffX, diffY) {
+	var x, y;
 
-	return mapCell.collision;
+	if(diffX < 0 && diffY == 0) {
+		for(distance = diffX; distance < 0; distance++) {
+			if(this._checkCollision(distance, 0) === true) {
+				return true;
+			}
+		}
+	} else if(diffX > 0 && diffY == 0) {
+		for(distance = -diffX; distance < 0; distance++) {
+			if(this._checkCollision(-distance, 0) === true) {
+				return true;
+			}
+		}		
+	} else if(diffX === 0 && diffY < 0) {
+		for(distance = diffY; distance < 0; distance++) {
+			if(this._checkCollision(0, distance) === true) {
+				return true;
+			}
+		}		
+	} else if(diffX === 0 && diffY > 0) {
+		for(distance = -diffY; distance < 0; distance++) {
+			if(this._checkCollision(0, -distance) === true) {
+				return true;
+			}
+		}				
+	} else if(diffX < 0 && diffY < 0) {
+		for(distance = diffX; distance < 0; distance++) {
+			if(this._checkCollision(distance, distance) === true) {
+				return true;
+			}
+		}
+	} else if(diffX < 0 && diffY > 0) {
+		for(distance = diffX; distance < 0; distance++) {
+			if(this._checkCollision(distance, -distance) === true) {
+				return true;
+			}
+		}
+	} else if(diffX > 0 && diffY < 0) {
+		for(distance = diffY; distance < 0; distance++) {
+			if(this._checkCollision(-distance, distance) === true) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+WorldScene.prototype._checkCollision = function(x, y) {
+	var mapCell = this._map.getMapCell(this._mainPlayer.virtualX + x, this._mainPlayer.virtualY + y),
+		npcs = GameService.npcs,
+		i = 0;
+
+	if(mapCell.collision) {
+		return true;
+	}
+
+	//check npcs
+	for(i = 0; i < npcs.length; i++) {
+		if(this._mainPlayer.virtualX + x === npcs[i].x && this._mainPlayer.virtualY + y === npcs[i].y) {
+			return true;
+		}
+	}	
+
+	return false;
 }
 
 WorldScene.prototype._updateCameraOffset = function(diffX, diffY) {
