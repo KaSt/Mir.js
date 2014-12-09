@@ -906,11 +906,8 @@ WorldScene.prototype._updateCamera = function(diffX, diffY) {
 }
 
 WorldScene.prototype._calculateDirection = function() {
-    var fCenterOfViewportX = GameService.defaults.screenWidth / 2; 
-    var fCenterOfViewportY = GameService.defaults.screenHeight / 2; 
-
-    var fDistanceX = InputService.mouseX - fCenterOfViewportX; 
-    var fDistanceY = InputService.mouseY - fCenterOfViewportY; 
+    var fDistanceX = InputService.mouseX - this._gameOffSetX; 
+    var fDistanceY = InputService.mouseY - this._gameOffSetY; 
 
     var n = Math.abs(fDistanceX) + Math.abs(fDistanceY); 
 
