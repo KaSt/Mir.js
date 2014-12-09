@@ -15,7 +15,7 @@ App.prototype._init = function() {
 	//check if we have a scene
 	if(GameService.scene === null && GameService.loggedIn === true) {
 		//load a scene
-		GameService.loadScene(new SceneTypes.WORLD_SCENE, this._appContainer);
+		GameService.loadScene(new SceneTypes.WORLD_SCENE(this._appContainer));
 	}
 
 	this._renderer.start();

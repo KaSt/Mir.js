@@ -3,6 +3,7 @@ var GameService = require('../services/GameService.js');
 var ResourceService = require('../services/ResourceService.js');
 var InputService = require('../services/InputService.js');
 var DirectionEnum = require('../enums/DirectionEnum.js');
+var GameInterface = require('../gui/GameInterface.js');
 var PIXI = require('pixi.js');
 
 function depthCompare(a,b) {
@@ -36,17 +37,20 @@ function WorldScene(appContainer) {
 	this._graphicsPlacements = [];
 	this._readyForInput = false;
 	this._mainPlayer = GameService.player;
+	this._gameInterface = null;
 }
 
 WorldScene.prototype.init = function() {
 	var defaults = GameService.defaults;
 	this._gameOffSetX = defaults.screenWidth / 2;
-    this._gameOffSetY = defaults.screenHeight / 2 - 1;
+    this._gameOffSetY = defaults.screenHeight / 2 - 48;
 
     //add
     this._stage.addChild(this._tileLayer);
     this._stage.addChild(this._smTileLayer);
     this._stage.addChild(this._objTileLayer);
+
+    this._gameInterface = new GameInterface(this._appContainer);
 
 	this._initGui();
 	this._enableInput();

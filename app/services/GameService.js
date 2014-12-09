@@ -15,7 +15,7 @@ var GameService = {
         screenHeight: 768
 	},
 
-	loadScene: function(newScene, appContainer) {
+	loadScene: function(newScene) {
 
 		var processScene = function processScene() {
 			this.scene = newScene;
