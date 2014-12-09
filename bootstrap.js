@@ -19,13 +19,16 @@ var App = require('./app/App.js');
 GameService.player = new Player({
 	name: 'TrueADM',
 	level: 30,
-	exp: 2000,
+	exp: 1000,
+	maxExp: 2000,
 	x: 300,
 	y: 300,
 	hp: 100,
 	mp: 100,
 	maxHp: 100,
 	maxMp: 100,
+	weight: 20,
+	maxWeight: 100,
 	direction: 0,
 	bag: [],
 	equiped: {}
