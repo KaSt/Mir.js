@@ -1505,7 +1505,6 @@ HumanSprite.prototype.init = function() {
 
 HumanSprite.prototype.setZ = function(z) {
 	this.z = z;
-	console.log(z);
 	this.sprites.z = this.z + 0.1;	
 }
 
