@@ -109,20 +109,22 @@ WorldScene.prototype._mouseDebug = function(mousePosition) {
 WorldScene.prototype._moveNorthWest = function(distance) {
 	if(this._readyForInput === true) {
 
+		var originalDistance = distance;
+
 		//first check walk
 		if(this._checkCollision(-1, -1) === true) {
 			return false;
 		}
 		//check run if we are running
-		if(distance > 1) {
+		if(originalDistance > 1) {
 			if(this._checkCollision(-2, -2) === true) {
-				return false;
+				distance = 1;
 			}
 		}
 		//check hourse run if distance is 3
-		if(distance > 3) {
+		if(originalDistance > 2) {
 			if(this._checkCollision(-3, -3) === true) {
-				return false;
+				distance = 2;
 			}			
 		}
 
@@ -145,20 +147,22 @@ WorldScene.prototype._moveNorthWest = function(distance) {
 WorldScene.prototype._moveWest = function(distance) {
 	if(this._readyForInput === true) {
 
+		var originalDistance = distance;
+
 		//first check walk
 		if(this._checkCollision(-1, 0) === true) {
 			return false;
 		}
 		//check run if we are running
-		if(distance > 1) {
+		if(originalDistance > 1) {
 			if(this._checkCollision(-2, 0) === true) {
-				return false;
+				distance = 1;
 			}
 		}
 		//check hourse run if distance is 3
-		if(distance > 3) {
+		if(originalDistance > 2) {
 			if(this._checkCollision(-3, 0) === true) {
-				return false;
+				distance = 2;
 			}			
 		}
 
@@ -180,20 +184,22 @@ WorldScene.prototype._moveWest = function(distance) {
 WorldScene.prototype._moveEast = function(distance) {
 	if(this._readyForInput === true) {
 
+		var originalDistance = distance;
+
 		//first check walk
 		if(this._checkCollision(1, 0) === true) {
 			return false;
 		}
 		//check run if we are running
-		if(distance > 1) {
+		if(originalDistance > 1) {
 			if(this._checkCollision(2, 0) === true) {
-				return false;
+				distance = 1;
 			}
 		}
 		//check hourse run if distance is 3
-		if(distance > 3) {
+		if(originalDistance > 2) {
 			if(this._checkCollision(3, 0) === true) {
-				return false;
+				distance = 2;
 			}			
 		}
 
@@ -215,20 +221,22 @@ WorldScene.prototype._moveEast = function(distance) {
 WorldScene.prototype._moveNorth = function(distance) {
 	if(this._readyForInput === true) {
 
+		var originalDistance = distance;
+
 		//first check walk
 		if(this._checkCollision(0, -1) === true) {
 			return false;
 		}
 		//check run if we are running
-		if(distance > 1) {
+		if(originalDistance > 1) {
 			if(this._checkCollision(0, -2) === true) {
-				return false;
+				distance = 1;
 			}
 		}
 		//check hourse run if distance is 3
-		if(distance > 3) {
+		if(originalDistance > 2) {
 			if(this._checkCollision(0, -3) === true) {
-				return false;
+				distance = 2;
 			}			
 		}
 
@@ -250,20 +258,22 @@ WorldScene.prototype._moveNorth = function(distance) {
 WorldScene.prototype._moveNorthEast = function(distance) {
 	if(this._readyForInput === true) {
 
+		var originalDistance = distance;
+
 		//first check walk
 		if(this._checkCollision(1, -1) === true) {
 			return false;
 		}
 		//check run if we are running
-		if(distance > 1) {
+		if(originalDistance > 1) {
 			if(this._checkCollision(2, -2) === true) {
-				return false;
+				distance = 1;
 			}
 		}
 		//check hourse run if distance is 3
-		if(distance > 3) {
+		if(originalDistance > 2) {
 			if(this._checkCollision(3, -3) === true) {
-				return false;
+				distance = 2;
 			}			
 		}
 
@@ -285,20 +295,22 @@ WorldScene.prototype._moveNorthEast = function(distance) {
 WorldScene.prototype._moveSouth = function(distance) {
 	if(this._readyForInput === true) {
 
+		var originalDistance = distance;
+
 		//first check walk
 		if(this._checkCollision(0, 1) === true) {
 			return false;
 		}
 		//check run if we are running
-		if(distance > 1) {
+		if(originalDistance > 1) {
 			if(this._checkCollision(0, 2) === true) {
-				return false;
+				distance = 1;
 			}
 		}
 		//check hourse run if distance is 3
-		if(distance > 3) {
+		if(originalDistance > 2) {
 			if(this._checkCollision(0, 3) === true) {
-				return false;
+				distance = 2;
 			}			
 		}
 
@@ -321,20 +333,22 @@ WorldScene.prototype._moveSouth = function(distance) {
 WorldScene.prototype._moveSouthWest = function(distance) {
 	if(this._readyForInput === true) {
 
+		var originalDistance = distance;
+
 		//first check walk
 		if(this._checkCollision(-1, 1) === true) {
 			return false;
 		}
 		//check run if we are running
-		if(distance > 1) {
+		if(originalDistance > 1) {
 			if(this._checkCollision(-2, 2) === true) {
-				return false;
+				distance = 1;
 			}
 		}
 		//check hourse run if distance is 3
-		if(distance > 3) {
+		if(originalDistance > 2) {
 			if(this._checkCollision(-3, 3) === true) {
-				return false;
+				distance = 2;
 			}			
 		}
 
@@ -357,20 +371,22 @@ WorldScene.prototype._moveSouthWest = function(distance) {
 WorldScene.prototype._moveSouthEast = function(distance) {
 	if(this._readyForInput === true) {
 
+		var originalDistance = distance;
+
 		//first check walk
 		if(this._checkCollision(1, 1) === true) {
 			return false;
 		}
 		//check run if we are running
-		if(distance > 1) {
+		if(originalDistance > 1) {
 			if(this._checkCollision(2, 2) === true) {
-				return false;
+				distance = 1;
 			}
 		}
 		//check hourse run if distance is 3
-		if(distance > 3) {
+		if(originalDistance > 2) {
 			if(this._checkCollision(3, 3) === true) {
-				return false;
+				distance = 2;
 			}			
 		}
 
