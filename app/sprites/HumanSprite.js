@@ -89,9 +89,6 @@ HumanSprite.prototype._nextAnimation = function() {
 		this._animationControl = new AnimationControl(HumanActionEnum.Standing, this._direction);
 		this._animationAlt = false;
 	} else {
-		if(this._animationControl.getAction() === this._actionQueue[0].getAction()) {
-			this._animationAlt = !this._animationAlt;	
-		}
 		this._animationControl = this._actionQueue[0];
 		if(this._animationControl.getBeginEvent() != null) {
 			this._animationControl.getBeginEvent().call();
@@ -125,22 +122,30 @@ HumanSprite.prototype._handleMovingAnimation = function() {
 
 	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
 
-	if(this._actionQueue.length === 0 && this._animationCameraFrame === 16) {
-		tickTime = 100;
-	}
+
 	if(this._tickElapsed(tickTime)) {
 		if(this._animationCameraFrame === 16) { 
 			this._animationControl.getAnimationCompleteEvent().call();
 			//check queue for more animations
 			this._nextAnimation();
 			this._animationFrame = 0
+
 		} else {
 			this._animationControl.getNewFrameEvent().call(this, this._animationCameraFrame);
 			this._animationCameraFrame++
 
-			if(this._animationCameraFrame % 6 === 0) {
-				this._animationFrame++;
+			if(this._animationCameraFrame === 3) {
+				this._animationFrame++;	
+			} else if(this._animationCameraFrame === 6) {
+				this._animationFrame++;	
+			} else if(this._animationCameraFrame === 9) {
+				this._animationFrame++;	
+			} else if(this._animationCameraFrame === 12) {
+				this._animationFrame++;	
+			} else if(this._animationCameraFrame === 15 && this._actionQueue.length === 0) {
+				this._animationFrame++;	
 			}
+
 			this._updateTick();
 		}
 	}		
