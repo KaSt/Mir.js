@@ -654,7 +654,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					if(getBackImageUrl !== null) {
 						mapCell.backSprite = false;					
 						LoaderService.loadTexture(getBackImageUrl)
-							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY + 80));
+							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY + 64));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
@@ -669,7 +669,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				if(imageUrl !== null) {
 					mapCell.middleSprite = false;
 					LoaderService.loadTexture(imageUrl)
-						.then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY + 80));
+						.then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY + 64));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.middleIndex);
 				}
@@ -704,7 +704,7 @@ WorldScene.prototype._handleNewSprites = function() {
 							this, 
 							mapCell, 
 							drawX + placementX, 
-							drawY + placementY + 80,
+							drawY + placementY + 64,
 							y
 						));
 				} else {
