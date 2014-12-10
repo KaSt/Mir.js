@@ -6,6 +6,7 @@ function Player( data ) {
 	this.name = data.name || null;
 	this.level = data.level || null;
 	this.exp = data.exp !== null ? data.exp : null;
+	this.gender = data.gender !== null ? data.gender : null;
 	this.maxExp = data.maxExp !== null ? data.maxExp : null;
 	this.x = data.x !== null ? data.x : null;
 	this.y = data.y !== null ? data.y : null;
@@ -29,8 +30,13 @@ Player.prototype.initHumanSprite = function(scene) {
 	this.humanSprite = new HumanSprite(scene, {
 		z: this.y,
 		direction: this.direction,
-		look: 0
+		look: this.gender
 	});
+}
+
+Player.prototype.setGender = function(gender) {
+	this.gender = gender;
+	this.humanSprite.setLook(this.gender);
 }
 
 Player.prototype.setLocation = function(x, y) {

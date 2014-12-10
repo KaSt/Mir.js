@@ -662,6 +662,7 @@ function Player( data ) {
 	this.name = data.name || null;
 	this.level = data.level || null;
 	this.exp = data.exp !== null ? data.exp : null;
+	this.gender = data.gender !== null ? data.gender : null;
 	this.maxExp = data.maxExp !== null ? data.maxExp : null;
 	this.x = data.x !== null ? data.x : null;
 	this.y = data.y !== null ? data.y : null;
@@ -685,8 +686,13 @@ Player.prototype.initHumanSprite = function(scene) {
 	this.humanSprite = new HumanSprite(scene, {
 		z: this.y,
 		direction: this.direction,
-		look: 0
+		look: this.gender
 	});
+}
+
+Player.prototype.setGender = function(gender) {
+	this.gender = gender;
+	this.humanSprite.setLook(this.gender);
 }
 
 Player.prototype.setLocation = function(x, y) {
@@ -1910,6 +1916,11 @@ HumanSprite.prototype.init = function() {
 	this._nextAnimation();
 }
 
+HumanSprite.prototype.setLook = function(look) {
+	this.look = look;
+	this._updateBodyTexture();
+}
+
 HumanSprite.prototype.setZ = function(z) {
 	this.z = z;
 	this.sprites.z = this.z + 0.1;	
@@ -2188,6 +2199,7 @@ GameService.player = new Player({
 	level: 30,
 	exp: 1000,
 	maxExp: 2000,
+	gender: 0,
 	x: 311,
 	y: 288,
 	hp: 100,

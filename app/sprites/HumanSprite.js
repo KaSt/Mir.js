@@ -46,6 +46,11 @@ HumanSprite.prototype.init = function() {
 	this._nextAnimation();
 }
 
+HumanSprite.prototype.setLook = function(look) {
+	this.look = look;
+	this._updateBodyTexture();
+}
+
 HumanSprite.prototype.setZ = function(z) {
 	this.z = z;
 	this.sprites.z = this.z + 0.1;	

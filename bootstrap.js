@@ -21,6 +21,7 @@ GameService.player = new Player({
 	level: 30,
 	exp: 1000,
 	maxExp: 2000,
+	gender: 0,
 	x: 311,
 	y: 288,
 	hp: 100,
