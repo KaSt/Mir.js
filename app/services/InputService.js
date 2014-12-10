@@ -72,6 +72,11 @@ InputService.prototype._mouseMove = function(e) {
 
 		this.mouseX = x;
 		this.mouseY = y;
+
+		this.emit('mousemove', {
+			x: this.mouseX,
+			y: this.mouseY
+		});
 	} else {
 		this.leftMouseButtonDown = false;
 		this.rightMouseButtonDown = false;

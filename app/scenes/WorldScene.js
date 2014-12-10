@@ -43,7 +43,7 @@ function WorldScene(appContainer) {
 WorldScene.prototype.init = function() {
 	var defaults = GameService.defaults;
 	this._gameOffSetX = defaults.screenWidth / 2;
-    this._gameOffSetY = defaults.screenHeight / 2 - 48;
+    this._gameOffSetY = defaults.screenHeight / 2 - 64;
 
     //add
     this._stage.addChild(this._tileLayer);
@@ -82,10 +82,50 @@ WorldScene.prototype._enableInput = function() {
 	//InputService.on('pressed right', this._moveRight.bind(this), true);
 	//InputService.on('pressed up', this._moveUp.bind(this), true);
 	//InputService.on('pressed down', this._moveDown.bind(this), true);
+	if(GameService.debug.enabled === true) {
+		InputService.on('mousemove', this._mouseDebug.bind(this), true);
+	}
+}
+
+WorldScene.prototype._mouseDebug = function(mousePosition) {
+	var defaults = GameService.defaults;
+
+	for (y = this._topBound; y <= this._bottomBound; y++) {
+		drawY = (y - this._mainPlayer.y) * defaults.cellHeight + this._gameOffSetY; //Moving OffSet
+
+	    for (x = this._leftBound; x <= this._rightBound; x++) {
+			drawX = (x - this._mainPlayer.x) * defaults.cellWidth + this._gameOffSetX; //Moving OffSet
+
+			if(mousePosition.x > drawX && mousePosition.y > drawY && mousePosition.x < drawX + 48 && mousePosition.y < drawY + 32) {
+				GameService.debug.x = x;
+				GameService.debug.y = y;
+				return;
+			}
+
+		}
+	}
 }
 
 WorldScene.prototype._moveNorthWest = function(distance) {
-	if(this._readyForInput === true && this.checkCollision(-distance, -distance) === false) {
+	if(this._readyForInput === true) {
+
+		//first check walk
+		if(this._checkCollision(-1, -1) === true) {
+			return false;
+		}
+		//check run if we are running
+		if(distance > 1) {
+			if(this._checkCollision(-2, -2) === true) {
+				return false;
+			}
+		}
+		//check hourse run if distance is 3
+		if(distance > 3) {
+			if(this._checkCollision(-3, -3) === true) {
+				return false;
+			}			
+		}
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, -distance);
 	
@@ -103,7 +143,25 @@ WorldScene.prototype._moveNorthWest = function(distance) {
 
 
 WorldScene.prototype._moveWest = function(distance) {
-	if(this._readyForInput === true && this.checkCollision(-distance, 0) === false) {
+	if(this._readyForInput === true) {
+
+		//first check walk
+		if(this._checkCollision(-1, 0) === true) {
+			return false;
+		}
+		//check run if we are running
+		if(distance > 1) {
+			if(this._checkCollision(-2, 0) === true) {
+				return false;
+			}
+		}
+		//check hourse run if distance is 3
+		if(distance > 3) {
+			if(this._checkCollision(-3, 0) === true) {
+				return false;
+			}			
+		}
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, 0);
 	
@@ -120,7 +178,25 @@ WorldScene.prototype._moveWest = function(distance) {
 }
 
 WorldScene.prototype._moveEast = function(distance) {
-	if(this._readyForInput === true && this.checkCollision(distance, 0) === false) {
+	if(this._readyForInput === true) {
+
+		//first check walk
+		if(this._checkCollision(1, 0) === true) {
+			return false;
+		}
+		//check run if we are running
+		if(distance > 1) {
+			if(this._checkCollision(2, 0) === true) {
+				return false;
+			}
+		}
+		//check hourse run if distance is 3
+		if(distance > 3) {
+			if(this._checkCollision(3, 0) === true) {
+				return false;
+			}			
+		}
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, 0);
 	
@@ -137,7 +213,25 @@ WorldScene.prototype._moveEast = function(distance) {
 }
 
 WorldScene.prototype._moveNorth = function(distance) {
-	if(this._readyForInput === true && this.checkCollision(0, -distance) === false) {
+	if(this._readyForInput === true) {
+
+		//first check walk
+		if(this._checkCollision(0, -1) === true) {
+			return false;
+		}
+		//check run if we are running
+		if(distance > 1) {
+			if(this._checkCollision(0, -2) === true) {
+				return false;
+			}
+		}
+		//check hourse run if distance is 3
+		if(distance > 3) {
+			if(this._checkCollision(0, -3) === true) {
+				return false;
+			}			
+		}
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(0, -distance);
 	
@@ -154,7 +248,25 @@ WorldScene.prototype._moveNorth = function(distance) {
 }
 
 WorldScene.prototype._moveNorthEast = function(distance) {
-	if(this._readyForInput === true && this.checkCollision(distance, -distance) === false) {
+	if(this._readyForInput === true) {
+
+		//first check walk
+		if(this._checkCollision(1, -1) === true) {
+			return false;
+		}
+		//check run if we are running
+		if(distance > 1) {
+			if(this._checkCollision(2, -2) === true) {
+				return false;
+			}
+		}
+		//check hourse run if distance is 3
+		if(distance > 3) {
+			if(this._checkCollision(3, -3) === true) {
+				return false;
+			}			
+		}
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, -distance);
 		
@@ -171,7 +283,25 @@ WorldScene.prototype._moveNorthEast = function(distance) {
 }
 
 WorldScene.prototype._moveSouth = function(distance) {
-	if(this._readyForInput === true && this.checkCollision(0, distance) === false) {
+	if(this._readyForInput === true) {
+
+		//first check walk
+		if(this._checkCollision(0, 1) === true) {
+			return false;
+		}
+		//check run if we are running
+		if(distance > 1) {
+			if(this._checkCollision(0, 2) === true) {
+				return false;
+			}
+		}
+		//check hourse run if distance is 3
+		if(distance > 3) {
+			if(this._checkCollision(0, 3) === true) {
+				return false;
+			}			
+		}
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(0, distance);
 		
@@ -189,7 +319,25 @@ WorldScene.prototype._moveSouth = function(distance) {
 }
 
 WorldScene.prototype._moveSouthWest = function(distance) {
-	if(this._readyForInput === true && this.checkCollision(-distance, distance) === false) {
+	if(this._readyForInput === true) {
+
+		//first check walk
+		if(this._checkCollision(-1, 1) === true) {
+			return false;
+		}
+		//check run if we are running
+		if(distance > 1) {
+			if(this._checkCollision(-2, 2) === true) {
+				return false;
+			}
+		}
+		//check hourse run if distance is 3
+		if(distance > 3) {
+			if(this._checkCollision(-3, 3) === true) {
+				return false;
+			}			
+		}
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, distance);
 		
@@ -207,7 +355,25 @@ WorldScene.prototype._moveSouthWest = function(distance) {
 }
 
 WorldScene.prototype._moveSouthEast = function(distance) {
-	if(this._readyForInput === true && this.checkCollision(distance, distance) === false) {
+	if(this._readyForInput === true) {
+
+		//first check walk
+		if(this._checkCollision(1, 1) === true) {
+			return false;
+		}
+		//check run if we are running
+		if(distance > 1) {
+			if(this._checkCollision(2, 2) === true) {
+				return false;
+			}
+		}
+		//check hourse run if distance is 3
+		if(distance > 3) {
+			if(this._checkCollision(3, 3) === true) {
+				return false;
+			}			
+		}
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, distance);
 
@@ -224,54 +390,6 @@ WorldScene.prototype._moveSouthEast = function(distance) {
 	}
 }
 
-WorldScene.prototype.checkCollision = function(diffX, diffY) {
-	var x, y;
-
-	if(diffX < 0 && diffY == 0) {
-		for(distance = diffX; distance < 0; distance++) {
-			if(this._checkCollision(distance, 0) === true) {
-				return true;
-			}
-		}
-	} else if(diffX > 0 && diffY == 0) {
-		for(distance = -diffX; distance < 0; distance++) {
-			if(this._checkCollision(-distance, 0) === true) {
-				return true;
-			}
-		}		
-	} else if(diffX === 0 && diffY < 0) {
-		for(distance = diffY; distance < 0; distance++) {
-			if(this._checkCollision(0, distance) === true) {
-				return true;
-			}
-		}		
-	} else if(diffX === 0 && diffY > 0) {
-		for(distance = -diffY; distance < 0; distance++) {
-			if(this._checkCollision(0, -distance) === true) {
-				return true;
-			}
-		}				
-	} else if(diffX < 0 && diffY < 0) {
-		for(distance = diffX; distance < 0; distance++) {
-			if(this._checkCollision(distance, distance) === true) {
-				return true;
-			}
-		}
-	} else if(diffX < 0 && diffY > 0) {
-		for(distance = diffX; distance < 0; distance++) {
-			if(this._checkCollision(distance, -distance) === true) {
-				return true;
-			}
-		}
-	} else if(diffX > 0 && diffY < 0) {
-		for(distance = diffY; distance < 0; distance++) {
-			if(this._checkCollision(-distance, distance) === true) {
-				return true;
-			}
-		}
-	}
-	return false;
-}
 
 WorldScene.prototype._checkCollision = function(x, y) {
 	var mapCell = this._map.getMapCell(this._mainPlayer.virtualX + x, this._mainPlayer.virtualY + y),
@@ -279,6 +397,7 @@ WorldScene.prototype._checkCollision = function(x, y) {
 		i = 0;
 
 	if(mapCell.collision) {
+		console.log('Collision at: ' + (this._mainPlayer.virtualX + x) + ' ' + (this._mainPlayer.virtualY + y));
 		return true;
 	}
 
@@ -535,7 +654,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					if(getBackImageUrl !== null) {
 						mapCell.backSprite = false;					
 						LoaderService.loadTexture(getBackImageUrl)
-							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY + defaults.cellHeight * 2));
+							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY + 80));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
@@ -550,7 +669,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				if(imageUrl !== null) {
 					mapCell.middleSprite = false;
 					LoaderService.loadTexture(imageUrl)
-						.then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY));
+						.then(this._addMiddleSprite.bind(this, mapCell, drawX, drawY + 80));
 				} else {
 					console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.middleIndex);
 				}
@@ -559,16 +678,16 @@ WorldScene.prototype._handleNewSprites = function() {
 			}
 
 			//debug flag?
-			//if(mapCell.collision === true && !mapCell.debug) {
-			//	mapCell.debug = true;
+			if(!mapCell.debug && mapCell.collision === true && GameService.debug.enabled === true) {
+				mapCell.debug = true;
 
-			//	var graphics = new PIXI.Graphics();
+				var graphics = new PIXI.Graphics();
 
-			//	graphics.beginFill(0xFFFF00);
+				graphics.beginFill(0xFFFF00);
 
-			//	graphics.drawRect(drawX, drawY, 48, 32);	
-			//	this._smTileLayer.addChild(graphics);			
-			//}
+				graphics.drawRect(drawX, drawY, 48, 32);	
+				this._objTileLayer.addChild(graphics);			
+			}
 
 
 			//top sprites (objects)
@@ -585,7 +704,7 @@ WorldScene.prototype._handleNewSprites = function() {
 							this, 
 							mapCell, 
 							drawX + placementX, 
-							drawY + placementY + defaults.cellHeight * 2,
+							drawY + placementY + 80,
 							y
 						));
 				} else {

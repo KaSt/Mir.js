@@ -18,6 +18,11 @@ var GameService = {
         screenWidth: 1024,
         screenHeight: 768
 	},
+	debug: {
+		enabled: false,
+		x: 0,
+		y: 0
+	},
 
 	loadScene: function(newScene) {
 

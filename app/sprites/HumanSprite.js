@@ -116,15 +116,15 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 }
 
 HumanSprite.prototype._handleMovingAnimation = function() {
-	var tickTime = 20;
+	var tickTime = 16;
 
 	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
 
-	if(this._actionQueue.length === 0 && this._animationCameraFrame === 12) {
+	if(this._actionQueue.length === 0 && this._animationCameraFrame === 16) {
 		tickTime = 100;
 	}
 	if(this._tickElapsed(tickTime)) {
-		if(this._animationCameraFrame === 12) { 
+		if(this._animationCameraFrame === 16) { 
 			this._animationControl.getAnimationCompleteEvent().call();
 			//check queue for more animations
 			this._nextAnimation();
@@ -133,7 +133,7 @@ HumanSprite.prototype._handleMovingAnimation = function() {
 			this._animationControl.getNewFrameEvent().call(this, this._animationCameraFrame);
 			this._animationCameraFrame++
 
-			if(this._animationCameraFrame % 5 === 0) {
+			if(this._animationCameraFrame % 6 === 0) {
 				this._animationFrame++;
 			}
 			this._updateTick();

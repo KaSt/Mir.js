@@ -18,6 +18,8 @@ Renderer.prototype._init = function() {
 
 Renderer.prototype._render = function() {
 
+	var lastTick = 0;
+
 	var loop = function loop() {
 		var scene = GameService.scene;
 
@@ -30,7 +32,10 @@ Renderer.prototype._render = function() {
 		if(scene !== null && scene.isLoadingMap() === false) {
 			scene.checkInputs();
 			scene.updateAnimations();
-			this._renderer.render(scene.getStage());
+			if(Date.now() - lastTick > 16) {
+				lastTick = Date.now();
+				this._renderer.render(scene.getStage());
+			}
 		};
 
 		this._fpsMeter.tick();

@@ -9,6 +9,7 @@ function GameInterface(appContainer) {
 	this._hpMpContainer = null;
 	this._chatContainer = null;
 	this._coordsLabel = null;
+	this._debugLabel = null;
 	this._levelLabel = null;
 	this._hpMpLabel = null;
 	this._hpBar = null;
@@ -24,6 +25,28 @@ GameInterface.prototype._init = function() {
 	this._appContainer.appendChild(this._gameInterfaceContainer);
 
 	this._initBottomInterface();
+	this._initDebugLabel();
+}
+
+GameInterface.prototype._initDebugLabel = function() {
+	//Cords label
+	this._debugLabel = document.createElement('div');
+	this._debugLabel.id = "debug-label";
+
+	var updateLabelText = function() {
+		this._debugLabel.innerHTML = 'Debug: ' + GameService.debug.x + ' ' + GameService.debug.y;
+	}.bind(this);
+
+	var observeDebugXChange = new PathObserver(GameService, 'debug.x');
+	var observeDebugYChange = new PathObserver(GameService, 'debug.y');
+
+	observeDebugXChange.open(updateLabelText);
+	observeDebugYChange.open(updateLabelText);
+
+	//update label
+	updateLabelText();
+
+	this._appContainer.appendChild(this._debugLabel);
 }
 
 GameInterface.prototype._initBottomInterface = function() {
