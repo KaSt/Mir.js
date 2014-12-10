@@ -719,7 +719,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._mainPlayer.humanSprite.loaded = true;
 				this._mainPlayer.humanSprite.init();
 				this._mainPlayer.humanSprite.sprites.x = drawX;
-				this._mainPlayer.humanSprite.sprites.y = drawY;
+				this._mainPlayer.humanSprite.sprites.y = drawY - 16;
 				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
 			}
 
@@ -730,7 +730,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					npc.npcSprite.loaded = true;
 					npc.npcSprite.init();
 					npc.npcSprite.sprites.x = drawX;
-					npc.npcSprite.sprites.y = drawY;
+					npc.npcSprite.sprites.y = drawY - 16;
 					this._objTileLayer.addChild(npc.npcSprite.sprites);
 				}
 			}

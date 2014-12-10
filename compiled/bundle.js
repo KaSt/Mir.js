@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var GameService = require('./services/GameService.js');
 var SceneTypes = require('./scenes/SceneTypes.js');
 var Renderer = require('./Renderer.js');
@@ -208,7 +208,9 @@ GameInterface.prototype._init = function() {
 	this._appContainer.appendChild(this._gameInterfaceContainer);
 
 	this._initBottomInterface();
-	this._initDebugLabel();
+	if(GameService.debug.enabled === true) {
+		this._initDebugLabel();
+	}
 }
 
 GameInterface.prototype._initDebugLabel = function() {
@@ -236,7 +238,6 @@ GameInterface.prototype._initBottomInterface = function() {
 
 	this._bottomInterface = document.createElement('div');
 	this._bottomInterface.id = "bottom-interface";
-	this._bottomInterface.excludeFromInput = true;
 
 	this._gameInterfaceContainer.appendChild(this._bottomInterface);
 
@@ -249,6 +250,7 @@ GameInterface.prototype._initBottomInterface = function() {
 GameInterface.prototype._initChatContainer = function() {
 	this._chatContainer = document.createElement('div');
 	this._chatContainer.id = "chat-container";
+	this._chatContainer.excludeFromInput = true;
 
 	this._bottomInterface.appendChild(this._chatContainer);
 }
@@ -723,8 +725,8 @@ Player.prototype.move = function(distance, direction, beginMoveCallback, cameraM
 			beginMoveCallback();
 		}.bind(this, beginMoveCallback),
 		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
-			cameraMoveCallback(distance / 16);
-			if(_animationCameraFrame === 12) {
+			cameraMoveCallback(distance / 8);
+			if(_animationCameraFrame === 5) {
 				inputReadyCallback();
 			}
 		}.bind(this, cameraMoveCallback, inputReadyCallback),
@@ -1467,7 +1469,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._mainPlayer.humanSprite.loaded = true;
 				this._mainPlayer.humanSprite.init();
 				this._mainPlayer.humanSprite.sprites.x = drawX;
-				this._mainPlayer.humanSprite.sprites.y = drawY;
+				this._mainPlayer.humanSprite.sprites.y = drawY - 16;
 				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
 			}
 
@@ -1478,7 +1480,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					npc.npcSprite.loaded = true;
 					npc.npcSprite.init();
 					npc.npcSprite.sprites.x = drawX;
-					npc.npcSprite.sprites.y = drawY;
+					npc.npcSprite.sprites.y = drawY - 16;
 					this._objTileLayer.addChild(npc.npcSprite.sprites);
 				}
 			}
@@ -1988,32 +1990,34 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 }
 
 HumanSprite.prototype._handleMovingAnimation = function() {
-	var tickTime = 16;
+	var tickTime = 80;
 
 	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
 
 
 	if(this._tickElapsed(tickTime)) {
-		if(this._animationCameraFrame === 16) { 
+		if(this._animationCameraFrame === 8) { 
 			this._animationControl.getAnimationCompleteEvent().call();
 			//check queue for more animations
 			this._nextAnimation();
-			this._animationFrame = 0
+			this._animationFrame = 0;
 
 		} else {
 			this._animationControl.getNewFrameEvent().call(this, this._animationCameraFrame);
 			this._animationCameraFrame++
 
-			if(this._animationCameraFrame === 3) {
-				this._animationFrame++;	
+			if(this._animationCameraFrame === 1) {
+				this._animationFrame = 1;
+			} else if(this._animationCameraFrame === 2) {
+				this._animationFrame = 2;
+			} else if(this._animationCameraFrame === 3) {
+				this._animationFrame = 3;				
+			} else if(this._animationCameraFrame === 5) {
+				this._animationFrame = 4;
 			} else if(this._animationCameraFrame === 6) {
-				this._animationFrame++;	
-			} else if(this._animationCameraFrame === 9) {
-				this._animationFrame++;	
-			} else if(this._animationCameraFrame === 12) {
-				this._animationFrame++;	
-			} else if(this._animationCameraFrame === 15 && this._actionQueue.length === 0) {
-				this._animationFrame++;	
+				this._animationFrame = 5;
+			} else if(this._animationCameraFrame === 7) {
+				this._animationFrame = 0;
 			}
 
 			this._updateTick();
@@ -3986,7 +3990,7 @@ H.push(K-1)}},b.WebGLGraphics.buildComplexPoly=function(a,c){var d=a.points.slic
   expose.ObserverTransform = ObserverTransform;
   
 })(typeof global !== 'undefined' && global && typeof module !== 'undefined' && module ? global : this || window);
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],23:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4047,8 +4051,10 @@ EventEmitter.prototype.emit = function(type) {
       er = arguments[1];
       if (er instanceof Error) {
         throw er; // Unhandled 'error' event
+      } else {
+        throw TypeError('Uncaught, unspecified "error" event.');
       }
-      throw TypeError('Uncaught, unspecified "error" event.');
+      return false;
     }
   }
 
@@ -4323,8 +4329,6 @@ var process = module.exports = {};
 process.nextTick = (function () {
     var canSetImmediate = typeof window !== 'undefined'
     && window.setImmediate;
-    var canMutationObserver = typeof window !== 'undefined'
-    && window.MutationObserver;
     var canPost = typeof window !== 'undefined'
     && window.postMessage && window.addEventListener
     ;
@@ -4333,29 +4337,8 @@ process.nextTick = (function () {
         return function (f) { return window.setImmediate(f) };
     }
 
-    var queue = [];
-
-    if (canMutationObserver) {
-        var hiddenDiv = document.createElement("div");
-        var observer = new MutationObserver(function () {
-            var queueList = queue.slice();
-            queue.length = 0;
-            queueList.forEach(function (fn) {
-                fn();
-            });
-        });
-
-        observer.observe(hiddenDiv, { attributes: true });
-
-        return function nextTick(fn) {
-            if (!queue.length) {
-                hiddenDiv.setAttribute('yes', 'no');
-            }
-            queue.push(fn);
-        };
-    }
-
     if (canPost) {
+        var queue = [];
         window.addEventListener('message', function (ev) {
             var source = ev.source;
             if ((source === window || source === null) && ev.data === 'process-tick') {
@@ -4395,7 +4378,7 @@ process.emit = noop;
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
-};
+}
 
 // TODO(shtylman)
 process.cwd = function () { return '/' };
@@ -4999,5 +4982,5 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":26,"_process":25,"inherits":24}]},{},[19]);
+}).call(this,require("q+64fw"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":26,"inherits":24,"q+64fw":25}]},{},[19])

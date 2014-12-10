@@ -25,7 +25,9 @@ GameInterface.prototype._init = function() {
 	this._appContainer.appendChild(this._gameInterfaceContainer);
 
 	this._initBottomInterface();
-	this._initDebugLabel();
+	if(GameService.debug.enabled === true) {
+		this._initDebugLabel();
+	}
 }
 
 GameInterface.prototype._initDebugLabel = function() {
@@ -53,7 +55,6 @@ GameInterface.prototype._initBottomInterface = function() {
 
 	this._bottomInterface = document.createElement('div');
 	this._bottomInterface.id = "bottom-interface";
-	this._bottomInterface.excludeFromInput = true;
 
 	this._gameInterfaceContainer.appendChild(this._bottomInterface);
 
@@ -66,6 +67,7 @@ GameInterface.prototype._initBottomInterface = function() {
 GameInterface.prototype._initChatContainer = function() {
 	this._chatContainer = document.createElement('div');
 	this._chatContainer.id = "chat-container";
+	this._chatContainer.excludeFromInput = true;
 
 	this._bottomInterface.appendChild(this._chatContainer);
 }

@@ -118,32 +118,34 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 }
 
 HumanSprite.prototype._handleMovingAnimation = function() {
-	var tickTime = 16;
+	var tickTime = 80;
 
 	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
 
 
 	if(this._tickElapsed(tickTime)) {
-		if(this._animationCameraFrame === 16) { 
+		if(this._animationCameraFrame === 8) { 
 			this._animationControl.getAnimationCompleteEvent().call();
 			//check queue for more animations
 			this._nextAnimation();
-			this._animationFrame = 0
+			this._animationFrame = 0;
 
 		} else {
 			this._animationControl.getNewFrameEvent().call(this, this._animationCameraFrame);
 			this._animationCameraFrame++
 
-			if(this._animationCameraFrame === 3) {
-				this._animationFrame++;	
+			if(this._animationCameraFrame === 1) {
+				this._animationFrame = 1;
+			} else if(this._animationCameraFrame === 2) {
+				this._animationFrame = 2;
+			} else if(this._animationCameraFrame === 3) {
+				this._animationFrame = 3;				
+			} else if(this._animationCameraFrame === 5) {
+				this._animationFrame = 4;
 			} else if(this._animationCameraFrame === 6) {
-				this._animationFrame++;	
-			} else if(this._animationCameraFrame === 9) {
-				this._animationFrame++;	
-			} else if(this._animationCameraFrame === 12) {
-				this._animationFrame++;	
-			} else if(this._animationCameraFrame === 15 && this._actionQueue.length === 0) {
-				this._animationFrame++;	
+				this._animationFrame = 5;
+			} else if(this._animationCameraFrame === 7) {
+				this._animationFrame = 0;
 			}
 
 			this._updateTick();
