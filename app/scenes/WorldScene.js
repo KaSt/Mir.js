@@ -307,7 +307,6 @@ WorldScene.prototype._updateCameraOffset = function(diffX, diffY) {
 
 	this._mainPlayer.humanSprite.sprites.x = this._mainPlayer.humanSprite.sprites.x + moveX;
 	this._mainPlayer.humanSprite.sprites.y = this._mainPlayer.humanSprite.sprites.y + moveY;
-	this._mainPlayer.humanSprite.sprites.z = this._mainPlayer.humanSprite.sprites.z + 0.1; 
 }
 
 WorldScene.prototype._updateCamera = function(diffX, diffY) {
@@ -536,7 +535,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					if(getBackImageUrl !== null) {
 						mapCell.backSprite = false;					
 						LoaderService.loadTexture(getBackImageUrl)
-							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY));
+							.then(this._addBackSprite.bind(this, mapCell, drawX, drawY + defaults.cellHeight * 2));
 					} else {
 						console.log('Failed loading map graphics ' + imageUrl + ' at index: ' + mapCell.backIndex);
 					}
@@ -559,6 +558,19 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._handleSpriteVisibility(mapCell.middleSprite);
 			}
 
+			//debug flag?
+			//if(mapCell.collision === true && !mapCell.debug) {
+			//	mapCell.debug = true;
+
+			//	var graphics = new PIXI.Graphics();
+
+			//	graphics.beginFill(0xFFFF00);
+
+			//	graphics.drawRect(drawX, drawY, 48, 32);	
+			//	this._smTileLayer.addChild(graphics);			
+			//}
+
+
 			//top sprites (objects)
 			if(mapCell.frontSprite === null && mapCell.frontIndex > 0 && mapCell.frontImage > 0) {
 				imageUrlAndPlacements = this._map.getFrontImageUrlAndPlacements(mapCell);
@@ -573,7 +585,7 @@ WorldScene.prototype._handleNewSprites = function() {
 							this, 
 							mapCell, 
 							drawX + placementX, 
-							drawY + placementY,
+							drawY + placementY + defaults.cellHeight * 2,
 							y
 						));
 				} else {
@@ -588,7 +600,7 @@ WorldScene.prototype._handleNewSprites = function() {
 				this._mainPlayer.humanSprite.loaded = true;
 				this._mainPlayer.humanSprite.init();
 				this._mainPlayer.humanSprite.sprites.x = drawX;
-				this._mainPlayer.humanSprite.sprites.y = drawY - defaults.cellHeight * 2;
+				this._mainPlayer.humanSprite.sprites.y = drawY;
 				this._objTileLayer.addChild(this._mainPlayer.humanSprite.sprites);
 			}
 
@@ -599,7 +611,7 @@ WorldScene.prototype._handleNewSprites = function() {
 					npc.npcSprite.loaded = true;
 					npc.npcSprite.init();
 					npc.npcSprite.sprites.x = drawX;
-					npc.npcSprite.sprites.y = drawY  - defaults.cellHeight * 2;
+					npc.npcSprite.sprites.y = drawY;
 					this._objTileLayer.addChild(npc.npcSprite.sprites);
 				}
 			}
