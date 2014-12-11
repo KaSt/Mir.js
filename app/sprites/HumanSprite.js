@@ -175,7 +175,7 @@ HumanSprite.prototype._handleMovingAnimation = function() {
 	this._animationKeyFrame = (this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128) + (8 * this._direction);
 
 	if(this._tickElapsed(tickTime)) {
-		if(this._animationCameraFrame === 16) { 
+		if(this._animationCameraFrame === 8) { 
 
 			if(this._actionQueue.length > 0) {
 				stillRunning = (this._actionQueue[0].getAction() === HumanActionEnum.Walking 
@@ -190,17 +190,17 @@ HumanSprite.prototype._handleMovingAnimation = function() {
 			this._animationControl.getNewFrameEvent().call(this, this._animationCameraFrame);
 			this._animationCameraFrame++
 
-			if(this._animationCameraFrame === 2) {
+			if(this._animationCameraFrame === 1) {
 				this._animationFrame = 1;
-			} else if(this._animationCameraFrame === 4) {
+			} else if(this._animationCameraFrame === 2) {
 				this._animationFrame = 2;
-			} else if(this._animationCameraFrame === 6) {
+			} else if(this._animationCameraFrame === 3) {
 				this._animationFrame = 3;				
-			} else if(this._animationCameraFrame === 10) {
+			} else if(this._animationCameraFrame === 5) {
 				this._animationFrame = 4;
-			} else if(this._animationCameraFrame === 12) {
+			} else if(this._animationCameraFrame === 6) {
 				this._animationFrame = 5;
-			} else if(this._animationCameraFrame === 14) {
+			} else if(this._animationCameraFrame === 7) {
 				this._animationFrame = 0;
 			}
 

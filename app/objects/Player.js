@@ -84,8 +84,8 @@ Player.prototype.move = function(distance, direction, beginMoveCallback, cameraM
 			this.isMoving = true;
 		}.bind(this, beginMoveCallback),
 		newFrameEvent: function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
-			cameraMoveCallback(distance / 16);
-			if(_animationCameraFrame === 12) {
+			cameraMoveCallback(distance / 8);
+			if(_animationCameraFrame === 6) {
 				inputReadyCallback();
 			}
 		}.bind(this, cameraMoveCallback, inputReadyCallback),
