@@ -169,7 +169,7 @@ HumanSprite.prototype._handleAttack1Animation = function() {
 }
 
 HumanSprite.prototype._handleMovingAnimation = function() {
-	var tickTime = 80,
+	var tickTime = 60,
 		stillRunning = false;
 
 	this._animationKeyFrame = (this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128) + (8 * this._direction);

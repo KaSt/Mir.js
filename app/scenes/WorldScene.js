@@ -43,7 +43,7 @@ function WorldScene(appContainer) {
 WorldScene.prototype.init = function() {
 	var defaults = GameService.defaults;
 	this._gameOffSetX = defaults.screenWidth / 2;
-    this._gameOffSetY = defaults.screenHeight / 2 - 64;
+    this._gameOffSetY = defaults.screenHeight / 2 - 48;
 
     //add
     this._stage.addChild(this._tileLayer);

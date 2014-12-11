@@ -811,7 +811,7 @@ function WorldScene(appContainer) {
 WorldScene.prototype.init = function() {
 	var defaults = GameService.defaults;
 	this._gameOffSetX = defaults.screenWidth / 2;
-    this._gameOffSetY = defaults.screenHeight / 2 - 64;
+    this._gameOffSetY = defaults.screenHeight / 2 - 48;
 
     //add
     this._stage.addChild(this._tileLayer);
@@ -2127,7 +2127,7 @@ HumanSprite.prototype._handleAttack1Animation = function() {
 }
 
 HumanSprite.prototype._handleMovingAnimation = function() {
-	var tickTime = 80,
+	var tickTime = 60,
 		stillRunning = false;
 
 	this._animationKeyFrame = (this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128) + (8 * this._direction);
