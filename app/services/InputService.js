@@ -4,10 +4,13 @@ var util = require('util');
 function InputService() {
 	this.leftMouseButtonDown = false;
 	this.rightMouseButtonDown = false;
+	this.shiftKeyDown = false;
+	this.altKeyDown = false;
 	this.mouseX = 0;
 	this.mouseY = 0;
 	EventEmitter.call(this);
 	window.addEventListener('keydown', this._keyDown.bind(this), true)
+	window.addEventListener('keyup', this._keyUp.bind(this), true)
 	window.addEventListener('mousedown', this._mouseDown.bind(this), true)
 	window.addEventListener('mouseup', this._mouseUp.bind(this), true)
 	window.addEventListener('mousemove', this._mouseMove.bind(this), true)
@@ -19,19 +22,24 @@ function InputService() {
 util.inherits(InputService, EventEmitter);
 
 InputService.prototype._keyDown = function(e) {
-	switch(e.keyCode) {
-		case 37:
-			this.emit('pressed left', e.keyCode);
-			break;							
-		case 38:
-			this.emit('pressed up', e.keyCode);
-			break;
-		case 39:
-			this.emit('pressed right', e.keyCode);
-			break;				
-		case 40:
-			this.emit('pressed down', e.keyCode);
-			break;								
+	switch(e.keyCode) {	
+		case 16:
+			this.shiftKeyDown = true;
+			break;	
+		case 18:
+			this.altKeyDown = false;
+			break;	
+	}
+}
+
+InputService.prototype._keyUp = function(e) {
+	switch(e.keyCode) {		
+		case 16:
+			this.shiftKeyDown = false;
+			break;	
+		case 18:
+			this.altKeyDown = false;
+			break;	
 	}
 }
 

@@ -23,6 +23,8 @@ function Player( data ) {
 	this.bag = data.bag || [];
 	this.equiped = data.equiped || {};
 	this.humanSprite = null;
+
+	this.isMoving = false;
 }
 
 Player.prototype.initHumanSprite = function(scene) {
@@ -58,24 +60,40 @@ Player.prototype.update = function() {
 	this.humanSprite.update();
 }
 
+Player.prototype.meleeAttack = function(direction, doneCallback) {
+	this.humanSprite.queueAnimation(new AnimationControl({
+		//maybe random the attacks?
+		action: HumanActionEnum.Attack1,
+		direction: direction,
+		beginEvent: function() {
+			//send attack to server?
+		}.bind(this),
+		animationCompleteEvent: function(doneCallback) {
+			//attack animation done
+			doneCallback();
+		}.bind(this, doneCallback)
+	}));
+}
+
 Player.prototype.move = function(distance, direction, beginMoveCallback, cameraMoveCallback, doneCallback, inputReadyCallback) {
-	//first we check we can move there
-	this.humanSprite.queueAnimation(new AnimationControl(
-		distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
-		direction,
-		function(beginMoveCallback) {
+	this.humanSprite.queueAnimation(new AnimationControl({
+		action: distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
+		direction: direction,
+		beginEvent: function(beginMoveCallback) {
 			beginMoveCallback();
+			this.isMoving = true;
 		}.bind(this, beginMoveCallback),
-		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
-			cameraMoveCallback(distance / 8);
-			if(_animationCameraFrame === 5) {
+		newFrameEvent: function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
+			cameraMoveCallback(distance / 16);
+			if(_animationCameraFrame === 12) {
 				inputReadyCallback();
 			}
 		}.bind(this, cameraMoveCallback, inputReadyCallback),
-		function(doneCallback) {
+		animationCompleteEvent: function(doneCallback, stillRunning) {
 			doneCallback();
+			this.isMoving = stillRunning;
 		}.bind(this, doneCallback)
-	));
+	}));
 }
 
 module.exports = Player

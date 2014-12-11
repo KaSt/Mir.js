@@ -7,7 +7,7 @@ var HumanActionEnum = {
     DashL: 4,
     DashR: 5,
     DashFail: 6,
-    Stance: 7,
+    Stance1: 7,
     Stance2: 8,
     Attack1: 9,
     Attack2: 10,

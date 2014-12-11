@@ -28,6 +28,7 @@ GameInterface.prototype._init = function() {
 	if(GameService.debug.enabled === true) {
 		this._initDebugLabel();
 	}
+	this._initCoordsLabel();
 }
 
 GameInterface.prototype._initDebugLabel = function() {
@@ -55,19 +56,18 @@ GameInterface.prototype._initBottomInterface = function() {
 
 	this._bottomInterface = document.createElement('div');
 	this._bottomInterface.id = "bottom-interface";
+	this._bottomInterface.excludeFromInput = true;
 
 	this._gameInterfaceContainer.appendChild(this._bottomInterface);
 
-	this._initCoordsLabel();
-	this._initLevelLabel();
-	this._initHpMpContainer();
-	this._initChatContainer();
+	//this._initLevelLabel();
+	//this._initHpMpContainer();
+	//this._initChatContainer();
 }
 
 GameInterface.prototype._initChatContainer = function() {
 	this._chatContainer = document.createElement('div');
 	this._chatContainer.id = "chat-container";
-	this._chatContainer.excludeFromInput = true;
 
 	this._bottomInterface.appendChild(this._chatContainer);
 }
@@ -157,7 +157,7 @@ GameInterface.prototype._initCoordsLabel = function() {
 	//update label
 	updateLabelText();
 
-	this._bottomInterface.appendChild(this._coordsLabel);
+	this._gameInterfaceContainer.appendChild(this._coordsLabel);
 }
 
 GameInterface.prototype._initLevelLabel = function() {

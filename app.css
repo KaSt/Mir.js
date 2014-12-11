@@ -10,15 +10,15 @@ body {
 }
 
 #app {
-	width: 1024px;
-	height: 768px;
+	width: 1920px;
+	height: 1080px;
 	overflow: hidden;
 	position: absolute;
 }
 
 #app canvas {
-	width: 1024px;
-	height: 768px;
+	width: 1920px;
+	height: 1080px;
 	position: absolute;
 }
 
@@ -33,8 +33,8 @@ body {
 }
 
 #app #game-interface-container {
-	width: 1024px;
-	height: 768px;
+	width: 1920px;
+	height: 1080px;
 	top: 0;
 	left: 0;
 	position: absolute;
@@ -43,9 +43,10 @@ body {
 #app #game-interface-container #bottom-interface {
 	position: absolute;
 	bottom: 0;
-	left: 0;
-	width: 1024px;
-	height: 229px;
+	transform: translateX(-50%);
+	left: 50%;
+	width: 644px;
+	height: 100px;
 	background: url('gui/bottom-interface.png') no-repeat;
 }
 
@@ -90,15 +91,15 @@ body {
 	margin: 0 10px;
 }
 
-#app #game-interface-container #bottom-interface #coords-label {
+#app #game-interface-container #coords-label {
 	display: block;
 	position: absolute;
 	color: #fff;
 	font-family: Arial;
 	font-size: 10px;
-	bottom: 6px;
-	left: 15px;
-	text-align: center;
+	bottom: 10px;
+	left: 10px;
+	text-align: left;
 	width: 155px;
 }
 

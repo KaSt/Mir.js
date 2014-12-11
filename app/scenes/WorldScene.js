@@ -128,6 +128,10 @@ WorldScene.prototype._moveNorthWest = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, -distance);
 	
@@ -166,6 +170,10 @@ WorldScene.prototype._moveWest = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, 0);
 	
@@ -203,6 +211,10 @@ WorldScene.prototype._moveEast = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, 0);
 	
@@ -238,6 +250,10 @@ WorldScene.prototype._moveNorth = function(distance) {
 			if(this._checkCollision(0, -3) === true) {
 				distance = 2;
 			}			
+		}
+
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
 		}
 
 		this._readyForInput = false;
@@ -277,6 +293,10 @@ WorldScene.prototype._moveNorthEast = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, -distance);
 		
@@ -313,6 +333,10 @@ WorldScene.prototype._moveSouth = function(distance) {
 				distance = 2;
 			}			
 		}
+
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
 
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(0, distance);
@@ -352,6 +376,10 @@ WorldScene.prototype._moveSouthWest = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, distance);
 		
@@ -389,6 +417,10 @@ WorldScene.prototype._moveSouthEast = function(distance) {
 				distance = 2;
 			}			
 		}
+
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
 
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, distance);
@@ -499,10 +531,13 @@ WorldScene.prototype._calculateDirection = function() {
 }
 
 WorldScene.prototype.checkInputs = function() {
+	var direction = 0,
+		distance = 0;
+
 	if(this._readyForInput === true) {
-		if(InputService.leftMouseButtonDown === true || InputService.rightMouseButtonDown === true) {
-			var direction = this._calculateDirection(),
-				distance = InputService.rightMouseButtonDown === true ? 2 : 1;
+		if((InputService.leftMouseButtonDown === true && InputService.shiftKeyDown === false) || InputService.rightMouseButtonDown === true) {
+			direction = this._calculateDirection();
+			distance = InputService.rightMouseButtonDown === true ? 2 : 1;
 
 			switch(direction) {
 				case DirectionEnum.North:
@@ -530,8 +565,17 @@ WorldScene.prototype.checkInputs = function() {
 					this._moveNorthWest(distance);
 					break;										
 			}
+		} else if(InputService.leftMouseButtonDown === true && InputService.shiftKeyDown === true) {
+			direction = this._calculateDirection();
+			//attack
+			this._readyForInput = false;
+			this._mainPlayer.meleeAttack(direction, this._enableReadyForInput.bind(this));
 		}
 	}
+}
+
+WorldScene.prototype._enableReadyForInput = function() {
+	this._readyForInput = true;
 }
 
 WorldScene.prototype.updateAnimations = function() {

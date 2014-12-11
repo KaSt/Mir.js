@@ -1,10 +1,10 @@
 
-function AnimationControl(action, direction, beginEvent, newFrameEvent, animationCompleteEvent) {
-	this._direction = direction;
-	this._action = action;
-	this._newFrameEvent = newFrameEvent;
-	this._beginEvent = beginEvent;
-	this._animationCompleteEvent = animationCompleteEvent;
+function AnimationControl(data) {
+	this._direction = data.direction || 0;
+	this._action = data.action !== null ? data.action : 0;
+	this._newFrameEvent = data.newFrameEvent || null;
+	this._beginEvent = data.beginEvent || null;
+	this._animationCompleteEvent = data.animationCompleteEvent || null;
 }
 
 AnimationControl.prototype.getAction = function() {

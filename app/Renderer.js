@@ -11,7 +11,7 @@ function Renderer(appContainer) {
 }
 
 Renderer.prototype._init = function() {
-	this._renderer = new PIXI.WebGLRenderer(1024, 768);
+	this._renderer = new PIXI.WebGLRenderer(GameService.defaults.screenWidth, GameService.defaults.screenHeight);
 	this._appContainer.appendChild(this._renderer.view);
 	this._render();
 }

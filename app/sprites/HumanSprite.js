@@ -77,6 +77,12 @@ HumanSprite.prototype.update = function() {
 		case HumanActionEnum.Running:
 			this._handleMovingAnimation();
 			break;
+		case HumanActionEnum.Attack1:
+			this._handleAttack1Animation();
+			break;
+		case HumanActionEnum.Stance1:
+			this._handleStandingStance1();
+			break;
 	}
 
 
@@ -86,7 +92,20 @@ HumanSprite.prototype.update = function() {
 HumanSprite.prototype._nextAnimation = function() {
 	//if nothing left, we set back to normal
 	if(this._actionQueue.length === 0) {
-		this._animationControl = new AnimationControl(HumanActionEnum.Standing, this._direction);
+
+		//check if last animation a movement, then we want to be standing again, otherwise we have an attack stance
+		if(this._animationControl !== null && this._animationControl.getAction() === HumanActionEnum.Attack1) {
+			this._animationControl = new AnimationControl({
+				action: HumanActionEnum.Stance1,
+				direction: this._direction
+			});			
+		} else {
+			this._animationControl = new AnimationControl({
+				action: HumanActionEnum.Standing,
+				direction: this._direction
+			});	
+		}
+
 		this._animationAlt = false;
 	} else {
 		this._animationControl = this._actionQueue[0];
@@ -103,9 +122,26 @@ HumanSprite.prototype.queueAnimation = function(animationControl) {
 	this._actionQueue.push(animationControl);
 }
 
+HumanSprite.prototype._handleStandingStance1 = function() {
+	this._animationKeyFrame = 192 + this._direction;
+	this._animationFrame = 0;
+
+	if(this._tickElapsed(1000)) {	
+		
+		if(this._animationCameraFrame === 5 || this._actionQueue.length > 0) { 
+			this._nextAnimation();
+			this._animationFrame = 0;
+			this._updateTick();
+		} else {
+			this._animationCameraFrame++;
+			this._updateTick();
+		}
+	}	
+}
+
 HumanSprite.prototype._handleStandingAnimation = function() {
 	if(this._tickElapsed(200)) {	
-		this._animationKeyFrame = 0;
+		this._animationKeyFrame = (8 * this._direction);
 
 		if(this._animationFrame === 3) {
 			this._animationFrame = 0;
@@ -117,15 +153,35 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 	}	
 }
 
+HumanSprite.prototype._handleAttack1Animation = function() {
+	if(this._tickElapsed(80)) {	
+		this._animationKeyFrame = 200 + (8 * this._direction); 
+
+		if(this._animationFrame === 5) {
+			this._animationControl.getAnimationCompleteEvent().call();
+			this._animationFrame = 0;
+			this._nextAnimation();
+		} else {
+			this._animationFrame++
+			this._updateTick();
+		}	
+	}	
+}
+
 HumanSprite.prototype._handleMovingAnimation = function() {
-	var tickTime = 80;
+	var tickTime = 80,
+		stillRunning = false;
 
-	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
-
+	this._animationKeyFrame = (this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128) + (8 * this._direction);
 
 	if(this._tickElapsed(tickTime)) {
-		if(this._animationCameraFrame === 8) { 
-			this._animationControl.getAnimationCompleteEvent().call();
+		if(this._animationCameraFrame === 16) { 
+
+			if(this._actionQueue.length > 0) {
+				stillRunning = (this._actionQueue[0].getAction() === HumanActionEnum.Walking 
+					|| this._actionQueue[0].getAction() === HumanActionEnum.Running)
+			}
+			this._animationControl.getAnimationCompleteEvent().call(this, stillRunning);
 			//check queue for more animations
 			this._nextAnimation();
 			this._animationFrame = 0;
@@ -134,17 +190,17 @@ HumanSprite.prototype._handleMovingAnimation = function() {
 			this._animationControl.getNewFrameEvent().call(this, this._animationCameraFrame);
 			this._animationCameraFrame++
 
-			if(this._animationCameraFrame === 1) {
+			if(this._animationCameraFrame === 2) {
 				this._animationFrame = 1;
-			} else if(this._animationCameraFrame === 2) {
+			} else if(this._animationCameraFrame === 4) {
 				this._animationFrame = 2;
-			} else if(this._animationCameraFrame === 3) {
-				this._animationFrame = 3;				
-			} else if(this._animationCameraFrame === 5) {
-				this._animationFrame = 4;
 			} else if(this._animationCameraFrame === 6) {
+				this._animationFrame = 3;				
+			} else if(this._animationCameraFrame === 10) {
+				this._animationFrame = 4;
+			} else if(this._animationCameraFrame === 12) {
 				this._animationFrame = 5;
-			} else if(this._animationCameraFrame === 7) {
+			} else if(this._animationCameraFrame === 14) {
 				this._animationFrame = 0;
 			}
 
@@ -163,7 +219,8 @@ HumanSprite.prototype._tickElapsed = function(value) {
 }
 
 HumanSprite.prototype._updateBodyTexture = function() {
-	var index = (this.look * 600) + (8 * this._direction) + (this._animationAlt === true ? this._animationFrame + 3 : this._animationFrame) + this._animationKeyFrame; // 0 in this case
+	var index = (this.look * 600) + this._animationFrame + this._animationKeyFrame;
+
 	var humLib = ResourceService.graphics.humLib(this.look);
 
 	var placementX = this._scene._graphicsPlacements[humLib.path][index][0];

@@ -37,7 +37,7 @@ function Renderer(appContainer) {
 }
 
 Renderer.prototype._init = function() {
-	this._renderer = new PIXI.WebGLRenderer(1024, 768);
+	this._renderer = new PIXI.WebGLRenderer(GameService.defaults.screenWidth, GameService.defaults.screenHeight);
 	this._appContainer.appendChild(this._renderer.view);
 	this._render();
 }
@@ -85,12 +85,12 @@ Renderer.prototype.end = function() {
 module.exports = Renderer;
 },{"../fpsmeter.min.js":20,"./services/GameService.js":13,"pixi.js":21}],3:[function(require,module,exports){
 
-function AnimationControl(action, direction, beginEvent, newFrameEvent, animationCompleteEvent) {
-	this._direction = direction;
-	this._action = action;
-	this._newFrameEvent = newFrameEvent;
-	this._beginEvent = beginEvent;
-	this._animationCompleteEvent = animationCompleteEvent;
+function AnimationControl(data) {
+	this._direction = data.direction || 0;
+	this._action = data.action !== null ? data.action : 0;
+	this._newFrameEvent = data.newFrameEvent || null;
+	this._beginEvent = data.beginEvent || null;
+	this._animationCompleteEvent = data.animationCompleteEvent || null;
 }
 
 AnimationControl.prototype.getAction = function() {
@@ -139,7 +139,7 @@ var HumanActionEnum = {
     DashL: 4,
     DashR: 5,
     DashFail: 6,
-    Stance: 7,
+    Stance1: 7,
     Stance2: 8,
     Attack1: 9,
     Attack2: 10,
@@ -211,6 +211,7 @@ GameInterface.prototype._init = function() {
 	if(GameService.debug.enabled === true) {
 		this._initDebugLabel();
 	}
+	this._initCoordsLabel();
 }
 
 GameInterface.prototype._initDebugLabel = function() {
@@ -238,19 +239,18 @@ GameInterface.prototype._initBottomInterface = function() {
 
 	this._bottomInterface = document.createElement('div');
 	this._bottomInterface.id = "bottom-interface";
+	this._bottomInterface.excludeFromInput = true;
 
 	this._gameInterfaceContainer.appendChild(this._bottomInterface);
 
-	this._initCoordsLabel();
-	this._initLevelLabel();
-	this._initHpMpContainer();
-	this._initChatContainer();
+	//this._initLevelLabel();
+	//this._initHpMpContainer();
+	//this._initChatContainer();
 }
 
 GameInterface.prototype._initChatContainer = function() {
 	this._chatContainer = document.createElement('div');
 	this._chatContainer.id = "chat-container";
-	this._chatContainer.excludeFromInput = true;
 
 	this._bottomInterface.appendChild(this._chatContainer);
 }
@@ -340,7 +340,7 @@ GameInterface.prototype._initCoordsLabel = function() {
 	//update label
 	updateLabelText();
 
-	this._bottomInterface.appendChild(this._coordsLabel);
+	this._gameInterfaceContainer.appendChild(this._coordsLabel);
 }
 
 GameInterface.prototype._initLevelLabel = function() {
@@ -681,6 +681,8 @@ function Player( data ) {
 	this.bag = data.bag || [];
 	this.equiped = data.equiped || {};
 	this.humanSprite = null;
+
+	this.isMoving = false;
 }
 
 Player.prototype.initHumanSprite = function(scene) {
@@ -716,24 +718,40 @@ Player.prototype.update = function() {
 	this.humanSprite.update();
 }
 
+Player.prototype.meleeAttack = function(direction, doneCallback) {
+	this.humanSprite.queueAnimation(new AnimationControl({
+		//maybe random the attacks?
+		action: HumanActionEnum.Attack1,
+		direction: direction,
+		beginEvent: function() {
+			//send attack to server?
+		}.bind(this),
+		animationCompleteEvent: function(doneCallback) {
+			//attack animation done
+			doneCallback();
+		}.bind(this, doneCallback)
+	}));
+}
+
 Player.prototype.move = function(distance, direction, beginMoveCallback, cameraMoveCallback, doneCallback, inputReadyCallback) {
-	//first we check we can move there
-	this.humanSprite.queueAnimation(new AnimationControl(
-		distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
-		direction,
-		function(beginMoveCallback) {
+	this.humanSprite.queueAnimation(new AnimationControl({
+		action: distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
+		direction: direction,
+		beginEvent: function(beginMoveCallback) {
 			beginMoveCallback();
+			this.isMoving = true;
 		}.bind(this, beginMoveCallback),
-		function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
+		newFrameEvent: function(cameraMoveCallback, inputReadyCallback, _animationCameraFrame) {
 			cameraMoveCallback(distance / 8);
-			if(_animationCameraFrame === 5) {
+			if(_animationCameraFrame === 6) {
 				inputReadyCallback();
 			}
 		}.bind(this, cameraMoveCallback, inputReadyCallback),
-		function(doneCallback) {
+		animationCompleteEvent: function(doneCallback, stillRunning) {
 			doneCallback();
+			this.isMoving = stillRunning;
 		}.bind(this, doneCallback)
-	));
+	}));
 }
 
 module.exports = Player
@@ -878,6 +896,10 @@ WorldScene.prototype._moveNorthWest = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, -distance);
 	
@@ -916,6 +938,10 @@ WorldScene.prototype._moveWest = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, 0);
 	
@@ -953,6 +979,10 @@ WorldScene.prototype._moveEast = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, 0);
 	
@@ -988,6 +1018,10 @@ WorldScene.prototype._moveNorth = function(distance) {
 			if(this._checkCollision(0, -3) === true) {
 				distance = 2;
 			}			
+		}
+
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
 		}
 
 		this._readyForInput = false;
@@ -1027,6 +1061,10 @@ WorldScene.prototype._moveNorthEast = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, -distance);
 		
@@ -1063,6 +1101,10 @@ WorldScene.prototype._moveSouth = function(distance) {
 				distance = 2;
 			}			
 		}
+
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
 
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(0, distance);
@@ -1102,6 +1144,10 @@ WorldScene.prototype._moveSouthWest = function(distance) {
 			}			
 		}
 
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
+
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(-distance, distance);
 		
@@ -1139,6 +1185,10 @@ WorldScene.prototype._moveSouthEast = function(distance) {
 				distance = 2;
 			}			
 		}
+
+		if(this._mainPlayer.isMoving === false) {
+			distance = 1;
+		}		
 
 		this._readyForInput = false;
 		this._mainPlayer.setVirtualLocation(distance, distance);
@@ -1249,10 +1299,13 @@ WorldScene.prototype._calculateDirection = function() {
 }
 
 WorldScene.prototype.checkInputs = function() {
+	var direction = 0,
+		distance = 0;
+
 	if(this._readyForInput === true) {
-		if(InputService.leftMouseButtonDown === true || InputService.rightMouseButtonDown === true) {
-			var direction = this._calculateDirection(),
-				distance = InputService.rightMouseButtonDown === true ? 2 : 1;
+		if((InputService.leftMouseButtonDown === true && InputService.shiftKeyDown === false) || InputService.rightMouseButtonDown === true) {
+			direction = this._calculateDirection();
+			distance = InputService.rightMouseButtonDown === true ? 2 : 1;
 
 			switch(direction) {
 				case DirectionEnum.North:
@@ -1280,8 +1333,17 @@ WorldScene.prototype.checkInputs = function() {
 					this._moveNorthWest(distance);
 					break;										
 			}
+		} else if(InputService.leftMouseButtonDown === true && InputService.shiftKeyDown === true) {
+			direction = this._calculateDirection();
+			//attack
+			this._readyForInput = false;
+			this._mainPlayer.meleeAttack(direction, this._enableReadyForInput.bind(this));
 		}
 	}
+}
+
+WorldScene.prototype._enableReadyForInput = function() {
+	this._readyForInput = true;
 }
 
 WorldScene.prototype.updateAnimations = function() {
@@ -1621,8 +1683,8 @@ var GameService = {
 		viewRangeY: 35,
 		cellWidth: 48,
         cellHeight: 32,
-        screenWidth: 1024,
-        screenHeight: 768
+        screenWidth: 1920,
+        screenHeight: 1080
 	},
 	debug: {
 		enabled: false,
@@ -1669,10 +1731,13 @@ var util = require('util');
 function InputService() {
 	this.leftMouseButtonDown = false;
 	this.rightMouseButtonDown = false;
+	this.shiftKeyDown = false;
+	this.altKeyDown = false;
 	this.mouseX = 0;
 	this.mouseY = 0;
 	EventEmitter.call(this);
 	window.addEventListener('keydown', this._keyDown.bind(this), true)
+	window.addEventListener('keyup', this._keyUp.bind(this), true)
 	window.addEventListener('mousedown', this._mouseDown.bind(this), true)
 	window.addEventListener('mouseup', this._mouseUp.bind(this), true)
 	window.addEventListener('mousemove', this._mouseMove.bind(this), true)
@@ -1684,19 +1749,24 @@ function InputService() {
 util.inherits(InputService, EventEmitter);
 
 InputService.prototype._keyDown = function(e) {
-	switch(e.keyCode) {
-		case 37:
-			this.emit('pressed left', e.keyCode);
-			break;							
-		case 38:
-			this.emit('pressed up', e.keyCode);
-			break;
-		case 39:
-			this.emit('pressed right', e.keyCode);
-			break;				
-		case 40:
-			this.emit('pressed down', e.keyCode);
-			break;								
+	switch(e.keyCode) {	
+		case 16:
+			this.shiftKeyDown = true;
+			break;	
+		case 18:
+			this.altKeyDown = false;
+			break;	
+	}
+}
+
+InputService.prototype._keyUp = function(e) {
+	switch(e.keyCode) {		
+		case 16:
+			this.shiftKeyDown = false;
+			break;	
+		case 18:
+			this.altKeyDown = false;
+			break;	
 	}
 }
 
@@ -1965,6 +2035,12 @@ HumanSprite.prototype.update = function() {
 		case HumanActionEnum.Running:
 			this._handleMovingAnimation();
 			break;
+		case HumanActionEnum.Attack1:
+			this._handleAttack1Animation();
+			break;
+		case HumanActionEnum.Stance1:
+			this._handleStandingStance1();
+			break;
 	}
 
 
@@ -1974,7 +2050,20 @@ HumanSprite.prototype.update = function() {
 HumanSprite.prototype._nextAnimation = function() {
 	//if nothing left, we set back to normal
 	if(this._actionQueue.length === 0) {
-		this._animationControl = new AnimationControl(HumanActionEnum.Standing, this._direction);
+
+		//check if last animation a movement, then we want to be standing again, otherwise we have an attack stance
+		if(this._animationControl !== null && this._animationControl.getAction() === HumanActionEnum.Attack1) {
+			this._animationControl = new AnimationControl({
+				action: HumanActionEnum.Stance1,
+				direction: this._direction
+			});			
+		} else {
+			this._animationControl = new AnimationControl({
+				action: HumanActionEnum.Standing,
+				direction: this._direction
+			});	
+		}
+
 		this._animationAlt = false;
 	} else {
 		this._animationControl = this._actionQueue[0];
@@ -1991,9 +2080,26 @@ HumanSprite.prototype.queueAnimation = function(animationControl) {
 	this._actionQueue.push(animationControl);
 }
 
+HumanSprite.prototype._handleStandingStance1 = function() {
+	this._animationKeyFrame = 192 + this._direction;
+	this._animationFrame = 0;
+
+	if(this._tickElapsed(1000)) {	
+		
+		if(this._animationCameraFrame === 5 || this._actionQueue.length > 0) { 
+			this._nextAnimation();
+			this._animationFrame = 0;
+			this._updateTick();
+		} else {
+			this._animationCameraFrame++;
+			this._updateTick();
+		}
+	}	
+}
+
 HumanSprite.prototype._handleStandingAnimation = function() {
 	if(this._tickElapsed(200)) {	
-		this._animationKeyFrame = 0;
+		this._animationKeyFrame = (8 * this._direction);
 
 		if(this._animationFrame === 3) {
 			this._animationFrame = 0;
@@ -2005,15 +2111,35 @@ HumanSprite.prototype._handleStandingAnimation = function() {
 	}	
 }
 
+HumanSprite.prototype._handleAttack1Animation = function() {
+	if(this._tickElapsed(80)) {	
+		this._animationKeyFrame = 200 + (8 * this._direction); 
+
+		if(this._animationFrame === 5) {
+			this._animationControl.getAnimationCompleteEvent().call();
+			this._animationFrame = 0;
+			this._nextAnimation();
+		} else {
+			this._animationFrame++
+			this._updateTick();
+		}	
+	}	
+}
+
 HumanSprite.prototype._handleMovingAnimation = function() {
-	var tickTime = 80;
+	var tickTime = 80,
+		stillRunning = false;
 
-	this._animationKeyFrame = this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128;
-
+	this._animationKeyFrame = (this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128) + (8 * this._direction);
 
 	if(this._tickElapsed(tickTime)) {
 		if(this._animationCameraFrame === 8) { 
-			this._animationControl.getAnimationCompleteEvent().call();
+
+			if(this._actionQueue.length > 0) {
+				stillRunning = (this._actionQueue[0].getAction() === HumanActionEnum.Walking 
+					|| this._actionQueue[0].getAction() === HumanActionEnum.Running)
+			}
+			this._animationControl.getAnimationCompleteEvent().call(this, stillRunning);
 			//check queue for more animations
 			this._nextAnimation();
 			this._animationFrame = 0;
@@ -2051,7 +2177,8 @@ HumanSprite.prototype._tickElapsed = function(value) {
 }
 
 HumanSprite.prototype._updateBodyTexture = function() {
-	var index = (this.look * 600) + (8 * this._direction) + (this._animationAlt === true ? this._animationFrame + 3 : this._animationFrame) + this._animationKeyFrame; // 0 in this case
+	var index = (this.look * 600) + this._animationFrame + this._animationKeyFrame;
+
 	var humLib = ResourceService.graphics.humLib(this.look);
 
 	var placementX = this._scene._graphicsPlacements[humLib.path][index][0];

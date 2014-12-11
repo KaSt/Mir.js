@@ -15,8 +15,8 @@ var GameService = {
 		viewRangeY: 35,
 		cellWidth: 48,
         cellHeight: 32,
-        screenWidth: 1024,
-        screenHeight: 768
+        screenWidth: 1920,
+        screenHeight: 1080
 	},
 	debug: {
 		enabled: false,
