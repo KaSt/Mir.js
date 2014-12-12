@@ -8,4 +8,4 @@ var MirClassEnum = {
     Monk: 5
 }
 
-module.exports = ClassEnum;
+module.exports = MirClassEnum;

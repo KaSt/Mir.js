@@ -33,7 +33,8 @@ Player.prototype.initHumanSprite = function(scene) {
 	this.humanSprite = new HumanSprite(scene, {
 		z: this.y,
 		direction: this.direction,
-		look: this.gender
+		look: this.gender,
+		gender: this.gender
 	});
 }
 

@@ -28,24 +28,58 @@ var ResourceService = {
 		humLib: function(look) {
 			switch(look) {
 				case 0:
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
 					return {
-						path: "data/hum" + (look + 1),
+						path: "data/hum1",
 						type: 'png',
-						placements: 'data/hum' + (look + 1) + '.json'
+						placements: 'data/hum1.json'
 					};
 			}
 		},
+		hairLib: function(look) {
+			switch(look) {
+				case 0:
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
+					return {
+						path: "data/hair1",
+						type: 'png',
+						placements: 'data/hair1.json'
+					};
+			}
+		},		
 		npcLib: function(look) {
 			switch(look) {
 				case 0:
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
+				case 8:
+				case 9:
 					return {
-						path: "data/npc" + (look + 1),
+						path: "data/npc1",
 						type: 'png',
-						placements: 'data/npc' + (look + 1) + '.json'
+						placements: 'data/npc1.json'
 					};
 			}
 		},		
 		placements: [
+			"data/hair1",
 			"data/hum1",
 			"data/npc1",
 			"data/tiles1",

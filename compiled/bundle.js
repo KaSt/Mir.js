@@ -191,7 +191,7 @@ var MirClassEnum = {
     Monk: 5
 }
 
-module.exports = ClassEnum;
+module.exports = MirClassEnum;
 },{}],7:[function(require,module,exports){
 var GameService = require('../services/GameService.js');
 var PathObserver = require('../../observe-js.js').PathObserver;
@@ -727,7 +727,8 @@ Player.prototype.initHumanSprite = function(scene) {
 	this.humanSprite = new HumanSprite(scene, {
 		z: this.y,
 		direction: this.direction,
-		look: this.gender
+		look: this.gender,
+		gender: this.gender
 	});
 }
 
@@ -1964,24 +1965,58 @@ var ResourceService = {
 		humLib: function(look) {
 			switch(look) {
 				case 0:
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
 					return {
-						path: "data/hum" + (look + 1),
+						path: "data/hum1",
 						type: 'png',
-						placements: 'data/hum' + (look + 1) + '.json'
+						placements: 'data/hum1.json'
 					};
 			}
 		},
+		hairLib: function(look) {
+			switch(look) {
+				case 0:
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
+					return {
+						path: "data/hair1",
+						type: 'png',
+						placements: 'data/hair1.json'
+					};
+			}
+		},		
 		npcLib: function(look) {
 			switch(look) {
 				case 0:
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
+				case 6:
+				case 7:
+				case 8:
+				case 9:
 					return {
-						path: "data/npc" + (look + 1),
+						path: "data/npc1",
 						type: 'png',
-						placements: 'data/npc' + (look + 1) + '.json'
+						placements: 'data/npc1.json'
 					};
 			}
 		},		
 		placements: [
+			"data/hair1",
 			"data/hum1",
 			"data/npc1",
 			"data/tiles1",
@@ -2013,6 +2048,7 @@ function HumanSprite( scene, data ) {
 	this._action = data.action !== null ? data.action : null;
 	this.z = null;
 	this.look = data.look !== null ? data.look : null;
+	this.gender = data.gender !== null ? data.gender : null;
 
 	this._animationControl = null;
 	this._animationKeyFrame = 0;
@@ -2040,12 +2076,14 @@ HumanSprite.prototype.init = function() {
 	this.sprites.z = this.z + 0.1;
 
 	this._updateBodyTexture();
+	this._updateHairTexture();
 	this._nextAnimation();
 }
 
 HumanSprite.prototype.setLook = function(look) {
 	this.look = look;
 	this._updateBodyTexture();
+	this._updateHairTexture();
 }
 
 HumanSprite.prototype.setZ = function(z) {
@@ -2082,8 +2120,8 @@ HumanSprite.prototype.update = function() {
 			break;
 	}
 
-
 	this._updateBodyTexture();
+	this._updateHairTexture();
 }
 
 HumanSprite.prototype._nextAnimation = function() {
@@ -2233,6 +2271,28 @@ HumanSprite.prototype._updateBodyTexture = function() {
 
 		this._bodySprite.x = placementX;
 		this._bodySprite.y = placementY;
+	}.bind(this));
+}
+
+HumanSprite.prototype._updateHairTexture = function() {
+	var index = ((this.gender === 0 ? 2 : 1) * 920) + this._animationFrame + this._animationKeyFrame;
+
+	var hairLib = ResourceService.graphics.hairLib(this.gender);
+
+	var placementX = this._scene._graphicsPlacements[hairLib.path][index][0];
+	var placementY = this._scene._graphicsPlacements[hairLib.path][index][1];	
+
+	LoaderService.loadTexture(hairLib.path + '/' + addPathNamePadding(index, 6) + '.' + hairLib.type).then(function(texture) {
+		if(this._hairSprite === null) {
+			this._hairSprite = new PIXI.Sprite(texture);
+			this.sprites.addChild(this._hairSprite);
+		} else {
+			this._hairSprite.setTexture(texture);
+		}
+
+		this._hairSprite.x = placementX;
+		this._hairSprite.y = placementY;
+		console.log(index, placementX, placementY);
 	}.bind(this));
 }
 
