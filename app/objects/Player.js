@@ -10,7 +10,7 @@ function Player( data ) {
 	this.maxExp = data.maxExp !== null ? data.maxExp : null;
 	this.x = data.x !== null ? data.x : null;
 	this.y = data.y !== null ? data.y : null;
-	this.class = data.class !== null ? data.class : null;
+	this.mirClass = data.mirClass !== null ? data.mirClass : null;
 	this.virtualX = data.x !== null ? data.x : null;
 	this.virtualY = data.y !== null ? data.y : null;
 

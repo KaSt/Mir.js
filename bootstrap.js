@@ -14,6 +14,7 @@ var GameService = require('./app/services/GameService.js');
 var Player = require('./app/objects/Player.js');
 var Npc = require('./app/objects/Npc.js');
 var App = require('./app/App.js');
+var MirClassEnum = require('./app/enums/MirClassEnum.js');
 
 //round to 128 so we get no blurry graphics
 GameService.defaults.screenWidth = 16 * Math.round((window.innerWidth || 1024) / 16);
@@ -33,6 +34,7 @@ GameService.player = new Player({
 	y: 288,
 	hp: 70,
 	mp: 20,
+	mirClass: MirClassEnum.Warrior,
 	maxHp: 100,
 	maxMp: 100,
 	weight: 20,
