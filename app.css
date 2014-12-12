@@ -2,9 +2,11 @@ html {
 	height: 100%;
 	width: 100%;
 	overflow: hidden;
+	position: relative;
 }
 
 body {
+	background: #000;
 	padding: 0;
 	margin: 0;
 	-webkit-touch-callout: none;
@@ -16,6 +18,8 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    position: relative;
+    font-family: 'Open Sans', sans-serif;
 }
 
 #app {
@@ -36,7 +40,6 @@ body {
 	top: 10px;
 	right: 10px;
 	color: #fff;
-	font-family: Arial;
 	font-size: 12px;
 	text-shadow: 0 0 1px black;
 }
@@ -49,67 +52,94 @@ body {
 	position: absolute;
 }
 
+#app #game-interface-container #mini-map-container {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 200px;
+	height: 238px;
+}
+
+#app #game-interface-container #mini-map-container #map {
+	position: absolute;
+	width: 170px;
+	height: 170px;
+	top: 15px;
+	left: 15px;
+	background-color: black;
+	background-repeat: no-repeat;
+}
+
+#app #game-interface-container #mini-map-container #frame {
+	display: block;
+	width: 200px;
+	height: 238px;
+	background: url('gui/mini-map.png') no-repeat;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
 #app #game-interface-container #bottom-interface {
 	position: absolute;
 	bottom: 0;
 	transform: translateX(-50%);
 	left: 50%;
-	width: 799px;
-	height: 100px;
+	width: 958px;
+	height: 120px;
 	background: url('gui/bottom-interface.png') no-repeat;
 }
 
-#app #game-interface-container #hp-mp-container {
+#app #game-interface-container #bottom-interface #exp-bar {
+	width: 337px;
 	position: absolute;
-	bottom: 27px;
-	left: 17px;
-	width: 154px;
-	height: 140px;
-	background: url('gui/hp-mp-container.png') no-repeat top center;
+	height: 13px;
+	top: 45px;
+	left: 211px;
+	background: url('gui/exp-bar.png') no-repeat;
 }
 
-#app #game-interface-container #hp-mp-container #hp-bar {
+
+#app #game-interface-container #hp-bar {
 	position: absolute;
-	bottom: 46px;
-	left: 30px;
-	width: 94px;
-	background: url('gui/hp-bar.png') no-repeat bottom center;
+	bottom: 4px;
+	left: 72px;
+	width: 99px;
+	height: 102px;
+	background: url('gui/hp-bar.png') bottom no-repeat;
 }
 
-#app #game-interface-container #hp-mp-container #mp-bar {
+#app #game-interface-container #mp-bar {
 	position: absolute;
-	bottom: 46px;
-	right: 30px;
-	width: 94px;
-	background: url('gui/mp-bar.png') no-repeat bottom center;
-}
-
-#app #game-interface-container #hp-mp-container #hp-mp-label {
-	position: absolute;
-	bottom: 1px;
-	color: #fff;
-	font-size: 10px;
-	text-align: center;
-	font-family: Arial;
-	left: 0;
-	width: 154px;
-}
-
-#app #game-interface-container #hp-mp-container #hp-mp-label span {
-	display: inline-block;
-	margin: 0 10px;
+	bottom: 4px;
+	right: 73px;
+	width: 99px;
+	height: 102px;
+	background: url('gui/mp-bar.png') bottom no-repeat;
 }
 
 #app #game-interface-container #coords-label {
 	display: block;
 	position: absolute;
 	color: #fff;
-	font-family: Arial;
 	font-size: 10px;
-	bottom: 10px;
-	left: 10px;
-	text-align: left;
-	width: 155px;
+	top: 205px;
+	right: 22px;
+	width: 170px;
+	text-align: center;
+	z-index: 5;
+	letter-spacing: 1px;
+	text-shadow: 0 0 10px #000;
+}
+
+#app #game-interface-container #coords-label span {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+#app #game-interface-container #coords-label em {
+	display: block;
+	font-style: normal;
 }
 
 #app #game-interface-container #bottom-interface #level-label {
@@ -117,7 +147,6 @@ body {
 	width: 20px;
 	height: 20px;
 	color: #fff;
-	font-family: Arial;
 	font-size: 10px;
 	right: 121px;
 	text-align: center;

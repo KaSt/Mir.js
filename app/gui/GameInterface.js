@@ -6,7 +6,7 @@ function GameInterface(appContainer) {
 
 	this._gameInterfaceContainer = null;
 	this._bottomInterface = null;
-	this._hpMpContainer = null;
+	this._miniMapContainer = null;
 	this._chatContainer = null;
 	this._coordsLabel = null;
 	this._debugLabel = null;
@@ -14,6 +14,7 @@ function GameInterface(appContainer) {
 	this._hpMpLabel = null;
 	this._hpBar = null;
 	this._mpBar = null;
+	this._expBar = null;
 
 	this._init();
 }
@@ -29,6 +30,7 @@ GameInterface.prototype._init = function() {
 		this._initDebugLabel();
 	}
 	this._initCoordsLabel();
+	this._initMiniMapContainer();
 }
 
 GameInterface.prototype._initDebugLabel = function() {
@@ -60,9 +62,30 @@ GameInterface.prototype._initBottomInterface = function() {
 
 	this._gameInterfaceContainer.appendChild(this._bottomInterface);
 
-	//this._initLevelLabel();
-	//this._initHpMpContainer();
-	//this._initChatContainer();
+	this._initExpBar();
+	this._initHpBar();
+	this._initMpBar();
+}
+
+GameInterface.prototype._initExpBar = function() {
+	this.expBar = document.createElement('div');
+	this.expBar.id = "exp-bar";
+
+	var updateBar = function() {
+
+		this.expBar.style.width = Math.round(GameService.player.exp / GameService.player.maxExp * 536) + "px";
+
+	}.bind(this);
+
+	var observePlayerExpChange = new PathObserver(GameService, 'player.exp');
+	var observePlayerMaxExpChange = new PathObserver(GameService, 'player.maxExp');	
+
+	observePlayerExpChange.open(updateBar);
+	observePlayerMaxExpChange.open(updateBar);		
+
+	updateBar();
+
+	this._bottomInterface.appendChild(this.expBar);
 }
 
 GameInterface.prototype._initChatContainer = function() {
@@ -72,15 +95,36 @@ GameInterface.prototype._initChatContainer = function() {
 	this._bottomInterface.appendChild(this._chatContainer);
 }
 
-GameInterface.prototype._initHpMpContainer = function() {
-	this._hpMpContainer = document.createElement('div');
-	this._hpMpContainer.id = "hp-mp-container";
+GameInterface.prototype._initMiniMapContainer = function() {
+	this._miniMapContainer = document.createElement('div');
+	this._miniMapContainer.id = "mini-map-container";
 
-	this._bottomInterface.appendChild(this._hpMpContainer);
+	var minimapFrame = document.createElement('div');
+	minimapFrame.id = "frame";
 
-	this._initHpMpLabel();
-	this._initHpBar();
-	this._initMpBar();
+	var minimapMap = document.createElement('div');
+	minimapMap.id = "map";
+	minimapMap.style.backgroundImage = "url('gui/minimap/0.jpg')";
+
+
+	var updateMapPosition = function() {
+		var positionX = Math.round(GameService.player.x / GameService.scene.getMap().getWidth() * 1052) - 85;
+		var positionY = Math.round(GameService.player.y / GameService.scene.getMap().getHeight() * 699) - 85;
+
+		minimapMap.style.backgroundPosition = "-" + positionX + "px -" + positionY + "px";
+	}.bind(this);
+
+	var observePlayerXChange = new PathObserver(GameService, 'player.x');
+	var observePlayerYChange = new PathObserver(GameService, 'player.y');	
+
+	observePlayerXChange.open(updateMapPosition);
+	observePlayerYChange.open(updateMapPosition);	
+
+	updateMapPosition();
+
+	this._miniMapContainer.appendChild(minimapMap);
+	this._miniMapContainer.appendChild(minimapFrame);
+	this._gameInterfaceContainer.appendChild(this._miniMapContainer);
 }
 
 GameInterface.prototype._initHpBar = function() {
@@ -89,55 +133,35 @@ GameInterface.prototype._initHpBar = function() {
 	
 
 	var updateHpBar = function() {
-		this._hpBar.style.height = parseInt(GameService.player.hp / GameService.player.maxHp * 94);
+		this._hpBar.style.height = parseInt(GameService.player.hp / GameService.player.maxHp * 102) + 'px';
 	}.bind(this);
 
 	var observePlayerHpChange = new PathObserver(GameService, 'player.hp');
 
-	this._hpMpContainer.appendChild(this._hpBar);
 	observePlayerHpChange.open(updateHpBar);
 
 	updateHpBar();
+
+	this._bottomInterface.appendChild(this._hpBar);
 }
 
 GameInterface.prototype._initMpBar = function() {
 	this._mpBar = document.createElement('div');
 	this._mpBar.id = "mp-bar";
 	
-
 	var updateMpBar = function() {
-		this._mpBar.style.height = parseInt(GameService.player.mp / GameService.player.maxMp * 94);
+		this._mpBar.style.height = parseInt(GameService.player.mp / GameService.player.maxMp * 102) + 'px';
 	}.bind(this);
 
 	var observePlayerMpChange = new PathObserver(GameService, 'player.mp');
 
-	this._hpMpContainer.appendChild(this._mpBar);
 	observePlayerMpChange.open(updateMpBar);
 
 	updateMpBar();
+
+	this._bottomInterface.appendChild(this._mpBar);
 }
 
-GameInterface.prototype._initHpMpLabel = function() {
-	//Cords label
-	this._hpMpLabel = document.createElement('div');
-	this._hpMpLabel.id = "hp-mp-label";
-
-	var updateLabelText = function() {
-		this._hpMpLabel.innerHTML = '<span>' + GameService.player.hp + '/' + GameService.player.maxHp + '</span>'
-								  + '<span>' + GameService.player.mp + '/' + GameService.player.maxMp + '</span>';
-	}.bind(this);
-
-	var observePlayerHpChange = new PathObserver(GameService, 'player.hp');
-	var observePlayerMpChange = new PathObserver(GameService, 'player.mp');
-
-	observePlayerHpChange.open(updateLabelText);
-	observePlayerMpChange.open(updateLabelText);
-
-	//update label
-	updateLabelText();
-
-	this._hpMpContainer.appendChild(this._hpMpLabel);
-}
 
 GameInterface.prototype._initCoordsLabel = function() {
 	//Cords label
@@ -145,7 +169,7 @@ GameInterface.prototype._initCoordsLabel = function() {
 	this._coordsLabel.id = "coords-label";
 
 	var updateLabelText = function() {
-		this._coordsLabel.innerHTML = GameService.map.name + ' ' + GameService.player.x + ':' + GameService.player.y;	
+		this._coordsLabel.innerHTML = '<span>' + GameService.map.name + '</span><em>' + GameService.player.x + ':' + GameService.player.y + '</em>';	
 	}.bind(this);
 
 	var observePlayerXChange = new PathObserver(GameService, 'player.x');

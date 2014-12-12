@@ -75,8 +75,8 @@ InputService.prototype._mouseUp = function(e) {
 
 InputService.prototype._mouseMove = function(e) {
 	if(!e.target.excludeFromInput || e.target.excludeFromInput === false) {
-		var x = e.offsetX === undefined ? e.layerX : e.offsetX;
-		var y = e.offsetY === undefined ? e.layerY : e.offsetY;
+		var x = e.pageX;
+		var y = e.pageY;
 
 		this.mouseX = x;
 		this.mouseY = y;

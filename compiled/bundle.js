@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 var GameService = require('./services/GameService.js');
 var SceneTypes = require('./scenes/SceneTypes.js');
 var Renderer = require('./Renderer.js');
@@ -189,7 +189,7 @@ function GameInterface(appContainer) {
 
 	this._gameInterfaceContainer = null;
 	this._bottomInterface = null;
-	this._hpMpContainer = null;
+	this._miniMapContainer = null;
 	this._chatContainer = null;
 	this._coordsLabel = null;
 	this._debugLabel = null;
@@ -197,6 +197,7 @@ function GameInterface(appContainer) {
 	this._hpMpLabel = null;
 	this._hpBar = null;
 	this._mpBar = null;
+	this._expBar = null;
 
 	this._init();
 }
@@ -212,6 +213,7 @@ GameInterface.prototype._init = function() {
 		this._initDebugLabel();
 	}
 	this._initCoordsLabel();
+	this._initMiniMapContainer();
 }
 
 GameInterface.prototype._initDebugLabel = function() {
@@ -243,9 +245,30 @@ GameInterface.prototype._initBottomInterface = function() {
 
 	this._gameInterfaceContainer.appendChild(this._bottomInterface);
 
-	//this._initLevelLabel();
-	//this._initHpMpContainer();
-	//this._initChatContainer();
+	this._initExpBar();
+	this._initHpBar();
+	this._initMpBar();
+}
+
+GameInterface.prototype._initExpBar = function() {
+	this.expBar = document.createElement('div');
+	this.expBar.id = "exp-bar";
+
+	var updateBar = function() {
+
+		this.expBar.style.width = Math.round(GameService.player.exp / GameService.player.maxExp * 536) + "px";
+
+	}.bind(this);
+
+	var observePlayerExpChange = new PathObserver(GameService, 'player.exp');
+	var observePlayerMaxExpChange = new PathObserver(GameService, 'player.maxExp');	
+
+	observePlayerExpChange.open(updateBar);
+	observePlayerMaxExpChange.open(updateBar);		
+
+	updateBar();
+
+	this._bottomInterface.appendChild(this.expBar);
 }
 
 GameInterface.prototype._initChatContainer = function() {
@@ -255,15 +278,36 @@ GameInterface.prototype._initChatContainer = function() {
 	this._bottomInterface.appendChild(this._chatContainer);
 }
 
-GameInterface.prototype._initHpMpContainer = function() {
-	this._hpMpContainer = document.createElement('div');
-	this._hpMpContainer.id = "hp-mp-container";
+GameInterface.prototype._initMiniMapContainer = function() {
+	this._miniMapContainer = document.createElement('div');
+	this._miniMapContainer.id = "mini-map-container";
 
-	this._bottomInterface.appendChild(this._hpMpContainer);
+	var minimapFrame = document.createElement('div');
+	minimapFrame.id = "frame";
 
-	this._initHpMpLabel();
-	this._initHpBar();
-	this._initMpBar();
+	var minimapMap = document.createElement('div');
+	minimapMap.id = "map";
+	minimapMap.style.backgroundImage = "url('gui/minimap/0.jpg')";
+
+
+	var updateMapPosition = function() {
+		var positionX = Math.round(GameService.player.x / GameService.scene.getMap().getWidth() * 1052) - 85;
+		var positionY = Math.round(GameService.player.y / GameService.scene.getMap().getHeight() * 699) - 85;
+
+		minimapMap.style.backgroundPosition = "-" + positionX + "px -" + positionY + "px";
+	}.bind(this);
+
+	var observePlayerXChange = new PathObserver(GameService, 'player.x');
+	var observePlayerYChange = new PathObserver(GameService, 'player.y');	
+
+	observePlayerXChange.open(updateMapPosition);
+	observePlayerYChange.open(updateMapPosition);	
+
+	updateMapPosition();
+
+	this._miniMapContainer.appendChild(minimapMap);
+	this._miniMapContainer.appendChild(minimapFrame);
+	this._gameInterfaceContainer.appendChild(this._miniMapContainer);
 }
 
 GameInterface.prototype._initHpBar = function() {
@@ -272,55 +316,35 @@ GameInterface.prototype._initHpBar = function() {
 	
 
 	var updateHpBar = function() {
-		this._hpBar.style.height = parseInt(GameService.player.hp / GameService.player.maxHp * 94);
+		this._hpBar.style.height = parseInt(GameService.player.hp / GameService.player.maxHp * 102) + 'px';
 	}.bind(this);
 
 	var observePlayerHpChange = new PathObserver(GameService, 'player.hp');
 
-	this._hpMpContainer.appendChild(this._hpBar);
 	observePlayerHpChange.open(updateHpBar);
 
 	updateHpBar();
+
+	this._bottomInterface.appendChild(this._hpBar);
 }
 
 GameInterface.prototype._initMpBar = function() {
 	this._mpBar = document.createElement('div');
 	this._mpBar.id = "mp-bar";
 	
-
 	var updateMpBar = function() {
-		this._mpBar.style.height = parseInt(GameService.player.mp / GameService.player.maxMp * 94);
+		this._mpBar.style.height = parseInt(GameService.player.mp / GameService.player.maxMp * 102) + 'px';
 	}.bind(this);
 
 	var observePlayerMpChange = new PathObserver(GameService, 'player.mp');
 
-	this._hpMpContainer.appendChild(this._mpBar);
 	observePlayerMpChange.open(updateMpBar);
 
 	updateMpBar();
+
+	this._bottomInterface.appendChild(this._mpBar);
 }
 
-GameInterface.prototype._initHpMpLabel = function() {
-	//Cords label
-	this._hpMpLabel = document.createElement('div');
-	this._hpMpLabel.id = "hp-mp-label";
-
-	var updateLabelText = function() {
-		this._hpMpLabel.innerHTML = '<span>' + GameService.player.hp + '/' + GameService.player.maxHp + '</span>'
-								  + '<span>' + GameService.player.mp + '/' + GameService.player.maxMp + '</span>';
-	}.bind(this);
-
-	var observePlayerHpChange = new PathObserver(GameService, 'player.hp');
-	var observePlayerMpChange = new PathObserver(GameService, 'player.mp');
-
-	observePlayerHpChange.open(updateLabelText);
-	observePlayerMpChange.open(updateLabelText);
-
-	//update label
-	updateLabelText();
-
-	this._hpMpContainer.appendChild(this._hpMpLabel);
-}
 
 GameInterface.prototype._initCoordsLabel = function() {
 	//Cords label
@@ -328,7 +352,7 @@ GameInterface.prototype._initCoordsLabel = function() {
 	this._coordsLabel.id = "coords-label";
 
 	var updateLabelText = function() {
-		this._coordsLabel.innerHTML = GameService.map.name + ' ' + GameService.player.x + ':' + GameService.player.y;	
+		this._coordsLabel.innerHTML = '<span>' + GameService.map.name + '</span><em>' + GameService.player.x + ':' + GameService.player.y + '</em>';	
 	}.bind(this);
 
 	var observePlayerXChange = new PathObserver(GameService, 'player.x');
@@ -810,15 +834,13 @@ function WorldScene(appContainer) {
 
 WorldScene.prototype.init = function() {
 	var defaults = GameService.defaults;
-	this._gameOffSetX = defaults.screenWidth / 2;
+	this._gameOffSetX = defaults.screenWidth / 2 - 32;
     this._gameOffSetY = defaults.screenHeight / 2 - 48;
 
     //add
     this._stage.addChild(this._tileLayer);
     this._stage.addChild(this._smTileLayer);
     this._stage.addChild(this._objTileLayer);
-
-    this._gameInterface = new GameInterface(this._appContainer);
 
 	this._initGui();
 	this._enableInput();
@@ -834,6 +856,7 @@ WorldScene.prototype.init = function() {
 			this._readyForInput = true;
 			this._updateCamera(0, 0);		
 			this._isLoadingMap = false;
+			this._gameInterface = new GameInterface(this._appContainer);
 		}.bind(this));
 }
 
@@ -1206,6 +1229,9 @@ WorldScene.prototype._moveSouthEast = function(distance) {
 	}
 }
 
+WorldScene.prototype.getMap = function() {
+	return this._map;
+}
 
 WorldScene.prototype._checkCollision = function(x, y) {
 	var mapCell = this._map.getMapCell(this._mainPlayer.virtualX + x, this._mainPlayer.virtualY + y),
@@ -1683,8 +1709,8 @@ var GameService = {
 		viewRangeY: 35,
 		cellWidth: 48,
         cellHeight: 32,
-        screenWidth: window.innerWidth || 1024,
-        screenHeight: window.innerHeight || 768
+        screenWidth: 1024,
+        screenHeight: 768
 	},
 	debug: {
 		enabled: false,
@@ -1802,8 +1828,8 @@ InputService.prototype._mouseUp = function(e) {
 
 InputService.prototype._mouseMove = function(e) {
 	if(!e.target.excludeFromInput || e.target.excludeFromInput === false) {
-		var x = e.offsetX === undefined ? e.layerX : e.offsetX;
-		var y = e.offsetY === undefined ? e.layerY : e.offsetY;
+		var x = e.pageX;
+		var y = e.pageY;
 
 		this.mouseX = x;
 		this.mouseY = y;
@@ -2345,6 +2371,13 @@ var Player = require('./app/objects/Player.js');
 var Npc = require('./app/objects/Npc.js');
 var App = require('./app/App.js');
 
+//round to 128 so we get no blurry graphics
+GameService.defaults.screenWidth = 16 * Math.round((window.innerWidth || 1024) / 16);
+GameService.defaults.screenHeight = 16 * Math.round((window.innerHeight || 768) / 16);
+
+document.body.style.width = GameService.defaults.screenWidth + 'px';
+document.body.style.height = GameService.defaults.screenHeight + 'px';
+
 //make a dummy player for our game server
 GameService.player = new Player({
 	name: 'TrueADM',
@@ -2354,8 +2387,8 @@ GameService.player = new Player({
 	gender: 0,
 	x: 311,
 	y: 288,
-	hp: 100,
-	mp: 100,
+	hp: 70,
+	mp: 20,
 	maxHp: 100,
 	maxMp: 100,
 	weight: 20,
@@ -4133,7 +4166,7 @@ H.push(K-1)}},b.WebGLGraphics.buildComplexPoly=function(a,c){var d=a.points.slic
   expose.ObserverTransform = ObserverTransform;
   
 })(typeof global !== 'undefined' && global && typeof module !== 'undefined' && module ? global : this || window);
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],23:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -4194,8 +4227,10 @@ EventEmitter.prototype.emit = function(type) {
       er = arguments[1];
       if (er instanceof Error) {
         throw er; // Unhandled 'error' event
+      } else {
+        throw TypeError('Uncaught, unspecified "error" event.');
       }
-      throw TypeError('Uncaught, unspecified "error" event.');
+      return false;
     }
   }
 
@@ -4470,8 +4505,6 @@ var process = module.exports = {};
 process.nextTick = (function () {
     var canSetImmediate = typeof window !== 'undefined'
     && window.setImmediate;
-    var canMutationObserver = typeof window !== 'undefined'
-    && window.MutationObserver;
     var canPost = typeof window !== 'undefined'
     && window.postMessage && window.addEventListener
     ;
@@ -4480,29 +4513,8 @@ process.nextTick = (function () {
         return function (f) { return window.setImmediate(f) };
     }
 
-    var queue = [];
-
-    if (canMutationObserver) {
-        var hiddenDiv = document.createElement("div");
-        var observer = new MutationObserver(function () {
-            var queueList = queue.slice();
-            queue.length = 0;
-            queueList.forEach(function (fn) {
-                fn();
-            });
-        });
-
-        observer.observe(hiddenDiv, { attributes: true });
-
-        return function nextTick(fn) {
-            if (!queue.length) {
-                hiddenDiv.setAttribute('yes', 'no');
-            }
-            queue.push(fn);
-        };
-    }
-
     if (canPost) {
+        var queue = [];
         window.addEventListener('message', function (ev) {
             var source = ev.source;
             if ((source === window || source === null) && ev.data === 'process-tick') {
@@ -4542,7 +4554,7 @@ process.emit = noop;
 
 process.binding = function (name) {
     throw new Error('process.binding is not supported');
-};
+}
 
 // TODO(shtylman)
 process.cwd = function () { return '/' };
@@ -5146,5 +5158,5 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":26,"_process":25,"inherits":24}]},{},[19]);
+}).call(this,require("q+64fw"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":26,"inherits":24,"q+64fw":25}]},{},[19])

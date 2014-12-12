@@ -15,6 +15,13 @@ var Player = require('./app/objects/Player.js');
 var Npc = require('./app/objects/Npc.js');
 var App = require('./app/App.js');
 
+//round to 128 so we get no blurry graphics
+GameService.defaults.screenWidth = 16 * Math.round((window.innerWidth || 1024) / 16);
+GameService.defaults.screenHeight = 16 * Math.round((window.innerHeight || 768) / 16);
+
+document.body.style.width = GameService.defaults.screenWidth + 'px';
+document.body.style.height = GameService.defaults.screenHeight + 'px';
+
 //make a dummy player for our game server
 GameService.player = new Player({
 	name: 'TrueADM',
@@ -24,8 +31,8 @@ GameService.player = new Player({
 	gender: 0,
 	x: 311,
 	y: 288,
-	hp: 100,
-	mp: 100,
+	hp: 70,
+	mp: 20,
 	maxHp: 100,
 	maxMp: 100,
 	weight: 20,

@@ -42,15 +42,13 @@ function WorldScene(appContainer) {
 
 WorldScene.prototype.init = function() {
 	var defaults = GameService.defaults;
-	this._gameOffSetX = defaults.screenWidth / 2;
+	this._gameOffSetX = defaults.screenWidth / 2 - 32;
     this._gameOffSetY = defaults.screenHeight / 2 - 48;
 
     //add
     this._stage.addChild(this._tileLayer);
     this._stage.addChild(this._smTileLayer);
     this._stage.addChild(this._objTileLayer);
-
-    this._gameInterface = new GameInterface(this._appContainer);
 
 	this._initGui();
 	this._enableInput();
@@ -66,6 +64,7 @@ WorldScene.prototype.init = function() {
 			this._readyForInput = true;
 			this._updateCamera(0, 0);		
 			this._isLoadingMap = false;
+			this._gameInterface = new GameInterface(this._appContainer);
 		}.bind(this));
 }
 
@@ -438,6 +437,9 @@ WorldScene.prototype._moveSouthEast = function(distance) {
 	}
 }
 
+WorldScene.prototype.getMap = function() {
+	return this._map;
+}
 
 WorldScene.prototype._checkCollision = function(x, y) {
 	var mapCell = this._map.getMapCell(this._mainPlayer.virtualX + x, this._mainPlayer.virtualY + y),
