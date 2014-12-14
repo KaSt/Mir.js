@@ -236,6 +236,7 @@ module.exports = MirClassEnum;
 var GameService = require('../services/GameService.js');
 var InputService = require('../services/InputService.js');
 var Draggabilly = require('Draggabilly');
+var ItemTypeEnum = require('../enums/ItemTypeEnum.js');
 
 function GameInterface(appContainer) {
 	this._appContainer = appContainer;
@@ -255,6 +256,7 @@ function GameInterface(appContainer) {
 	this._expBar = null;
 	this._characterButton = null;
 	this._inventoryContainerGrid = [];
+	this._inventoryContainerEquip = {};
 	this._draggingItem = false;
 	this._draggingInventoryGridItem = null;
 
@@ -297,6 +299,34 @@ GameInterface.prototype._initInventoryContainer = function() {
 	this._initInventoryContainerPlayer();
 	this._initInventoryContainerGoldLabel();
 	this._initInventoryContainerGrid();
+	this._initInventoryContainerEquip();
+}
+
+GameInterface.prototype._initInventoryContainerEquip = function() {
+
+	var inventoryEquip = document.createElement('div');
+	inventoryEquip.id = 'inventory-equip';
+	inventoryEquip.excludeFromInput = true;
+
+	this._createInventoryEquipItem(inventoryEquip, 4, 51, ItemTypeEnum.Weapon, 'weapon');
+	this._createInventoryEquipItem(inventoryEquip, 4, 101, ItemTypeEnum.Armour, 'armour');
+	this._createInventoryEquipItem(inventoryEquip, 4, 152, ItemTypeEnum.Bracelet, 'bracelet1');
+	this._createInventoryEquipItem(inventoryEquip, 4, 203, ItemTypeEnum.Ring, 'ring1');
+	this._createInventoryEquipItem(inventoryEquip, 4, 254, ItemTypeEnum.Belt, 'belt');
+	this._createInventoryEquipItem(inventoryEquip, 56, 254, ItemTypeEnum.Amulet, 'amulet');
+
+	this._inventoryContainer.appendChild(inventoryEquip);
+}
+
+GameInterface.prototype._createInventoryEquipItem = function(inventoryEquip, x, y, itemType, binding) {
+	this._inventoryContainerEquip[binding] = document.createElement('div');
+	this._inventoryContainerEquip[binding].classList.add('inventory-equip-item');
+	this._inventoryContainerEquip[binding].dataset.id = binding;
+	this._inventoryContainerEquip[binding].style.left = x + 'px';
+	this._inventoryContainerEquip[binding].style.top = y + 'px';
+	this._inventoryContainerEquip[binding].excludeFromInput = true;
+
+	inventoryEquip.appendChild(this._inventoryContainerEquip[binding]);
 }
 
 GameInterface.prototype._initInventoryContainerGrid = function() {
@@ -590,7 +620,7 @@ GameInterface.prototype._initLevelLabel = function() {
 }
 
 module.exports = GameInterface;
-},{"../services/GameService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/GameService.js","../services/InputService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/InputService.js","Draggabilly":"/Volumes/StorageVol/Sites/www/mirjs/node_modules/Draggabilly/draggabilly.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/maps/Map.js":[function(require,module,exports){
+},{"../enums/ItemTypeEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/ItemTypeEnum.js","../services/GameService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/GameService.js","../services/InputService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/InputService.js","Draggabilly":"/Volumes/StorageVol/Sites/www/mirjs/node_modules/Draggabilly/draggabilly.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/maps/Map.js":[function(require,module,exports){
 var ResourceService = require('../services/ResourceService.js');
 
 var addPathNamePadding = function(n, width, z) {
@@ -1736,7 +1766,7 @@ WorldScene.prototype._updateBounds = function() {
 	this._topBound = this._mainPlayer.getY() - defaults.viewRangeY < 0 ? 0 : this._mainPlayer.getY() - defaults.viewRangeY;
 	this._leftBound = this._mainPlayer.getX() - defaults.viewRangeX < 0 ? 0 : this._mainPlayer.getX() - defaults.viewRangeX;
 	this._rightBound = this._mainPlayer.getX() + defaults.viewRangeX > this._map.getWidth() - 1 ? this._map.getWidth() - 1 : this._mainPlayer.getX() + defaults.viewRangeX;
-	this._bottomBound = this._mainPlayer.getY() + defaults.viewRangeY > this._map.getHeight() - 1 ? this._map.getHeight() - 1 : this._mainPlayer.getY() + defaults.viewRangeY;
+	this._bottomBound = this._mainPlayer.getY() + defaults.viewRangeY + 5 > this._map.getHeight() - 1 ? this._map.getHeight() - 1 : this._mainPlayer.getY() + defaults.viewRangeY + 5;
 }
 
 WorldScene.prototype._handleOldSprites = function() {
@@ -1957,7 +1987,7 @@ WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 		sprite.visible = false;
 	} else if(sprite.y + sprite.height - this._cameraDeltaY < (defaults.cellheight * -3)) {
 		sprite.visible = false;
-	} else if(sprite.y - this._cameraDeltaY > defaults.screenHeight + (defaults.cellheight * 5)) {
+	} else if(sprite.y - this._cameraDeltaY > defaults.screenHeight + (defaults.cellheight * 10)) {
 		sprite.visible = false;
 	} else {
 		sprite.visible = true;
@@ -2544,7 +2574,7 @@ HumanSprite.prototype._handleAttack1Animation = function() {
 }
 
 HumanSprite.prototype._handleMovingAnimation = function() {
-	var tickTime = 60,
+	var tickTime = 50,
 		stillRunning = false;
 
 	this._animationKeyFrame = (this._animationControl.getAction() === HumanActionEnum.Walking ? 64 : 128) + (8 * this._direction);
@@ -2851,7 +2881,73 @@ GameService.player = new Player({
 			price: 200,
 			stats: null,
 			weight: 5
-		})			
+		}),
+		new Item({
+			name: 'Small Health Potion',
+			inventoryLook: 3,
+			spriteLook: 0,
+			description: "A small health potion that heals 50 HP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 25,
+			stats: null,
+			weight: 2
+		}),
+		new Item({
+			name: 'Medium Health Potion',
+			inventoryLook: 4,
+			spriteLook: 0,
+			description: "A medium health potion that heals 125 HP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 100,
+			stats: null,
+			weight: 3
+		}),
+		new Item({
+			name: 'Large Health Potion',
+			inventoryLook: 5,
+			spriteLook: 0,
+			description: "A medium health potion that heals 250 HP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 250,
+			stats: null,
+			weight: 4
+		}),
+		new Item({
+			name: 'Small Mana Potion',
+			inventoryLook: 6,
+			spriteLook: 0,
+			description: "A small health potion that heals 50 MP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 25,
+			stats: null,
+			weight: 2
+		}),
+		new Item({
+			name: 'Medium Mana Potion',
+			inventoryLook: 7,
+			spriteLook: 0,
+			description: "A medium health potion that heals 125 MP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 100,
+			stats: null,
+			weight: 3
+		}),
+		new Item({
+			name: 'Large Mana Potion',
+			inventoryLook: 8,
+			spriteLook: 0,
+			description: "A medium health potion that heals 250 MP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 250,
+			stats: null,
+			weight: 4
+		})		
 	],
 	equiped: {}
 });

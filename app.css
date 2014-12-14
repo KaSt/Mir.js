@@ -62,13 +62,31 @@ body {
 	opacity: 0;
 	left: 200px;
 	top: 200px;
-	transition: opacity 0.1s;
+	transition: opacity 0.2s;
 }
 
 #app #game-interface-container #inventory-container.visible {
 	visibility: visible;
 	opacity: 1;
 	max-height: 571px;
+}
+
+#app #game-interface-container #inventory-container #inventory-equip {
+	position: absolute;
+	width: 305px;
+	height: 295px;
+	top: 75px;
+	left: 55px;
+}
+
+#app #game-interface-container #inventory-container #inventory-equip .inventory-equip-item {
+	position: absolute;
+	width: 40px;
+	height: 40px;
+}
+
+#app #game-interface-container #inventory-container #inventory-equip .inventory-equip-item:hover {
+	background: rgba(255,255,255,0.1);
 }
 
 #app #game-interface-container #inventory-container #inventory-grid {

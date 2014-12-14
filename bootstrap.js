@@ -83,7 +83,73 @@ GameService.player = new Player({
 			price: 200,
 			stats: null,
 			weight: 5
-		})			
+		}),
+		new Item({
+			name: 'Small Health Potion',
+			inventoryLook: 3,
+			spriteLook: 0,
+			description: "A small health potion that heals 50 HP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 25,
+			stats: null,
+			weight: 2
+		}),
+		new Item({
+			name: 'Medium Health Potion',
+			inventoryLook: 4,
+			spriteLook: 0,
+			description: "A medium health potion that heals 125 HP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 100,
+			stats: null,
+			weight: 3
+		}),
+		new Item({
+			name: 'Large Health Potion',
+			inventoryLook: 5,
+			spriteLook: 0,
+			description: "A medium health potion that heals 250 HP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 250,
+			stats: null,
+			weight: 4
+		}),
+		new Item({
+			name: 'Small Mana Potion',
+			inventoryLook: 6,
+			spriteLook: 0,
+			description: "A small health potion that heals 50 MP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 25,
+			stats: null,
+			weight: 2
+		}),
+		new Item({
+			name: 'Medium Mana Potion',
+			inventoryLook: 7,
+			spriteLook: 0,
+			description: "A medium health potion that heals 125 MP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 100,
+			stats: null,
+			weight: 3
+		}),
+		new Item({
+			name: 'Large Mana Potion',
+			inventoryLook: 8,
+			spriteLook: 0,
+			description: "A medium health potion that heals 250 MP over 5 seconds'",
+			itemType: ItemTypeEnum.Potion,
+			restrictions: null,
+			price: 250,
+			stats: null,
+			weight: 4
+		})		
 	],
 	equiped: {}
 });

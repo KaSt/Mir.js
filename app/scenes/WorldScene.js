@@ -591,7 +591,7 @@ WorldScene.prototype._updateBounds = function() {
 	this._topBound = this._mainPlayer.getY() - defaults.viewRangeY < 0 ? 0 : this._mainPlayer.getY() - defaults.viewRangeY;
 	this._leftBound = this._mainPlayer.getX() - defaults.viewRangeX < 0 ? 0 : this._mainPlayer.getX() - defaults.viewRangeX;
 	this._rightBound = this._mainPlayer.getX() + defaults.viewRangeX > this._map.getWidth() - 1 ? this._map.getWidth() - 1 : this._mainPlayer.getX() + defaults.viewRangeX;
-	this._bottomBound = this._mainPlayer.getY() + defaults.viewRangeY > this._map.getHeight() - 1 ? this._map.getHeight() - 1 : this._mainPlayer.getY() + defaults.viewRangeY;
+	this._bottomBound = this._mainPlayer.getY() + defaults.viewRangeY + 5 > this._map.getHeight() - 1 ? this._map.getHeight() - 1 : this._mainPlayer.getY() + defaults.viewRangeY + 5;
 }
 
 WorldScene.prototype._handleOldSprites = function() {
@@ -812,7 +812,7 @@ WorldScene.prototype._handleSpriteVisibility = function(sprite) {
 		sprite.visible = false;
 	} else if(sprite.y + sprite.height - this._cameraDeltaY < (defaults.cellheight * -3)) {
 		sprite.visible = false;
-	} else if(sprite.y - this._cameraDeltaY > defaults.screenHeight + (defaults.cellheight * 5)) {
+	} else if(sprite.y - this._cameraDeltaY > defaults.screenHeight + (defaults.cellheight * 10)) {
 		sprite.visible = false;
 	} else {
 		sprite.visible = true;

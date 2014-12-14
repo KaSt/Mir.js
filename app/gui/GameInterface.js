@@ -1,6 +1,7 @@
 var GameService = require('../services/GameService.js');
 var InputService = require('../services/InputService.js');
 var Draggabilly = require('Draggabilly');
+var ItemTypeEnum = require('../enums/ItemTypeEnum.js');
 
 function GameInterface(appContainer) {
 	this._appContainer = appContainer;
@@ -20,6 +21,7 @@ function GameInterface(appContainer) {
 	this._expBar = null;
 	this._characterButton = null;
 	this._inventoryContainerGrid = [];
+	this._inventoryContainerEquip = {};
 	this._draggingItem = false;
 	this._draggingInventoryGridItem = null;
 
@@ -62,6 +64,34 @@ GameInterface.prototype._initInventoryContainer = function() {
 	this._initInventoryContainerPlayer();
 	this._initInventoryContainerGoldLabel();
 	this._initInventoryContainerGrid();
+	this._initInventoryContainerEquip();
+}
+
+GameInterface.prototype._initInventoryContainerEquip = function() {
+
+	var inventoryEquip = document.createElement('div');
+	inventoryEquip.id = 'inventory-equip';
+	inventoryEquip.excludeFromInput = true;
+
+	this._createInventoryEquipItem(inventoryEquip, 4, 51, ItemTypeEnum.Weapon, 'weapon');
+	this._createInventoryEquipItem(inventoryEquip, 4, 101, ItemTypeEnum.Armour, 'armour');
+	this._createInventoryEquipItem(inventoryEquip, 4, 152, ItemTypeEnum.Bracelet, 'bracelet1');
+	this._createInventoryEquipItem(inventoryEquip, 4, 203, ItemTypeEnum.Ring, 'ring1');
+	this._createInventoryEquipItem(inventoryEquip, 4, 254, ItemTypeEnum.Belt, 'belt');
+	this._createInventoryEquipItem(inventoryEquip, 56, 254, ItemTypeEnum.Amulet, 'amulet');
+
+	this._inventoryContainer.appendChild(inventoryEquip);
+}
+
+GameInterface.prototype._createInventoryEquipItem = function(inventoryEquip, x, y, itemType, binding) {
+	this._inventoryContainerEquip[binding] = document.createElement('div');
+	this._inventoryContainerEquip[binding].classList.add('inventory-equip-item');
+	this._inventoryContainerEquip[binding].dataset.id = binding;
+	this._inventoryContainerEquip[binding].style.left = x + 'px';
+	this._inventoryContainerEquip[binding].style.top = y + 'px';
+	this._inventoryContainerEquip[binding].excludeFromInput = true;
+
+	inventoryEquip.appendChild(this._inventoryContainerEquip[binding]);
 }
 
 GameInterface.prototype._initInventoryContainerGrid = function() {
