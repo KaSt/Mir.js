@@ -1,46 +1,54 @@
+"use strict";
+
 var HumanSprite = require('../sprites/HumanSprite.js');
 var HumanActionEnum = require('../enums/HumanActionEnum.js');
 var AnimationControl = require('../animations/AnimationControl.js');
+var EventEmitter = require('events').EventEmitter;
+var util = require('util');
 
 function Player( data ) {
-	this.name = data.name || null;
-	this.level = data.level || null;
-	this.exp = data.exp !== null ? data.exp : null;
-	this.gender = data.gender !== null ? data.gender : null;
-	this.maxExp = data.maxExp !== null ? data.maxExp : null;
-	this.x = data.x !== null ? data.x : null;
-	this.y = data.y !== null ? data.y : null;
-	this.mirClass = data.mirClass !== null ? data.mirClass : null;
-	this.virtualX = data.x !== null ? data.x : null;
-	this.virtualY = data.y !== null ? data.y : null;
-	this.gold = data.gold !== null ? data.gold : null;
+	this._name = data.name || null;
+	this._level = data.level || null;
+	this._exp = data.exp !== null ? data.exp : null;
+	this._gender = data.gender !== null ? data.gender : null;
+	this._maxExp = data.maxExp !== null ? data.maxExp : null;
+	this._x = data.x !== null ? data.x : null;
+	this._y = data.y !== null ? data.y : null;
+	this._mirClass = data.mirClass !== null ? data.mirClass : null;
+	this._virtualX = data.x !== null ? data.x : null;
+	this._virtualY = data.y !== null ? data.y : null;
+	this._gold = data.gold !== null ? data.gold : null;
 
-	this.direction = data.direction !== null ? data.direction : null;
-	this.hp = data.hp !== null ? data.hp : null;
-	this.mp = data.mp !== null ? data.mp : null;
-	this.maxHp = data.maxHp !== null ? data.maxHp : null;
-	this.maxMp = data.maxMp !== null ? data.maxMp : null;
-	this.weight = data.weight !== null ? data.weight : null;
-	this.weight = data.maxWeight !== null ? data.maxWeight : null;
-	this.bag = data.bag || [];
-	this.equiped = data.equiped || {};
-	this.humanSprite = null;
+	this._direction = data.direction !== null ? data.direction : null;
+	this._hp = data.hp !== null ? data.hp : null;
+	this._mp = data.mp !== null ? data.mp : null;
+	this._maxHp = data.maxHp !== null ? data.maxHp : null;
+	this._maxMp = data.maxMp !== null ? data.maxMp : null;
+	this._weight = data.weight !== null ? data.weight : null;
+	this._weight = data.maxWeight !== null ? data.maxWeight : null;
+	this._inventory = data.inventory || [];
+	this._equiped = data.equiped || {};
+	this._humanSprite = null;
 
 	this.isMoving = false;
+
+	EventEmitter.call(this);
 }
+
+util.inherits(Player, EventEmitter);
 
 Player.prototype.initHumanSprite = function(scene) {
 	//make the human sprite for the player
-	this.humanSprite = new HumanSprite(scene, {
-		z: this.y,
-		direction: this.direction,
-		look: this.gender,
-		gender: this.gender
+	this._humanSprite = new HumanSprite(scene, {
+		z: this._y,
+		direction: this._direction,
+		look: this._gender,
+		gender: this._gender
 	});
 }
 
-Player.prototype.mirClassToString = function() {
-	switch(this.mirClass) {
+Player.prototype.getMirClassToString = function() {
+	switch(this._mirClass) {
 		case 0:
 			return "Warrior";
 		case 1:
@@ -57,31 +65,132 @@ Player.prototype.mirClassToString = function() {
 }
 
 Player.prototype.setGender = function(gender) {
-	this.gender = gender;
-	this.humanSprite.setLook(this.gender);
+	this._gender = gender;
+	this._humanSprite.setLook(this._gender);
+	this.emit('gender change', gender);
+}
+
+Player.prototype.setGold = function(gold) {
+	this._gold = gold;
+	this.emit('gold change', gold);
 }
 
 Player.prototype.setLocation = function(x, y) {
-	this.x = x;
-	this.y = y;
-	this.humanSprite.setZ(y);	
+	this._x = x;
+	this._y = y;
+	this._humanSprite.setZ(y);	
+	this.emit('location change', x, y);
+}
+
+Player.prototype.getHumanSprite = function() {
+	return this._humanSprite;
 }
 
 Player.prototype.setZ = function(z) {
-	this.humanSprite.setZ(z);	
+	this._humanSprite.setZ(z);	
+}
+
+Player.prototype.setExp = function(exp) {
+	this._exp = exp;	
+	this.emit('exp change', exp);
+}
+
+Player.prototype.setMaxExp = function(maxExp) {
+	this._maxExp = maxExp;	
+	this.emit('maxExp change', maxExp);
+}
+
+Player.prototype.getX = function() {
+	return this._x;
+}
+
+Player.prototype.getY = function() {
+	return this._y;
+}
+
+Player.prototype.getVirtualX = function() {
+	return this._virtualX;
+}
+
+Player.prototype.getVirtualY = function() {
+	return this._virtualY;
+}
+
+Player.prototype.getName = function() {
+	return this._name;
+}
+
+Player.prototype.getMirClass = function() {
+	return this._mirClass;
+}
+
+Player.prototype.getGender = function() {
+	return this._gender;
+}
+
+Player.prototype.getGold = function() {
+	return this._gold;
+}
+
+Player.prototype.getInventory = function() {
+	return this._inventory;
+}
+
+Player.prototype.getDirection = function() {
+	return this._direction;
+}
+
+Player.prototype.getHp = function() {
+	return this._hp;
+}
+
+Player.prototype.getMp = function() {
+	return this._mp;
+}
+
+Player.prototype.getMaxHp = function() {
+	return this._maxHp;
+}
+
+Player.prototype.getMaxMp = function() {
+	return this._maxMp;
+}
+
+Player.prototype.getExp = function() {
+	return this._exp;
+}
+
+Player.prototype.getMaxExp = function() {
+	return this._maxExp;
+}
+
+Player.prototype.getLevel = function() {
+	return this._level;
 }
 
 Player.prototype.setVirtualLocation = function(diffX, diffY) {
-	this.virtualX = this.virtualX + diffX;
-	this.virtualY = this.virtualY + diffY;
+	this._virtualX = this._virtualX + diffX;
+	this._virtualY = this._virtualY + diffY;
+	this.emit('virtualLocation change', this._virtualX, this._virtualX);	
+}
+
+Player.prototype.moveInventoryItem = function(fromIndex, toIndex) {
+	var newItem = this._inventory[fromIndex],
+		oldItem = this._inventory[toIndex];
+
+	this._inventory[toIndex] = newItem;
+	this._inventory[fromIndex] = oldItem;
+
+	this.emit('inventory change',  fromIndex , oldItem);
+	this.emit('inventory change', toIndex, newItem);	
 }
 
 Player.prototype.update = function() {
-	this.humanSprite.update();
+	this._humanSprite.update();
 }
 
 Player.prototype.meleeAttack = function(direction, doneCallback) {
-	this.humanSprite.queueAnimation(new AnimationControl({
+	this._humanSprite.queueAnimation(new AnimationControl({
 		//maybe random the attacks?
 		action: HumanActionEnum.Attack1,
 		direction: direction,
@@ -96,7 +205,7 @@ Player.prototype.meleeAttack = function(direction, doneCallback) {
 }
 
 Player.prototype.move = function(distance, direction, beginMoveCallback, cameraMoveCallback, doneCallback, inputReadyCallback) {
-	this.humanSprite.queueAnimation(new AnimationControl({
+	this._humanSprite.queueAnimation(new AnimationControl({
 		action: distance === 1 ? HumanActionEnum.Walking : HumanActionEnum.Running,
 		direction: direction,
 		beginEvent: function(beginMoveCallback) {

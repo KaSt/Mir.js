@@ -1,6 +1,5 @@
 var GameService = require('../services/GameService.js');
 var InputService = require('../services/InputService.js');
-var PathObserver = require('../../observe-js.js').PathObserver;
 var Draggabilly = require('Draggabilly');
 
 function GameInterface(appContainer) {
@@ -20,6 +19,9 @@ function GameInterface(appContainer) {
 	this._mpBar = null;
 	this._expBar = null;
 	this._characterButton = null;
+	this._inventoryContainerGrid = [];
+	this._draggingItem = false;
+	this._draggingInventoryGridItem = null;
 
 	this._init();
 }
@@ -31,9 +33,6 @@ GameInterface.prototype._init = function() {
 	this._appContainer.appendChild(this._gameInterfaceContainer);
 
 	this._initBottomInterface();
-	if(GameService.debug.enabled === true) {
-		this._initDebugLabel();
-	}
 	this._initCoordsLabel();
 	this._initMiniMapContainer();
 	this._initInventoryContainer();
@@ -62,6 +61,86 @@ GameInterface.prototype._initInventoryContainer = function() {
 	this._initInventoryContainerCloseButton();
 	this._initInventoryContainerPlayer();
 	this._initInventoryContainerGoldLabel();
+	this._initInventoryContainerGrid();
+}
+
+GameInterface.prototype._initInventoryContainerGrid = function() {
+
+	var inventoryGrid = document.createElement('div');
+	inventoryGrid.id = 'inventory-grid';
+	inventoryGrid.excludeFromInput = true;
+
+	//bind the grid with the player inventory
+	var bindGridWithPlayerInventory = function(index) {
+		var item = GameService.player.getInventory()[index];
+		
+		if(item != null) {
+			this._inventoryContainerGrid[index].children[0].style.backgroundImage = 'url("gui/inventory/' + item.inventoryLook  + '.png")';
+			this._inventoryContainerGrid[index].children[0].style.display = 'block';
+		} else {
+			this._inventoryContainerGrid[index].children[0].style.display = 'none';
+		}
+	}.bind(this);
+
+	inventoryGrid.addEventListener('click', this._inventoryClickEvent.bind(this), true);
+
+	for(var i = 0 ; i < 40; i++) {
+		this._inventoryContainerGrid[i] = document.createElement('div');
+		this._inventoryContainerGrid[i].classList.add('inventory-grid-item');
+		this._inventoryContainerGrid[i].dataset.id = i;
+		this._inventoryContainerGrid[i].excludeFromInput = true;
+
+		var inventoryItem = document.createElement('div');
+		inventoryItem.excludeFromInput = true;
+		inventoryItem.classList.add('item');
+		this._inventoryContainerGrid[i].appendChild(inventoryItem);
+
+		bindGridWithPlayerInventory(i);
+
+		inventoryGrid.appendChild(this._inventoryContainerGrid[i]);
+	}
+
+	GameService.player.on('inventory change', bindGridWithPlayerInventory)
+
+	this._inventoryContainer.appendChild(inventoryGrid);
+}
+
+GameInterface.prototype._inventoryClickEvent = function(event) {
+	var item = null;
+	//make sure we are clicking one of inventory slots
+	if(event.target.classList.contains('inventory-grid-item')) {
+		item = GameService.player.getInventory()[event.target.dataset.id];
+		if(item != null && this._draggingItem === false) {
+			this._dragItem(item, event.target.children[0]);
+		} else if(this._draggingItem === true) {	
+			this._dropItem(event.target.children[0]);
+		}
+	}
+
+	if(event.target.classList.contains('item')) {
+		item = GameService.player.getInventory()[event.target.parentElement.dataset.id];
+		if(item != null && this._draggingItem === false) {
+			this._dragItem(item, event.target);
+		} else if(this._draggingItem === true) {	
+			this._dropItem(event.target);
+		}	
+	}
+}
+
+GameInterface.prototype._dragItem = function(item, inventoryGridItem) {
+	this._draggingItem = true;
+	inventoryGridItem.style.display = "none";
+	this._draggingInventoryGridItem = inventoryGridItem; 
+	document.body.style.cursor = inventoryGridItem.style.backgroundImage + ", pointer";
+}
+
+GameInterface.prototype._dropItem = function(inventoryGridItem) {
+	this._draggingItem = false;
+	document.body.style.cursor = "";
+	GameService.player.moveInventoryItem(
+		this._draggingInventoryGridItem.parentElement.dataset.id, 
+		inventoryGridItem.parentElement.dataset.id
+	);
 }
 
 GameInterface.prototype._initInventoryContainerGoldLabel = function() {
@@ -70,12 +149,10 @@ GameInterface.prototype._initInventoryContainerGoldLabel = function() {
 	this._goldLabel.id = "gold-label";
 
 	var updateLabelText = function() {
-		this._goldLabel.innerHTML = GameService.player.gold.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+		this._goldLabel.innerHTML = GameService.player.getGold().toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 	}.bind(this);
 
-	var observePlayerGoldChange = new PathObserver(GameService, 'player.gold');
-
-	observePlayerGoldChange.open(updateLabelText);
+	GameService.player.on('gold change', updateLabelText)
 
 	//update label
 	updateLabelText();
@@ -86,7 +163,7 @@ GameInterface.prototype._initInventoryContainerGoldLabel = function() {
 GameInterface.prototype._initInventoryContainerPlayer = function() {
 	var playerLook = document.createElement('div');
 	playerLook.classList.add("player");
-	playerLook.style.backgroundImage = "url('gui/players/0.png')"
+	playerLook.style.backgroundImage = "url('gui/looks/0.png')"
 	playerLook.excludeFromInput = true;
 
 	this._inventoryContainer.appendChild(playerLook);
@@ -111,39 +188,19 @@ GameInterface.prototype._initInventoryContainerHeader = function() {
 	var headerPlayerName = document.createElement('span');
 	headerPlayerName.classList.add("player-name");
 	headerPlayerName.excludeFromInput = true;
-	headerPlayerName.innerHTML = GameService.player.name;
+	headerPlayerName.innerHTML = GameService.player.getName();
 	header.appendChild(headerPlayerName);
 
 	var headerPlayerDetails = document.createElement('span');
 	headerPlayerDetails.classList.add("player-details");
 	headerPlayerDetails.excludeFromInput = true;
-	headerPlayerDetails.innerHTML = 'Level ' + GameService.player.level + ' ' + GameService.player.mirClassToString();
+	headerPlayerDetails.innerHTML = 'Level ' + GameService.player.getLevel() + ' ' + GameService.player.getMirClassToString();
 	header.appendChild(headerPlayerDetails);
 
 
 	var draggie = new Draggabilly(this._inventoryContainer, {
 		handle: '.header'
 	});
-}
-
-GameInterface.prototype._initDebugLabel = function() {
-	this._debugLabel = document.createElement('div');
-	this._debugLabel.id = "debug-label";
-
-	var updateLabelText = function() {
-		this._debugLabel.innerHTML = 'Debug: ' + GameService.debug.x + ' ' + GameService.debug.y;
-	}.bind(this);
-
-	var observeDebugXChange = new PathObserver(GameService, 'debug.x');
-	var observeDebugYChange = new PathObserver(GameService, 'debug.y');
-
-	observeDebugXChange.open(updateLabelText);
-	observeDebugYChange.open(updateLabelText);
-
-	//update label
-	updateLabelText();
-
-	this._appContainer.appendChild(this._debugLabel);
 }
 
 GameInterface.prototype._initBottomInterface = function() {
@@ -182,15 +239,12 @@ GameInterface.prototype._initExpBar = function() {
 
 	var updateBar = function() {
 
-		this.expBar.style.width = Math.round(GameService.player.exp / GameService.player.maxExp * 536) + "px";
+		this.expBar.style.width = Math.round(GameService.player.getExp() / GameService.player.getMaxExp() * 536) + "px";
 
 	}.bind(this);
 
-	var observePlayerExpChange = new PathObserver(GameService, 'player.exp');
-	var observePlayerMaxExpChange = new PathObserver(GameService, 'player.maxExp');	
-
-	observePlayerExpChange.open(updateBar);
-	observePlayerMaxExpChange.open(updateBar);		
+	GameService.player.on('exp change', updateBar)
+	GameService.player.on('maxExp change', updateBar)	
 
 	updateBar();
 
@@ -218,17 +272,13 @@ GameInterface.prototype._initMiniMapContainer = function() {
 
 
 	var updateMapPosition = function() {
-		var positionX = Math.round(GameService.player.x / GameService.scene.getMap().getWidth() * 1052) - 85;
-		var positionY = Math.round(GameService.player.y / GameService.scene.getMap().getHeight() * 699) - 85;
+		var positionX = Math.round(GameService.player.getX() / GameService.scene.getMap().getWidth() * 1052) - 85;
+		var positionY = Math.round(GameService.player.getY() / GameService.scene.getMap().getHeight() * 699) - 85;
 
 		minimapMap.style.backgroundPosition = "-" + positionX + "px -" + positionY + "px";
 	}.bind(this);
 
-	var observePlayerXChange = new PathObserver(GameService, 'player.x');
-	var observePlayerYChange = new PathObserver(GameService, 'player.y');	
-
-	observePlayerXChange.open(updateMapPosition);
-	observePlayerYChange.open(updateMapPosition);	
+	GameService.player.on('location change', updateMapPosition)
 
 	updateMapPosition();
 
@@ -243,12 +293,10 @@ GameInterface.prototype._initHpBar = function() {
 	this._hpBar.excludeFromInput = true;
 
 	var updateHpBar = function() {
-		this._hpBar.style.height = parseInt(GameService.player.hp / GameService.player.maxHp * 102) + 'px';
+		this._hpBar.style.height = parseInt(GameService.player.getHp() / GameService.player.getMaxHp() * 102) + 'px';
 	}.bind(this);
 
-	var observePlayerHpChange = new PathObserver(GameService, 'player.hp');
-
-	observePlayerHpChange.open(updateHpBar);
+	GameService.player.on('hp change', updateHpBar)
 
 	updateHpBar();
 
@@ -261,12 +309,10 @@ GameInterface.prototype._initMpBar = function() {
 	this._mpBar.excludeFromInput = true;
 	
 	var updateMpBar = function() {
-		this._mpBar.style.height = parseInt(GameService.player.mp / GameService.player.maxMp * 102) + 'px';
+		this._mpBar.style.height = parseInt(GameService.player.getMp() / GameService.player.getMaxMp() * 102) + 'px';
 	}.bind(this);
 
-	var observePlayerMpChange = new PathObserver(GameService, 'player.mp');
-
-	observePlayerMpChange.open(updateMpBar);
+	GameService.player.on('mp change', updateMpBar)
 
 	updateMpBar();
 
@@ -280,14 +326,10 @@ GameInterface.prototype._initCoordsLabel = function() {
 	this._coordsLabel.id = "coords-label";
 
 	var updateLabelText = function() {
-		this._coordsLabel.innerHTML = '<span>' + GameService.map.name + '</span><em>' + GameService.player.x + ':' + GameService.player.y + '</em>';	
+		this._coordsLabel.innerHTML = '<span>' + GameService.map.name + '</span><em>' + GameService.player.getX() + ':' + GameService.player.getY() + '</em>';	
 	}.bind(this);
 
-	var observePlayerXChange = new PathObserver(GameService, 'player.x');
-	var observePlayerYChange = new PathObserver(GameService, 'player.y');
-
-	observePlayerXChange.open(updateLabelText);
-	observePlayerYChange.open(updateLabelText);
+	GameService.player.on('location change', updateLabelText)
 
 	//update label
 	updateLabelText();
@@ -301,12 +343,10 @@ GameInterface.prototype._initLevelLabel = function() {
 	this._levelLabel.id = "level-label";
 
 	var updateLabelText = function() {
-		this._levelLabel.innerHTML = GameService.player.level;
+		this._levelLabel.innerHTML = GameService.player.getLevel();
 	}.bind(this);
 
-	var observePlayerLevelChange = new PathObserver(GameService, 'player.level');
-
-	observePlayerLevelChange.open(updateLabelText);
+	GameService.player.on('level change', updateLabelText)
 
 	//update label
 	updateLabelText();

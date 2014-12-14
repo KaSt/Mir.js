@@ -57,11 +57,47 @@ body {
 	height: 571px;
 	width: 594px;
 	background: url('gui/inventory.png') no-repeat;
-	visiblility: hidden;
+	visibility: hidden;
+	max-height: 0;
 	opacity: 0;
 	left: 200px;
 	top: 200px;
 	transition: opacity 0.1s;
+}
+
+#app #game-interface-container #inventory-container.visible {
+	visibility: visible;
+	opacity: 1;
+	max-height: 571px;
+}
+
+#app #game-interface-container #inventory-container #inventory-grid {
+	position: absolute;
+	right: 0;
+	top: 68px;
+	width: 184px;
+	height: 451px;
+}
+
+#app #game-interface-container #inventory-container #inventory-grid .inventory-grid-item {
+	display: block;
+	float: left;
+	width: 40px;
+	height: 41px;
+	position: relative;
+	margin-right: 6px;
+	margin-bottom: 5px;
+}
+
+#app #game-interface-container #inventory-container #inventory-grid .inventory-grid-item:hover {
+	background: rgba(255,255,255,0.1);
+}
+
+#app #game-interface-container #inventory-container #inventory-grid .inventory-grid-item .item {
+	width: 40px;
+	height: 40px;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
 }
 
 #app #game-interface-container #inventory-container .close-button {
@@ -91,18 +127,13 @@ body {
 	opacity: 1;
 }
 
-#app #game-interface-container #inventory-container.visible {
-	visiblility: visible;
-	opacity: 1;
-}
-
 #app #game-interface-container #inventory-container #gold-label {
 	font-size: 12px;
 	position: absolute;
 	width: 130px;
 	right: 15px;
 	color: #FFBE20;
-	bottom: 29px;
+	bottom: 24px;
 	font-weight: 600;
 }
 

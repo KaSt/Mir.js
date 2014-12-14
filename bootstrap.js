@@ -12,9 +12,11 @@
 
 var GameService = require('./app/services/GameService.js');
 var Player = require('./app/objects/Player.js');
+var Item = require('./app/objects/Item.js');
 var Npc = require('./app/objects/Npc.js');
 var App = require('./app/App.js');
 var MirClassEnum = require('./app/enums/MirClassEnum.js');
+var ItemTypeEnum = require('./app/enums/ItemTypeEnum.js');
 
 //round to 128 so we get no blurry graphics
 GameService.defaults.screenWidth = 16 * Math.round((window.innerWidth || 1024) / 16);
@@ -41,7 +43,48 @@ GameService.player = new Player({
 	weight: 20,
 	maxWeight: 100,
 	direction: 0,
-	bag: [],
+	inventory: [
+		new Item({
+			name: 'Candle',
+			inventoryLook: 0,
+			spriteLook: 0,
+			description: "A basic candle that provides a source of light when equipped",
+			itemType: ItemTypeEnum.Torch,
+			restrictions: null,
+			price: 10,
+			durability: 5,
+			maxDurability: 5,
+			stats: null,
+			weight: 1
+		}),
+		new Item({
+			name: 'Torch',
+			inventoryLook: 1,
+			spriteLook: 0,
+			description: "A durable torch that provides a source of light when equipped",
+			itemType: ItemTypeEnum.Torch,
+			restrictions: null,
+			price: 50,
+			durability: 10,
+			maxDurability: 10,
+			stats: null,
+			weight: 2
+		}),
+		new Item({
+			name: 'Book of Fireball',
+			inventoryLook: 2,
+			spriteLook: 0,
+			description: "An ancient spell book that allows Wizards to study and learn the Fireball spell'",
+			itemType: ItemTypeEnum.Book,
+			restrictions: {
+				mirClass: MirClassEnum.Wizard,
+				level: 7
+			},
+			price: 200,
+			stats: null,
+			weight: 5
+		})			
+	],
 	equiped: {}
 });
 
