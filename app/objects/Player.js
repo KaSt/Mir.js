@@ -13,6 +13,7 @@ function Player( data ) {
 	this.mirClass = data.mirClass !== null ? data.mirClass : null;
 	this.virtualX = data.x !== null ? data.x : null;
 	this.virtualY = data.y !== null ? data.y : null;
+	this.gold = data.gold !== null ? data.gold : null;
 
 	this.direction = data.direction !== null ? data.direction : null;
 	this.hp = data.hp !== null ? data.hp : null;
@@ -36,6 +37,23 @@ Player.prototype.initHumanSprite = function(scene) {
 		look: this.gender,
 		gender: this.gender
 	});
+}
+
+Player.prototype.mirClassToString = function() {
+	switch(this.mirClass) {
+		case 0:
+			return "Warrior";
+		case 1:
+			return "Wizard";
+		case 2:
+			return "Taoist";
+		case 3:
+			return "Assassin";
+		case 4:
+			return "Archer";
+		case 5:
+			return "Monk";
+	}
 }
 
 Player.prototype.setGender = function(gender) {

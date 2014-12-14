@@ -1,5 +1,7 @@
 var GameService = require('../services/GameService.js');
+var InputService = require('../services/InputService.js');
 var PathObserver = require('../../observe-js.js').PathObserver;
+var Draggabilly = require('Draggabilly');
 
 function GameInterface(appContainer) {
 	this._appContainer = appContainer;
@@ -7,14 +9,17 @@ function GameInterface(appContainer) {
 	this._gameInterfaceContainer = null;
 	this._bottomInterface = null;
 	this._miniMapContainer = null;
+	this._inventoryContainer = null;
 	this._chatContainer = null;
 	this._coordsLabel = null;
 	this._debugLabel = null;
 	this._levelLabel = null;
+	this._goldLabel = null;
 	this._hpMpLabel = null;
 	this._hpBar = null;
 	this._mpBar = null;
 	this._expBar = null;
+	this._characterButton = null;
 
 	this._init();
 }
@@ -31,10 +36,97 @@ GameInterface.prototype._init = function() {
 	}
 	this._initCoordsLabel();
 	this._initMiniMapContainer();
+	this._initInventoryContainer();
+}
+
+GameInterface.prototype._initInventoryContainer = function() {
+	this._inventoryContainer = document.createElement('div');
+	this._inventoryContainer.id = "inventory-container";
+	this._inventoryContainer.excludeFromInput = true;
+
+	this._gameInterfaceContainer.appendChild(this._inventoryContainer);
+
+	var inventoryTitleLabel = document.createElement('div');
+	inventoryTitleLabel.classList.add("inventory-title-label");
+	inventoryTitleLabel.innerHTML = "My Inventory"	
+
+	this._inventoryContainer.appendChild(inventoryTitleLabel);
+
+	InputService.on('keyup', function(keycode) {
+		if(keycode === 73 || keycode === 67) {
+			this._toggleInventoryContainer();
+		}
+	}.bind(this));
+
+	this._initInventoryContainerHeader();
+	this._initInventoryContainerCloseButton();
+	this._initInventoryContainerPlayer();
+	this._initInventoryContainerGoldLabel();
+}
+
+GameInterface.prototype._initInventoryContainerGoldLabel = function() {
+	//Cords label
+	this._goldLabel = document.createElement('div');
+	this._goldLabel.id = "gold-label";
+
+	var updateLabelText = function() {
+		this._goldLabel.innerHTML = GameService.player.gold.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}.bind(this);
+
+	var observePlayerGoldChange = new PathObserver(GameService, 'player.gold');
+
+	observePlayerGoldChange.open(updateLabelText);
+
+	//update label
+	updateLabelText();
+
+	this._inventoryContainer.appendChild(this._goldLabel);
+}
+
+GameInterface.prototype._initInventoryContainerPlayer = function() {
+	var playerLook = document.createElement('div');
+	playerLook.classList.add("player");
+	playerLook.style.backgroundImage = "url('gui/players/0.png')"
+	playerLook.excludeFromInput = true;
+
+	this._inventoryContainer.appendChild(playerLook);
+}
+
+GameInterface.prototype._initInventoryContainerCloseButton = function() {
+	var closeButton = document.createElement('button');
+	closeButton.classList.add("close-button");
+	closeButton.excludeFromInput = true;
+
+	closeButton.addEventListener('click', this._toggleInventoryContainer.bind(this), true);
+
+	this._inventoryContainer.appendChild(closeButton);
+}
+
+GameInterface.prototype._initInventoryContainerHeader = function() {
+	var header = document.createElement('header');
+	header.classList.add("header");
+	header.excludeFromInput = true;
+	this._inventoryContainer.appendChild(header);
+
+	var headerPlayerName = document.createElement('span');
+	headerPlayerName.classList.add("player-name");
+	headerPlayerName.excludeFromInput = true;
+	headerPlayerName.innerHTML = GameService.player.name;
+	header.appendChild(headerPlayerName);
+
+	var headerPlayerDetails = document.createElement('span');
+	headerPlayerDetails.classList.add("player-details");
+	headerPlayerDetails.excludeFromInput = true;
+	headerPlayerDetails.innerHTML = 'Level ' + GameService.player.level + ' ' + GameService.player.mirClassToString();
+	header.appendChild(headerPlayerDetails);
+
+
+	var draggie = new Draggabilly(this._inventoryContainer, {
+		handle: '.header'
+	});
 }
 
 GameInterface.prototype._initDebugLabel = function() {
-	//Cords label
 	this._debugLabel = document.createElement('div');
 	this._debugLabel.id = "debug-label";
 
@@ -62,14 +154,31 @@ GameInterface.prototype._initBottomInterface = function() {
 
 	this._gameInterfaceContainer.appendChild(this._bottomInterface);
 
+	this._characterButton = document.createElement('button');
+	this._characterButton.id = "character-button";
+	this._characterButton.excludeFromInput = true;
+
+	this._characterButton.addEventListener('click', this._toggleInventoryContainer.bind(this), true);
+
+	this._bottomInterface.appendChild(this._characterButton);
+
 	this._initExpBar();
 	this._initHpBar();
 	this._initMpBar();
 }
 
+GameInterface.prototype._toggleInventoryContainer = function(event) {
+	this._inventoryContainer.classList.toggle("visible");
+	if(event) {
+		event.stopPropagation();
+		event.preventDefault();
+	}
+}
+
 GameInterface.prototype._initExpBar = function() {
 	this.expBar = document.createElement('div');
 	this.expBar.id = "exp-bar";
+	this.expBar.excludeFromInput = true;
 
 	var updateBar = function() {
 
@@ -98,6 +207,7 @@ GameInterface.prototype._initChatContainer = function() {
 GameInterface.prototype._initMiniMapContainer = function() {
 	this._miniMapContainer = document.createElement('div');
 	this._miniMapContainer.id = "mini-map-container";
+	this._miniMapContainer.excludeFromInput = true;
 
 	var minimapFrame = document.createElement('div');
 	minimapFrame.id = "frame";
@@ -130,7 +240,7 @@ GameInterface.prototype._initMiniMapContainer = function() {
 GameInterface.prototype._initHpBar = function() {
 	this._hpBar = document.createElement('div');
 	this._hpBar.id = "hp-bar";
-	
+	this._hpBar.excludeFromInput = true;
 
 	var updateHpBar = function() {
 		this._hpBar.style.height = parseInt(GameService.player.hp / GameService.player.maxHp * 102) + 'px';
@@ -148,6 +258,7 @@ GameInterface.prototype._initHpBar = function() {
 GameInterface.prototype._initMpBar = function() {
 	this._mpBar = document.createElement('div');
 	this._mpBar.id = "mp-bar";
+	this._mpBar.excludeFromInput = true;
 	
 	var updateMpBar = function() {
 		this._mpBar.style.height = parseInt(GameService.player.mp / GameService.player.maxMp * 102) + 'px';

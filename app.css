@@ -52,6 +52,92 @@ body {
 	position: absolute;
 }
 
+#app #game-interface-container #inventory-container {
+	position: absolute;
+	height: 571px;
+	width: 594px;
+	background: url('gui/inventory.png') no-repeat;
+	visiblility: hidden;
+	opacity: 0;
+	left: 200px;
+	top: 200px;
+	transition: opacity 0.1s;
+}
+
+#app #game-interface-container #inventory-container .close-button {
+	width: 23px;
+	height: 22px;
+	background: url('gui/close-button-hover.png') no-repeat;
+	outline: 0;
+	border: 0;
+	position: absolute;
+	left: 372px;
+	top: 31px;
+	opacity: 0;
+	transition: opacity 0.1s;
+	cursor: pointer;
+}
+
+#app #game-interface-container #inventory-container .player {
+	position: absolute;
+	background-repeat: no-repeat;
+	width: 82px;
+	height: 150px;
+	left: 165px;
+	top: 140px;
+}
+
+#app #game-interface-container #inventory-container .close-button:hover {
+	opacity: 1;
+}
+
+#app #game-interface-container #inventory-container.visible {
+	visiblility: visible;
+	opacity: 1;
+}
+
+#app #game-interface-container #inventory-container #gold-label {
+	font-size: 12px;
+	position: absolute;
+	width: 130px;
+	right: 15px;
+	color: #FFBE20;
+	bottom: 29px;
+	font-weight: 600;
+}
+
+#app #game-interface-container #inventory-container .inventory-title-label {
+	position: absolute;
+	width: 125px;
+	height: 20px;
+	color: #fff;
+	font-size: 12px;
+	right: 50px;
+	top: 39px;
+	text-shadow: 0 -1px 1px #000;
+}
+
+#app #game-interface-container #inventory-container .header {
+	display: block;
+	position: absolute;
+	width: 320px;
+	height: 50px;
+	color: #fff;
+	font-weight: 600;
+	text-align: center;
+	left: 50px;
+	line-height: 50px;
+	font-size: 14px;
+	cursor: move;
+	text-shadow: 0 -1px 1px #000;
+}
+
+#app #game-interface-container #inventory-container .header .player-details {
+	margin-left: 10px;
+	font-weight: normal;
+	color: #ddd;
+}
+
 #app #game-interface-container #mini-map-container {
 	position: absolute;
 	top: 10px;
@@ -88,6 +174,24 @@ body {
 	width: 958px;
 	height: 120px;
 	background: url('gui/bottom-interface.png') no-repeat;
+}
+
+#app #game-interface-container #bottom-interface #character-button {
+	position: absolute;
+	border: 0;
+	width: 18px;
+	height: 18px;
+	background: url('gui/character-button-hover.png') no-repeat 3px 3px;
+	outline: 0;
+	left: 163px;
+	top: 16px;
+	opacity: 0;
+	transition: opacity 0.1s;
+	cursor: pointer;
+}
+
+#app #game-interface-container #bottom-interface #character-button:hover {
+	opacity: 1;
 }
 
 #app #game-interface-container #bottom-interface #exp-bar {

@@ -247,8 +247,8 @@ HumanSprite.prototype._updateHairTexture = function() {
 
 	var hairLib = ResourceService.graphics.hairLib(this.gender);
 
-	var placementX = this._scene._graphicsPlacements[hairLib.path][index - 920][0];
-	var placementY = this._scene._graphicsPlacements[hairLib.path][index - 920][1];	
+	var placementX = this._scene._graphicsPlacements[hairLib.path][index][0];
+	var placementY = this._scene._graphicsPlacements[hairLib.path][index][1];	
 
 	LoaderService.loadTexture(hairLib.path + '/' + addPathNamePadding(index, 6) + '.' + hairLib.type).then(function(texture) {
 		if(this._hairSprite === null) {
@@ -260,7 +260,6 @@ HumanSprite.prototype._updateHairTexture = function() {
 
 		this._hairSprite.x = placementX;
 		this._hairSprite.y = placementY;
-		console.log(index, placementX, placementY);
 	}.bind(this));
 }
 

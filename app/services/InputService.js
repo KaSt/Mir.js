@@ -41,6 +41,7 @@ InputService.prototype._keyUp = function(e) {
 			this.altKeyDown = false;
 			break;	
 	}
+	this.emit('keyup', e.keyCode);
 }
 
 InputService.prototype._mouseDown = function(e) {
