@@ -314,6 +314,13 @@ GameInterface.prototype._initInventoryContainerEquip = function() {
 	this._createInventoryEquipItem(inventoryEquip, 4, 203, ItemTypeEnum.Ring, 'ring1');
 	this._createInventoryEquipItem(inventoryEquip, 4, 254, ItemTypeEnum.Belt, 'belt');
 	this._createInventoryEquipItem(inventoryEquip, 56, 254, ItemTypeEnum.Amulet, 'amulet');
+	this._createInventoryEquipItem(inventoryEquip, 160, 254, ItemTypeEnum.Gem, 'gem');
+	this._createInventoryEquipItem(inventoryEquip, 262, 254, ItemTypeEnum.Boots, 'boots');
+	this._createInventoryEquipItem(inventoryEquip, 262, 203, ItemTypeEnum.Boots, 'ring2');
+	this._createInventoryEquipItem(inventoryEquip, 262, 152, ItemTypeEnum.Boots, 'bracelet1');
+	this._createInventoryEquipItem(inventoryEquip, 262, 101, ItemTypeEnum.Torch, 'torch');
+	this._createInventoryEquipItem(inventoryEquip, 262, 51, ItemTypeEnum.Necklace, 'necklace');
+	this._createInventoryEquipItem(inventoryEquip, 262, 0, ItemTypeEnum.Helmet, 'helmet');
 
 	this._inventoryContainer.appendChild(inventoryEquip);
 }
