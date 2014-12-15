@@ -344,6 +344,7 @@ GameInterface.prototype._createInventoryEquipItem = function(inventoryEquip, x, 
 	this._inventoryContainerEquip[binding].dataset.id = binding;
 	this._inventoryContainerEquip[binding].style.left = x + 'px';
 	this._inventoryContainerEquip[binding].style.top = y + 'px';
+	this._inventoryContainerEquip[binding].itemType = itemType;
 	this._inventoryContainerEquip[binding].excludeFromInput = true;
 
 	var equipItem = document.createElement('div');
@@ -405,7 +406,7 @@ GameInterface.prototype._inventoryEquipClick = function(event) {
 	if(event.target.classList.contains('inventory-equip-item')) {
 		item = GameService.player.getEquipped()[event.target.dataset.id];
 		if(item == null && this._draggingItem === true) {
-			this._dropGridItemToEquip(event.target.children[0]);
+			this._dropGridItemToEquip(event.target.children[0], event.target.itemType);
 		}
 	}
 }
@@ -439,13 +440,17 @@ GameInterface.prototype._dragItem = function(item, inventoryGridItem) {
 	document.body.style.cursor = inventoryGridItem.style.backgroundImage + ", pointer";
 }
 
-GameInterface.prototype._dropGridItemToEquip = function(inventoryEquipItem) {
-	this._draggingItem = false;
-	document.body.style.cursor = "";
-	GameService.player.moveInventoryItemToEquipped(
+GameInterface.prototype._dropGridItemToEquip = function(inventoryEquipItem, itemType) {
+	
+	if(GameService.player.moveInventoryItemToEquipped(
 		this._draggingInventoryGridItem.parentElement.dataset.id, 
-		inventoryEquipItem.parentElement.dataset.id
-	);	
+		inventoryEquipItem.parentElement.dataset.id,
+		itemType 
+	)) {
+
+		this._draggingItem = false;
+		document.body.style.cursor = "";
+	}	
 }
 
 GameInterface.prototype._dropGridItemToGrid = function(inventoryGridItem) {
@@ -1174,12 +1179,17 @@ Player.prototype.moveInventoryItemToInventory = function(fromIndex, toIndex) {
 	this.emit('inventory change', toIndex, newItem);	
 }
 
-Player.prototype.moveInventoryItemToEquipped = function(fromIndex, toBinding) {
+Player.prototype.moveInventoryItemToEquipped = function(fromIndex, toBinding, itemType) {
+	//check the item to move matches to slow itemType
+	if(this._inventory[fromIndex].itemType !== itemType) {
+		return false;
+	}
 	this._equipped[toBinding] = this._inventory[fromIndex];
 	this._inventory[fromIndex] = null;
 
 	this.emit('inventory change',  fromIndex , this._inventory[fromIndex]);
 	this.emit('equip change', toBinding, this._equipped[toBinding]);	
+	return true;
 }
 
 Player.prototype.update = function() {

@@ -189,12 +189,17 @@ Player.prototype.moveInventoryItemToInventory = function(fromIndex, toIndex) {
 	this.emit('inventory change', toIndex, newItem);	
 }
 
-Player.prototype.moveInventoryItemToEquipped = function(fromIndex, toBinding) {
+Player.prototype.moveInventoryItemToEquipped = function(fromIndex, toBinding, itemType) {
+	//check the item to move matches to slow itemType
+	if(this._inventory[fromIndex].itemType !== itemType) {
+		return false;
+	}
 	this._equipped[toBinding] = this._inventory[fromIndex];
 	this._inventory[fromIndex] = null;
 
 	this.emit('inventory change',  fromIndex , this._inventory[fromIndex]);
 	this.emit('equip change', toBinding, this._equipped[toBinding]);	
+	return true;
 }
 
 Player.prototype.update = function() {
