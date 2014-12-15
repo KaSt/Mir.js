@@ -27,7 +27,7 @@ function Player( data ) {
 	this._weight = data.weight !== null ? data.weight : null;
 	this._weight = data.maxWeight !== null ? data.maxWeight : null;
 	this._inventory = data.inventory || [];
-	this._equiped = data.equiped || {};
+	this._equipped = data._equipped || {};
 	this._humanSprite = null;
 
 	this.isMoving = false;
@@ -136,6 +136,10 @@ Player.prototype.getInventory = function() {
 	return this._inventory;
 }
 
+Player.prototype.getEquipped = function() {
+	return this._equipped;
+}
+
 Player.prototype.getDirection = function() {
 	return this._direction;
 }
@@ -174,7 +178,7 @@ Player.prototype.setVirtualLocation = function(diffX, diffY) {
 	this.emit('virtualLocation change', this._virtualX, this._virtualX);	
 }
 
-Player.prototype.moveInventoryItem = function(fromIndex, toIndex) {
+Player.prototype.moveInventoryItemToInventory = function(fromIndex, toIndex) {
 	var newItem = this._inventory[fromIndex],
 		oldItem = this._inventory[toIndex];
 
@@ -183,6 +187,14 @@ Player.prototype.moveInventoryItem = function(fromIndex, toIndex) {
 
 	this.emit('inventory change',  fromIndex , oldItem);
 	this.emit('inventory change', toIndex, newItem);	
+}
+
+Player.prototype.moveInventoryItemToEquipped = function(fromIndex, toBinding) {
+	this._equipped[toBinding] = this._inventory[fromIndex];
+	this._inventory[fromIndex] = null;
+
+	this.emit('inventory change',  fromIndex , this._inventory[fromIndex]);
+	this.emit('equip change', toBinding, this._equipped[toBinding]);	
 }
 
 Player.prototype.update = function() {

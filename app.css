@@ -89,6 +89,13 @@ body {
 	background: rgba(255,255,255,0.1);
 }
 
+#app #game-interface-container #inventory-container #inventory-equip .inventory-equip-item .item {
+	width: 40px;
+	height: 40px;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+}
+
 #app #game-interface-container #inventory-container #inventory-grid {
 	position: absolute;
 	right: 0;

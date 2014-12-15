@@ -151,7 +151,21 @@ GameService.player = new Player({
 			weight: 4
 		})		
 	],
-	equiped: {}
+	equipped: {
+		weapon: null,
+		bracelet1: null,
+		bracelet2: null,
+		ring1: null,
+		ring2: null,
+		armour: null,
+		gem: null,
+		boots: null,
+		belt: null,
+		torch: null,
+		amulet: null,
+		necklace: null,
+		helmet: null
+	}
 });
 
 //set map
