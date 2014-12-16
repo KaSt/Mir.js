@@ -259,6 +259,9 @@ function GameInterface(appContainer) {
 	this._inventoryContainerEquip = {};
 	this._draggingItem = false;
 	this._draggingInventoryGridItem = null;
+	this._toolTopContainer = null;
+	this._toolTopHeader = null;
+	this._toolTopBody = null;
 
 	this._init();
 }
@@ -273,6 +276,46 @@ GameInterface.prototype._init = function() {
 	this._initCoordsLabel();
 	this._initMiniMapContainer();
 	this._initInventoryContainer();
+	this._initTooltipContainer();
+}
+
+GameInterface.prototype.showToolTip = function(header, body) {
+	this._toolTopContainer.style.opacity = "1";
+	this._toolTopHeader.innerHTML = header;
+	this._toolTopBody.innerHTML = body;
+}
+
+GameInterface.prototype.hideToolTip = function() {
+	this._toolTopContainer.style.opacity = "0";
+}
+
+GameInterface.prototype._initTooltipContainer = function() {
+	this._toolTopContainer = document.createElement('div');
+	this._toolTopContainer.id = "tooltip-container";
+	this._toolTopContainer.excludeFromInput = true;
+
+	this._toolTopHeader = document.createElement('header');
+	this._toolTopHeader.classList.add("header");
+	this._toolTopHeader.innerHTML = "Test header name";
+	this._toolTopHeader.excludeFromInput = true;
+
+	this._toolTopContainer.appendChild(this._toolTopHeader);
+
+	this._toolTopBody = document.createElement('div');
+	this._toolTopBody.classList.add("body");
+	this._toolTopBody.innerHTML = "<p>Test body stuff goes here over many different lines.</p>"
+								+ "<p>It can go on further, with these stats</p>"
+								+ "<ul><li>Test item 1</li><li>Test item 2</li></ul>";
+	this._toolTopBody.excludeFromInput = true;
+
+	InputService.on('mousemove', function(x, y) {
+		this._toolTopContainer.style.left = (x + 15) + 'px';
+		this._toolTopContainer.style.top = (y - 15) + 'px';
+	}.bind(this));
+
+	this._toolTopContainer.appendChild(this._toolTopBody);
+
+	this._gameInterfaceContainer.appendChild(this._toolTopContainer);
 }
 
 GameInterface.prototype._initInventoryContainer = function() {
@@ -378,6 +421,8 @@ GameInterface.prototype._initInventoryContainerGrid = function() {
 	}.bind(this);
 
 	inventoryGrid.addEventListener('click', this._inventoryGridClick.bind(this), true);
+	inventoryGrid.addEventListener('mouseenter', this._inventoryGridMouseEnter.bind(this), true);
+	inventoryGrid.addEventListener('mouseleave', this._inventoryGridMouseLeave.bind(this), true);
 
 	for(var i = 0 ; i < 40; i++) {
 		this._inventoryContainerGrid[i] = document.createElement('div');
@@ -409,6 +454,32 @@ GameInterface.prototype._inventoryEquipClick = function(event) {
 			this._dropGridItemToEquip(event.target.children[0], event.target.itemType);
 		}
 	}
+}
+
+GameInterface.prototype._inventoryGridMouseEnter = function(event) {
+	if(event.target.classList.contains('item')) {
+		item = GameService.player.getInventory()[event.target.parentElement.dataset.id];
+		if(item != null) {
+			var desc = '<p class="type">Type: <span class="highlight1">' + item.getItemTypeAsSring() + '</span></p>'
+					 + '<p>' + item.description + '</p>';
+
+			if(item.requirements != null) {
+				desc += '<ul class="properties">'
+
+				if(item.requirements.level != null) {
+					desc += '<li>Requires level ' + item.requirements.level + '</li>';
+				}
+
+				desc += '</ul>';	
+			}
+
+			this.showToolTip(item.name, desc);
+		}
+	}
+}
+
+GameInterface.prototype._inventoryGridMouseLeave = function(event) {
+	this.hideToolTip();
 }
 
 GameInterface.prototype._inventoryGridClick = function(event) {
@@ -935,6 +1006,7 @@ MapReader.prototype._loadMapType5 = function() {
 
 module.exports = MapReader;
 },{"./Map.js":"/Volumes/StorageVol/Sites/www/mirjs/app/maps/Map.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Item.js":[function(require,module,exports){
+var ItemTypeEnum = require('../enums/ItemTypeEnum.js');
 
 function Item( data ) {
 	this.name = data.name;
@@ -954,8 +1026,23 @@ function Item( data ) {
 	this.itemSprite = null;
 }
 
+Item.prototype.getItemTypeAsSring = function() {
+	switch(this.itemType) {
+		case ItemTypeEnum.Weapon:
+			return "Weapon";
+		case ItemTypeEnum.Book:
+			return "Book";			
+		case ItemTypeEnum.Potion:
+			return "Potion";
+		case ItemTypeEnum.Torch:
+			return "Light";			
+		default:
+			return "Unknown";
+	}
+}
+
 module.exports = Item;
-},{}],"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Npc.js":[function(require,module,exports){
+},{"../enums/ItemTypeEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/ItemTypeEnum.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Npc.js":[function(require,module,exports){
 var NpcSprite = require('../sprites/NpcSprite.js');
 
 function Npc( data ) {
@@ -2282,18 +2369,14 @@ InputService.prototype._mouseUp = function(e) {
 }
 
 InputService.prototype._mouseMove = function(e) {
-	if(!e.target.excludeFromInput || e.target.excludeFromInput === false) {
-		var x = e.pageX;
-		var y = e.pageY;
+	var x = e.pageX, y = e.pageY;
 
-		this.mouseX = x;
-		this.mouseY = y;
+	this.mouseX = x;	
+	this.mouseY = y;
 
-		this.emit('mousemove', {
-			x: this.mouseX,
-			y: this.mouseY
-		});
-	} else {
+	this.emit('mousemove', x, y);
+
+	if(e.target.excludeFromInput && e.target.excludeFromInput === true) {
 		this.leftMouseButtonDown = false;
 		this.rightMouseButtonDown = false;
 	}
@@ -2943,7 +3026,7 @@ GameService.player = new Player({
 			name: 'Book of Fireball',
 			inventoryLook: 2,
 			spriteLook: 0,
-			description: "An ancient spell book that allows Wizards to study and learn the Fireball spell'",
+			description: "An ancient spell book that allows Wizards to study and learn the Fireball spell",
 			itemType: ItemTypeEnum.Book,
 			restrictions: {
 				mirClass: MirClassEnum.Wizard,
@@ -2957,7 +3040,7 @@ GameService.player = new Player({
 			name: 'Small Health Potion',
 			inventoryLook: 3,
 			spriteLook: 0,
-			description: "A small health potion that heals 50 HP over 5 seconds'",
+			description: "A small health potion that heals 50 HP over 5 seconds",
 			itemType: ItemTypeEnum.Potion,
 			restrictions: null,
 			price: 25,
@@ -2968,7 +3051,7 @@ GameService.player = new Player({
 			name: 'Medium Health Potion',
 			inventoryLook: 4,
 			spriteLook: 0,
-			description: "A medium health potion that heals 125 HP over 5 seconds'",
+			description: "A medium health potion that heals 125 HP over 5 seconds",
 			itemType: ItemTypeEnum.Potion,
 			restrictions: null,
 			price: 100,
@@ -2979,7 +3062,7 @@ GameService.player = new Player({
 			name: 'Large Health Potion',
 			inventoryLook: 5,
 			spriteLook: 0,
-			description: "A medium health potion that heals 250 HP over 5 seconds'",
+			description: "A medium health potion that heals 250 HP over 5 seconds",
 			itemType: ItemTypeEnum.Potion,
 			restrictions: null,
 			price: 250,
@@ -2990,7 +3073,7 @@ GameService.player = new Player({
 			name: 'Small Mana Potion',
 			inventoryLook: 6,
 			spriteLook: 0,
-			description: "A small health potion that heals 50 MP over 5 seconds'",
+			description: "A small health potion that heals 50 MP over 5 seconds",
 			itemType: ItemTypeEnum.Potion,
 			restrictions: null,
 			price: 25,
@@ -3001,7 +3084,7 @@ GameService.player = new Player({
 			name: 'Medium Mana Potion',
 			inventoryLook: 7,
 			spriteLook: 0,
-			description: "A medium health potion that heals 125 MP over 5 seconds'",
+			description: "A medium health potion that heals 125 MP over 5 seconds",
 			itemType: ItemTypeEnum.Potion,
 			restrictions: null,
 			price: 100,
@@ -3012,7 +3095,7 @@ GameService.player = new Player({
 			name: 'Large Mana Potion',
 			inventoryLook: 8,
 			spriteLook: 0,
-			description: "A medium health potion that heals 250 MP over 5 seconds'",
+			description: "A medium health potion that heals 250 MP over 5 seconds",
 			itemType: ItemTypeEnum.Potion,
 			restrictions: null,
 			price: 250,

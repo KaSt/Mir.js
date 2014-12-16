@@ -1,3 +1,4 @@
+var ItemTypeEnum = require('../enums/ItemTypeEnum.js');
 
 function Item( data ) {
 	this.name = data.name;
@@ -15,6 +16,21 @@ function Item( data ) {
 	this.weight = data.weight
 
 	this.itemSprite = null;
+}
+
+Item.prototype.getItemTypeAsSring = function() {
+	switch(this.itemType) {
+		case ItemTypeEnum.Weapon:
+			return "Weapon";
+		case ItemTypeEnum.Book:
+			return "Book";			
+		case ItemTypeEnum.Potion:
+			return "Potion";
+		case ItemTypeEnum.Torch:
+			return "Light";			
+		default:
+			return "Unknown";
+	}
 }
 
 module.exports = Item;

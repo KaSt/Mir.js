@@ -65,6 +65,63 @@ body {
 	transition: opacity 0.2s;
 }
 
+#app #game-interface-container #tooltip-container {
+	border: 1px solid #52565d;
+	box-shadow: 0 0 5px rgba(0,0,0,0.8);
+	background: #2a2a2b;
+	position: absolute;
+	font-size: 10px;
+	color: #fff;
+	padding: 10px;
+	max-width: 170px;
+	color: #87847e;
+	text-shadow: 0 0 3px rgba(0,0,0, 0.8);
+	transform: translateY(-100%);
+	opacity: 0;
+	transition: opacity 0.1s;
+}
+
+#app #game-interface-container #tooltip-container:after {
+	content: '';
+	background: url('gui/tooltip-corner.png') no-repeat;
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	left: -6px;
+	bottom: -10px;
+}
+
+
+#app #game-interface-container #tooltip-container .header {
+	color: #fff;
+	font-size: 12px;
+}
+
+#app #game-interface-container #tooltip-container .body p.type {
+	margin-top: 0;
+	color: #ccc;
+}
+
+#app #game-interface-container #tooltip-container .body ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+#app #game-interface-container #tooltip-container .body ul li {
+	margin: 0;
+	padding: 0;
+}
+
+#app #game-interface-container #tooltip-container .body ul.properties {
+	color: #fff;
+}
+
+#app #game-interface-container #tooltip-container .body span.highlight1 {
+	color: #d6cd90;
+	padding: 0 2px;
+}
+
 #app #game-interface-container #inventory-container.visible {
 	visibility: visible;
 	opacity: 1;

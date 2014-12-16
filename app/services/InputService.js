@@ -75,18 +75,14 @@ InputService.prototype._mouseUp = function(e) {
 }
 
 InputService.prototype._mouseMove = function(e) {
-	if(!e.target.excludeFromInput || e.target.excludeFromInput === false) {
-		var x = e.pageX;
-		var y = e.pageY;
+	var x = e.pageX, y = e.pageY;
 
-		this.mouseX = x;
-		this.mouseY = y;
+	this.mouseX = x;	
+	this.mouseY = y;
 
-		this.emit('mousemove', {
-			x: this.mouseX,
-			y: this.mouseY
-		});
-	} else {
+	this.emit('mousemove', x, y);
+
+	if(e.target.excludeFromInput && e.target.excludeFromInput === true) {
 		this.leftMouseButtonDown = false;
 		this.rightMouseButtonDown = false;
 	}

@@ -24,6 +24,9 @@ function GameInterface(appContainer) {
 	this._inventoryContainerEquip = {};
 	this._draggingItem = false;
 	this._draggingInventoryGridItem = null;
+	this._toolTopContainer = null;
+	this._toolTopHeader = null;
+	this._toolTopBody = null;
 
 	this._init();
 }
@@ -38,6 +41,46 @@ GameInterface.prototype._init = function() {
 	this._initCoordsLabel();
 	this._initMiniMapContainer();
 	this._initInventoryContainer();
+	this._initTooltipContainer();
+}
+
+GameInterface.prototype.showToolTip = function(header, body) {
+	this._toolTopContainer.style.opacity = "1";
+	this._toolTopHeader.innerHTML = header;
+	this._toolTopBody.innerHTML = body;
+}
+
+GameInterface.prototype.hideToolTip = function() {
+	this._toolTopContainer.style.opacity = "0";
+}
+
+GameInterface.prototype._initTooltipContainer = function() {
+	this._toolTopContainer = document.createElement('div');
+	this._toolTopContainer.id = "tooltip-container";
+	this._toolTopContainer.excludeFromInput = true;
+
+	this._toolTopHeader = document.createElement('header');
+	this._toolTopHeader.classList.add("header");
+	this._toolTopHeader.innerHTML = "Test header name";
+	this._toolTopHeader.excludeFromInput = true;
+
+	this._toolTopContainer.appendChild(this._toolTopHeader);
+
+	this._toolTopBody = document.createElement('div');
+	this._toolTopBody.classList.add("body");
+	this._toolTopBody.innerHTML = "<p>Test body stuff goes here over many different lines.</p>"
+								+ "<p>It can go on further, with these stats</p>"
+								+ "<ul><li>Test item 1</li><li>Test item 2</li></ul>";
+	this._toolTopBody.excludeFromInput = true;
+
+	InputService.on('mousemove', function(x, y) {
+		this._toolTopContainer.style.left = (x + 15) + 'px';
+		this._toolTopContainer.style.top = (y - 15) + 'px';
+	}.bind(this));
+
+	this._toolTopContainer.appendChild(this._toolTopBody);
+
+	this._gameInterfaceContainer.appendChild(this._toolTopContainer);
 }
 
 GameInterface.prototype._initInventoryContainer = function() {
@@ -143,6 +186,8 @@ GameInterface.prototype._initInventoryContainerGrid = function() {
 	}.bind(this);
 
 	inventoryGrid.addEventListener('click', this._inventoryGridClick.bind(this), true);
+	inventoryGrid.addEventListener('mouseenter', this._inventoryGridMouseEnter.bind(this), true);
+	inventoryGrid.addEventListener('mouseleave', this._inventoryGridMouseLeave.bind(this), true);
 
 	for(var i = 0 ; i < 40; i++) {
 		this._inventoryContainerGrid[i] = document.createElement('div');
@@ -174,6 +219,32 @@ GameInterface.prototype._inventoryEquipClick = function(event) {
 			this._dropGridItemToEquip(event.target.children[0], event.target.itemType);
 		}
 	}
+}
+
+GameInterface.prototype._inventoryGridMouseEnter = function(event) {
+	if(event.target.classList.contains('item')) {
+		item = GameService.player.getInventory()[event.target.parentElement.dataset.id];
+		if(item != null) {
+			var desc = '<p class="type">Type: <span class="highlight1">' + item.getItemTypeAsSring() + '</span></p>'
+					 + '<p>' + item.description + '</p>';
+
+			if(item.requirements != null) {
+				desc += '<ul class="properties">'
+
+				if(item.requirements.level != null) {
+					desc += '<li>Requires level ' + item.requirements.level + '</li>';
+				}
+
+				desc += '</ul>';	
+			}
+
+			this.showToolTip(item.name, desc);
+		}
+	}
+}
+
+GameInterface.prototype._inventoryGridMouseLeave = function(event) {
+	this.hideToolTip();
 }
 
 GameInterface.prototype._inventoryGridClick = function(event) {
