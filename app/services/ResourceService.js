@@ -78,7 +78,18 @@ var ResourceService = {
 					};
 			}
 		},		
+		mobLib: function(look) {
+			switch(look) {
+				case 0:
+					return {
+						path: "data/mon1",
+						type: 'png',
+						placements: 'data/mon1.json'
+					};
+			}			
+		},
 		placements: [
+			"data/mon1",
 			"data/hair1",
 			"data/hum1",
 			"data/npc1",

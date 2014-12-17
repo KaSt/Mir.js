@@ -143,10 +143,10 @@ HumanSprite.prototype._handleStandingStance1 = function() {
 }
 
 HumanSprite.prototype._handleStandingAnimation = function() {
-	if(this._tickElapsed(200)) {	
+	if(this._tickElapsed(400)) {	
 		this._animationKeyFrame = (8 * this._direction);
 
-		if(this._animationFrame === 3) {
+		if(this._animationFrame === 3 || this._actionQueue.length > 0) {
 			this._animationFrame = 0;
 			this._nextAnimation();
 		} else {

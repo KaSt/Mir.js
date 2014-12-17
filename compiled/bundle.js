@@ -1042,7 +1042,42 @@ Item.prototype.getItemTypeAsSring = function() {
 }
 
 module.exports = Item;
-},{"../enums/ItemTypeEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/ItemTypeEnum.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Npc.js":[function(require,module,exports){
+},{"../enums/ItemTypeEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/ItemTypeEnum.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Mob.js":[function(require,module,exports){
+var MobSprite = require('../sprites/MobSprite.js');
+
+function Mob( data ) {
+	this.name = data.name || null;
+	this.look = data.look !== null ? data.look : null;
+	this.id = data.id !== null ? data.id : null;
+	this.x = data.x !== null ? data.x : null;
+	this.y = data.y !== null ? data.y : null;
+	this._mobSprite = null;	
+}
+
+Mob.prototype.initMobSprite = function(scene) {
+	//make the human sprite for the player
+	this._mobSprite = new MobSprite(scene, {
+		z: this.y,
+		look: this.look
+	});
+}
+
+Mob.prototype.setLocation = function(x, y) {
+	this.x = x;
+	this.y = y;
+	this._mobSprite.setZ(y);	
+}
+
+Mob.prototype.update = function() {
+	this._mobSprite.update();
+}
+
+Mob.prototype.getMobSprite = function() {
+	return this._mobSprite;
+}
+
+module.exports = Mob;
+},{"../sprites/MobSprite.js":"/Volumes/StorageVol/Sites/www/mirjs/app/sprites/MobSprite.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Npc.js":[function(require,module,exports){
 var NpcSprite = require('../sprites/NpcSprite.js');
 
 function Npc( data ) {
@@ -1407,6 +1442,9 @@ WorldScene.prototype._initObjects = function() {
 	for(var i = 0; i < GameService.npcs.length; i++) {
 		GameService.npcs[i].initNpcSprite(this);
 	}
+	for(var i = 0; i < GameService.mobs.length; i++) {
+		GameService.mobs[i].initMobSprite(this);
+	}	
 }
 
 WorldScene.prototype._enableInput = function() {
@@ -1773,6 +1811,7 @@ WorldScene.prototype.getMap = function() {
 WorldScene.prototype._checkCollision = function(x, y) {
 	var mapCell = this._map.getMapCell(this._mainPlayer.getVirtualX() + x, this._mainPlayer.getVirtualY() + y),
 		npcs = GameService.npcs,
+		mobs = GameService.mobs,
 		i = 0;
 
 	if(mapCell.collision) {
@@ -1785,6 +1824,13 @@ WorldScene.prototype._checkCollision = function(x, y) {
 			return true;
 		}
 	}	
+
+	//check mobs
+	for(i = 0; i < mobs.length; i++) {
+		if(this._mainPlayer.getVirtualX() + x === mobs[i].x && this._mainPlayer.getVirtualY() + y === mobs[i].y) {
+			return true;
+		}
+	}		
 
 	return false;
 }
@@ -1909,12 +1955,17 @@ WorldScene.prototype._enableReadyForInput = function() {
 }
 
 WorldScene.prototype.updateAnimations = function() {
-	var npcs = GameService.npcs;
+	var npcs = GameService.npcs,
+		mobs = GameService.mobs;
 	//update main player
 	this._mainPlayer.update();
 	//update npcs
 	for(var i = 0; i < npcs.length; i++) {
 		npcs[i].update();
+	}	
+	//update mobs
+	for(var i = 0; i < mobs.length; i++) {
+		mobs[i].update();
 	}	
 }
 
@@ -2027,6 +2078,7 @@ WorldScene.prototype._handleNewSprites = function() {
 		otherPlayers = GameService.otherPlayers,
 		npc = null,
 		mob = null,
+		mobSprite = null,
 		otherPlayer = null,
 		mainPlayerHumanSprite = null,
 		mainPlayerX = this._mainPlayer.getX(),
@@ -2129,6 +2181,19 @@ WorldScene.prototype._handleNewSprites = function() {
 					this._objTileLayer.addChild(npc.npcSprite.sprites);
 				}
 			}
+
+			//handle mobs
+			for(i = 0; i < mobs.length; i++) {
+				mob = mobs[i],
+				mobSprite = mob.getMobSprite();
+				if(mob.x === x & mob.y === y && mobSprite.loaded === false) {
+					mobSprite.loaded = true;
+					mobSprite.init();
+					mobSprite.sprites.x = drawX;
+					mobSprite.sprites.y = drawY - 16;
+					this._objTileLayer.addChild(mobSprite.sprites);
+				}
+			}			
 	    }
 	}
 
@@ -2539,7 +2604,18 @@ var ResourceService = {
 					};
 			}
 		},		
+		mobLib: function(look) {
+			switch(look) {
+				case 0:
+					return {
+						path: "data/mon1",
+						type: 'png',
+						placements: 'data/mon1.json'
+					};
+			}			
+		},
 		placements: [
+			"data/mon1",
 			"data/hair1",
 			"data/hum1",
 			"data/npc1",
@@ -2699,10 +2775,10 @@ HumanSprite.prototype._handleStandingStance1 = function() {
 }
 
 HumanSprite.prototype._handleStandingAnimation = function() {
-	if(this._tickElapsed(200)) {	
+	if(this._tickElapsed(400)) {	
 		this._animationKeyFrame = (8 * this._direction);
 
-		if(this._animationFrame === 3) {
+		if(this._animationFrame === 3 || this._actionQueue.length > 0) {
 			this._animationFrame = 0;
 			this._nextAnimation();
 		} else {
@@ -2820,7 +2896,104 @@ HumanSprite.prototype._updateHairTexture = function() {
 }
 
 module.exports = HumanSprite;
-},{"../animations/AnimationControl.js":"/Volumes/StorageVol/Sites/www/mirjs/app/animations/AnimationControl.js","../enums/HumanActionEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/HumanActionEnum.js","../services/LoaderService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/LoaderService.js","../services/ResourceService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/ResourceService.js","pixi.js":"/Volumes/StorageVol/Sites/www/mirjs/node_modules/pixi.js/bin/pixi.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/sprites/NpcSprite.js":[function(require,module,exports){
+},{"../animations/AnimationControl.js":"/Volumes/StorageVol/Sites/www/mirjs/app/animations/AnimationControl.js","../enums/HumanActionEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/HumanActionEnum.js","../services/LoaderService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/LoaderService.js","../services/ResourceService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/ResourceService.js","pixi.js":"/Volumes/StorageVol/Sites/www/mirjs/node_modules/pixi.js/bin/pixi.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/sprites/MobSprite.js":[function(require,module,exports){
+var PIXI = require('pixi.js');
+var LoaderService = require('../services/LoaderService.js');
+var ResourceService = require('../services/ResourceService.js');
+
+var addPathNamePadding = function(n, width, z) {
+  z = z || '0';
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+}
+
+function MobSprite( scene, data ) {
+	this.hasLight = data.hasLight !== null ? data.hasLight : null;
+	this._direction = 0;
+	this.z = data.z !== null ? data.z : null;
+	this.look = data.look !== null ? data.look : null;
+
+	this._animationKeyFrame = 0;
+	this._animationFrame = 0;
+	this._lastAnimationTime = 0;
+	this._animationAmounts = 0;
+	this._animateAltEffect = false;
+
+	this.sprites = new PIXI.DisplayObjectContainer();
+
+	this._scene = scene;
+	this._mobSprite = null;
+	this.loaded = false;
+}
+
+MobSprite.prototype.init = function() {
+	//add the sprites to our container
+	this.sprites.x = this.x;
+	this.sprites.y = this.y;
+	this.sprites.z = this.z + 0.1;
+
+	this._updateSpriteTexture();
+}
+
+MobSprite.prototype.setZ = function(z) {
+	this.z = z;
+	this.sprites.z = this.z + 0.1;	
+}
+
+MobSprite.prototype.update = function() {
+	if(this._mobSprite === null) {
+		return false;
+	}
+
+	this._handleStandingAnimation();
+
+	this._updateSpriteTexture();
+}
+
+MobSprite.prototype._handleStandingAnimation = function() {
+	if(this._tickElapsed(400)) {	
+		this._animationKeyFrame = (8 * this._direction);
+
+		if(this._animationFrame === 3) {
+			this._animationFrame = 0;
+			this._updateTick();
+		} else {
+			this._animationFrame++
+			this._updateTick();
+		}	
+	}	
+}
+
+MobSprite.prototype._updateSpriteTexture = function() {
+	var index = (this.look * 60) + (10 * this._direction) + this._animationFrame + this._animationKeyFrame;
+	var mobLib = ResourceService.graphics.mobLib(this.look);
+
+	var placementX = this._scene._graphicsPlacements[mobLib.path][index][0];
+	var placementY = this._scene._graphicsPlacements[mobLib.path][index][1];	
+
+	LoaderService.loadTexture(mobLib.path + '/' + addPathNamePadding(index, 6) + '.' + mobLib.type).then(function(texture) {
+		if(this._mobSprite === null) {
+			this._mobSprite = new PIXI.Sprite(texture);
+			this.sprites.addChild(this._mobSprite);
+		} else {
+			this._mobSprite.setTexture(texture);
+		}
+
+		this._mobSprite.x = placementX;
+		this._mobSprite.y = placementY;
+	}.bind(this));
+}
+
+MobSprite.prototype._updateTick = function() {
+	this._lastAnimationTime = Date.now();
+}
+
+MobSprite.prototype._tickElapsed = function(value) {
+	return Date.now() - this._lastAnimationTime > value;
+}
+
+module.exports = MobSprite;
+},{"../services/LoaderService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/LoaderService.js","../services/ResourceService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/ResourceService.js","pixi.js":"/Volumes/StorageVol/Sites/www/mirjs/node_modules/pixi.js/bin/pixi.js"}],"/Volumes/StorageVol/Sites/www/mirjs/app/sprites/NpcSprite.js":[function(require,module,exports){
 var PIXI = require('pixi.js');
 var LoaderService = require('../services/LoaderService.js');
 var ResourceService = require('../services/ResourceService.js');
@@ -2966,6 +3139,7 @@ var GameService = require('./app/services/GameService.js');
 var Player = require('./app/objects/Player.js');
 var Item = require('./app/objects/Item.js');
 var Npc = require('./app/objects/Npc.js');
+var Mob = require('./app/objects/Mob.js');
 var App = require('./app/App.js');
 var MirClassEnum = require('./app/enums/MirClassEnum.js');
 var ItemTypeEnum = require('./app/enums/ItemTypeEnum.js');
@@ -3133,6 +3307,15 @@ GameService.addNpc(new Npc({
 	y: 290
 }));
 
+//add an Mob into the middle of BW
+GameService.addMob(new Mob({
+	id: 1,
+	name: 'Archer Guard',
+	look: 0,
+	x: 328,
+	y: 271
+}));
+
 window.GameService = GameService;
 
 //we haven't got the login scene or char select scene yet, so let's cheat and say we have
@@ -3140,7 +3323,7 @@ GameService.loggedIn = true;
 
 //now start the app
 var app = new App(document.getElementById('app'));
-},{"./app/App.js":"/Volumes/StorageVol/Sites/www/mirjs/app/App.js","./app/enums/ItemTypeEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/ItemTypeEnum.js","./app/enums/MirClassEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/MirClassEnum.js","./app/objects/Item.js":"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Item.js","./app/objects/Npc.js":"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Npc.js","./app/objects/Player.js":"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Player.js","./app/services/GameService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/GameService.js"}],"/Volumes/StorageVol/Sites/www/mirjs/fpsmeter.min.js":[function(require,module,exports){
+},{"./app/App.js":"/Volumes/StorageVol/Sites/www/mirjs/app/App.js","./app/enums/ItemTypeEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/ItemTypeEnum.js","./app/enums/MirClassEnum.js":"/Volumes/StorageVol/Sites/www/mirjs/app/enums/MirClassEnum.js","./app/objects/Item.js":"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Item.js","./app/objects/Mob.js":"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Mob.js","./app/objects/Npc.js":"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Npc.js","./app/objects/Player.js":"/Volumes/StorageVol/Sites/www/mirjs/app/objects/Player.js","./app/services/GameService.js":"/Volumes/StorageVol/Sites/www/mirjs/app/services/GameService.js"}],"/Volumes/StorageVol/Sites/www/mirjs/fpsmeter.min.js":[function(require,module,exports){
 /*! FPSMeter 0.3.1 - 9th May 2013 | https://github.com/Darsain/fpsmeter */
 (function(m,j){function s(a,e){for(var g in e)try{a.style[g]=e[g]}catch(j){}return a}function H(a){return null==a?String(a):"object"===typeof a||"function"===typeof a?Object.prototype.toString.call(a).match(/\s([a-z]+)/i)[1].toLowerCase()||"object":typeof a}function R(a,e){if("array"!==H(e))return-1;if(e.indexOf)return e.indexOf(a);for(var g=0,j=e.length;g<j;g++)if(e[g]===a)return g;return-1}function I(){var a=arguments,e;for(e in a[1])if(a[1].hasOwnProperty(e))switch(H(a[1][e])){case "object":a[0][e]=
 I({},a[0][e],a[1][e]);break;case "array":a[0][e]=a[1][e].slice(0);break;default:a[0][e]=a[1][e]}return 2<a.length?I.apply(null,[a[0]].concat(Array.prototype.slice.call(a,2))):a[0]}function N(a){a=Math.round(255*a).toString(16);return 1===a.length?"0"+a:a}function S(a,e,g,j){if(a.addEventListener)a[j?"removeEventListener":"addEventListener"](e,g,!1);else if(a.attachEvent)a[j?"detachEvent":"attachEvent"]("on"+e,g)}function D(a,e){function g(a,b,d,c){return y[0|a][Math.round(Math.min((b-d)/(c-d)*J,J))]}

@@ -14,6 +14,7 @@ var GameService = require('./app/services/GameService.js');
 var Player = require('./app/objects/Player.js');
 var Item = require('./app/objects/Item.js');
 var Npc = require('./app/objects/Npc.js');
+var Mob = require('./app/objects/Mob.js');
 var App = require('./app/App.js');
 var MirClassEnum = require('./app/enums/MirClassEnum.js');
 var ItemTypeEnum = require('./app/enums/ItemTypeEnum.js');
@@ -179,6 +180,15 @@ GameService.addNpc(new Npc({
 	look: 0,
 	x: 300,
 	y: 290
+}));
+
+//add an Mob into the middle of BW
+GameService.addMob(new Mob({
+	id: 1,
+	name: 'Archer Guard',
+	look: 0,
+	x: 328,
+	y: 271
 }));
 
 window.GameService = GameService;

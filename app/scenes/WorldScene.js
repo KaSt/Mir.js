@@ -74,6 +74,9 @@ WorldScene.prototype._initObjects = function() {
 	for(var i = 0; i < GameService.npcs.length; i++) {
 		GameService.npcs[i].initNpcSprite(this);
 	}
+	for(var i = 0; i < GameService.mobs.length; i++) {
+		GameService.mobs[i].initMobSprite(this);
+	}	
 }
 
 WorldScene.prototype._enableInput = function() {
@@ -440,6 +443,7 @@ WorldScene.prototype.getMap = function() {
 WorldScene.prototype._checkCollision = function(x, y) {
 	var mapCell = this._map.getMapCell(this._mainPlayer.getVirtualX() + x, this._mainPlayer.getVirtualY() + y),
 		npcs = GameService.npcs,
+		mobs = GameService.mobs,
 		i = 0;
 
 	if(mapCell.collision) {
@@ -452,6 +456,13 @@ WorldScene.prototype._checkCollision = function(x, y) {
 			return true;
 		}
 	}	
+
+	//check mobs
+	for(i = 0; i < mobs.length; i++) {
+		if(this._mainPlayer.getVirtualX() + x === mobs[i].x && this._mainPlayer.getVirtualY() + y === mobs[i].y) {
+			return true;
+		}
+	}		
 
 	return false;
 }
@@ -576,12 +587,17 @@ WorldScene.prototype._enableReadyForInput = function() {
 }
 
 WorldScene.prototype.updateAnimations = function() {
-	var npcs = GameService.npcs;
+	var npcs = GameService.npcs,
+		mobs = GameService.mobs;
 	//update main player
 	this._mainPlayer.update();
 	//update npcs
 	for(var i = 0; i < npcs.length; i++) {
 		npcs[i].update();
+	}	
+	//update mobs
+	for(var i = 0; i < mobs.length; i++) {
+		mobs[i].update();
 	}	
 }
 
@@ -694,6 +710,7 @@ WorldScene.prototype._handleNewSprites = function() {
 		otherPlayers = GameService.otherPlayers,
 		npc = null,
 		mob = null,
+		mobSprite = null,
 		otherPlayer = null,
 		mainPlayerHumanSprite = null,
 		mainPlayerX = this._mainPlayer.getX(),
@@ -796,6 +813,19 @@ WorldScene.prototype._handleNewSprites = function() {
 					this._objTileLayer.addChild(npc.npcSprite.sprites);
 				}
 			}
+
+			//handle mobs
+			for(i = 0; i < mobs.length; i++) {
+				mob = mobs[i],
+				mobSprite = mob.getMobSprite();
+				if(mob.x === x & mob.y === y && mobSprite.loaded === false) {
+					mobSprite.loaded = true;
+					mobSprite.init();
+					mobSprite.sprites.x = drawX;
+					mobSprite.sprites.y = drawY - 16;
+					this._objTileLayer.addChild(mobSprite.sprites);
+				}
+			}			
 	    }
 	}
 
