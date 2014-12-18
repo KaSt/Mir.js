@@ -3275,7 +3275,29 @@ GameService.player = new Player({
 			price: 250,
 			stats: null,
 			weight: 4
-		})		
+		}),
+		new Item({
+			name: 'Cloth Wears',
+			inventoryLook: 9,
+			spriteLook: 0,
+			description: "Basic male cloth wears that offer minimal protection",
+			itemType: ItemTypeEnum.Armour,
+			restrictions: null,
+			price: 20,
+			stats: null,
+			weight: 5
+		}),
+		new Item({
+			name: 'Cloth Wears',
+			inventoryLook: 10,
+			spriteLook: 0,
+			description: "Basic female cloth wears that offer minimal protection",
+			itemType: ItemTypeEnum.Armour,
+			restrictions: null,
+			price: 20,
+			stats: null,
+			weight: 5
+		})			
 	],
 	equipped: {
 		weapon: null,
