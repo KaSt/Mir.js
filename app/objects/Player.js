@@ -202,6 +202,23 @@ Player.prototype.moveInventoryItemToEquipped = function(fromIndex, toBinding, it
 	return true;
 }
 
+Player.prototype.moveEquippedItemToEquipped = function(fromBinding, toBinding, itemType) {
+	//check the item to move matches to slow itemType
+	if(this._equipped[fromBinding].itemType !== itemType) {
+		return false;
+	}
+	if(this._equipped[toBinding] === this._equipped[fromBinding]) {
+		this.emit('equip change', fromBinding, this._equipped[fromBinding]);
+		return true;
+	}
+	this._equipped[toBinding] = this._equipped[fromBinding];
+	this._equipped[fromBinding] = null;
+
+	this.emit('equip change', fromBinding, this._equipped[fromBinding]);	
+	this.emit('equip change', toBinding, this._equipped[toBinding]);	
+	return true;
+}
+
 Player.prototype.update = function() {
 	this._humanSprite.update();
 }

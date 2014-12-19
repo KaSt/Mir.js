@@ -23,7 +23,8 @@ function GameInterface(appContainer) {
 	this._inventoryContainerGrid = [];
 	this._inventoryContainerEquip = {};
 	this._draggingItem = false;
-	this._draggingInventoryGridItem = null;
+	this._draggingInventoryItem = null;
+	this._draggingInventoryGridItem = false;
 	this._toolTopContainer = null;
 	this._toolTopHeader = null;
 	this._toolTopBody = null;
@@ -215,10 +216,22 @@ GameInterface.prototype._inventoryEquipClick = function(event) {
 	//make sure we are clicking one of inventory slots
 	if(event.target.classList.contains('inventory-equip-item')) {
 		item = GameService.player.getEquipped()[event.target.dataset.id];
-		if(item == null && this._draggingItem === true) {
+		if((item == null) && this._draggingItem === true) {
 			this._dropGridItemToEquip(event.target.children[0], event.target.itemType);
+		} else 	if((this._draggingInventoryItem === event.target.children[0]) && this._draggingItem === true) {
+			this._dropEquipItemToEquip(event.target.children[0], event.target.itemType);
 		}
 	}
+	if(event.target.classList.contains('item')) {
+		item = GameService.player.getEquipped()[event.target.parentElement.dataset.id];
+		if(item != null && this._draggingItem === false) {
+			this._dragItem(item, event.target, false);
+		} else if((item == null || this._draggingInventoryItem === event.target) && this._draggingItem === true) {
+			this._dropEquipItemToEquip(event.target, event.target.parentElement.itemType);
+		}
+	}	
+
+	event.stopPropagation();
 }
 
 GameInterface.prototype._inventoryGridMouseEnter = function(event) {
@@ -253,8 +266,8 @@ GameInterface.prototype._inventoryGridClick = function(event) {
 	if(event.target.classList.contains('inventory-grid-item')) {
 		item = GameService.player.getInventory()[event.target.dataset.id];
 		if(item != null && this._draggingItem === false) {
-			this._dragItem(item, event.target.children[0]);
-		} else if(this._draggingItem === true) {	
+			this._dragItem(item, event.target.children[0], true);
+		} else if(this._draggingItem === true && this._draggingInventoryGridItem === true) {	
 			this._dropGridItemToGrid(event.target.children[0]);
 		}
 	}
@@ -262,28 +275,42 @@ GameInterface.prototype._inventoryGridClick = function(event) {
 	if(event.target.classList.contains('item')) {
 		item = GameService.player.getInventory()[event.target.parentElement.dataset.id];
 		if(item != null && this._draggingItem === false) {
-			this._dragItem(item, event.target);
-		} else if(this._draggingItem === true) {	
+			this._dragItem(item, event.target, true);
+		} else if(this._draggingItem === true && this._draggingInventoryGridItem === true) {	
 			this._dropGridItemToGrid(event.target);
 		}	
 	}
+
+	event.stopPropagation();
 }
 
-GameInterface.prototype._dragItem = function(item, inventoryGridItem) {
+GameInterface.prototype._dragItem = function(item, item, draggingInventory) {
 	this._draggingItem = true;
-	inventoryGridItem.style.display = "none";
-	this._draggingInventoryGridItem = inventoryGridItem; 
-	document.body.style.cursor = inventoryGridItem.style.backgroundImage + ", pointer";
+	item.style.display = "none";
+	this._draggingInventoryItem = item; 
+	this._draggingInventoryGridItem = draggingInventory;
+	document.body.style.cursor = item.style.backgroundImage + ", pointer";
 }
 
 GameInterface.prototype._dropGridItemToEquip = function(inventoryEquipItem, itemType) {
 	
 	if(GameService.player.moveInventoryItemToEquipped(
-		this._draggingInventoryGridItem.parentElement.dataset.id, 
+		this._draggingInventoryItem.parentElement.dataset.id, 
 		inventoryEquipItem.parentElement.dataset.id,
 		itemType 
 	)) {
+		this._draggingItem = false;
+		document.body.style.cursor = "";
+	}	
+}
 
+GameInterface.prototype._dropEquipItemToEquip = function(inventoryEquipItem, itemType) {
+	
+	if(GameService.player.moveEquippedItemToEquipped(
+		this._draggingInventoryItem.parentElement.dataset.id, 
+		inventoryEquipItem.parentElement.dataset.id,
+		itemType 
+	)) {
 		this._draggingItem = false;
 		document.body.style.cursor = "";
 	}	
@@ -293,7 +320,7 @@ GameInterface.prototype._dropGridItemToGrid = function(inventoryGridItem) {
 	this._draggingItem = false;
 	document.body.style.cursor = "";
 	GameService.player.moveInventoryItemToInventory(
-		this._draggingInventoryGridItem.parentElement.dataset.id, 
+		this._draggingInventoryItem.parentElement.dataset.id, 
 		inventoryGridItem.parentElement.dataset.id
 	);
 }
